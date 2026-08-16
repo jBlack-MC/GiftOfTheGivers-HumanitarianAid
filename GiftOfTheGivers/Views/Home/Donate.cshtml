@@ -1,0 +1,225 @@
+@model GiftOfTheGivers.Models.ViewModels.DonateViewModel
+
+@{
+    ViewData["Title"] = "Donate";
+}
+
+<!-- Page Header -->
+<section class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-3">DONATE</h1>
+        <p class="lead">Your generosity changes lives</p>
+    </div>
+</section>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            @if (!string.IsNullOrEmpty(Model.ProjectTitle))
+            {
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Donating to:</strong> @Model.ProjectTitle
+                </div>
+            }
+
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <h3 class="text-center mb-4">How would you like to donate?</h3>
+
+                    <form asp-action="Donate" method="post" id="donateForm">
+                        <!-- Donation Type -->
+                        <div class="mb-4">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="DonationType" id="oneTime" value="OneTime" checked>
+                                <label class="form-check-label" for="oneTime">
+                                    <strong>One-time</strong>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="DonationType" id="recurring" value="Recurring">
+                                <label class="form-check-label" for="recurring">
+                                    <strong>Recurring</strong> <small class="text-muted">(Monthly donation)</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Project Selection (Optional) -->
+                        <div class="mb-3">
+                            <label class="form-label">Support a specific project (Optional)</label>
+                            <select asp-for="ReliefProjectId" class="form-select">
+                                <option value="">General Donation - Where Most Needed</option>
+                                @if (Model.AvailableProjects != null)
+                                {
+                                    @foreach (var project in Model.AvailableProjects)
+                                    {
+                                        <option value="@project.Id" selected="@(Model.ReliefProjectId == project.Id)">
+                                            @project.Title - @project.Location
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Currency Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Currency</label>
+                            <select class="form-select" id="currency" name="Currency">
+                                <option value="ZAR" selected>ZAR (South African Rand)</option>
+                                <option value="USD">USD (US Dollar)</option>
+                                <option value="EUR">EUR (Euro)</option>
+                            </select>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Amount</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text" id="currencySymbol">R</span>
+                                <input asp-for="Amount" class="form-control" type="number" step="0.01" min="1" placeholder="500.00" />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+
+                        <!-- Quick Amount Buttons -->
+                        <div class="mb-4">
+                            <div class="d-grid gap-2 d-md-flex">
+                                <button type="button" class="btn btn-outline-secondary flex-fill quick-amount" data-amount="100">100</button>
+                                <button type="button" class="btn btn-outline-secondary flex-fill quick-amount" data-amount="500">500</button>
+                                <button type="button" class="btn btn-outline-secondary flex-fill quick-amount" data-amount="1000">1000</button>
+                                <button type="button" class="btn btn-outline-secondary flex-fill quick-amount" data-amount="5000">5000</button>
+                            </div>
+                        </div>
+
+                        <!-- Your Details -->
+                        <h5 class="mb-3">Your details</h5>
+
+                        <div class="mb-3">
+                            <label for="donorName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="donorName" name="DonorName" placeholder="Enter your name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="donorEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="donorEmail" name="DonorEmail" placeholder="your.email@example.com" required>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="mb-3">
+                            <label asp-for="PaymentMethod" class="form-label">Payment Method</label>
+                            <select asp-for="PaymentMethod" class="form-select">
+                                <option value="Card">Credit/Debit Card</option>
+                                <option value="EFT">Electronic Funds Transfer (EFT)</option>
+                                <option value="PayPal">PayPal</option>
+                            </select>
+                        </div>
+
+                        <!-- Anonymous Donation -->
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsAnonymous" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsAnonymous" class="form-check-label">Make donation anonymous</label>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-4">
+                            <label asp-for="Notes" class="form-label">Message (Optional)</label>
+                            <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Add a personal message..."></textarea>
+                        </div>
+
+                        <!-- Important Note -->
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="bi bi-info-circle me-1"></i>
+                                <strong>Note:</strong> This is a prototype. No actual payment will be processed. 
+                                A tax certificate will be generated after donation.
+                            </small>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-heart-fill me-2"></i>DONATE NOW
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tax Certificate Info -->
+            <div class="card mt-4 border-success">
+                <div class="card-body">
+                    <h6 class="card-title text-success">
+                        <i class="bi bi-file-earmark-check-fill me-2"></i>Tax Certificate
+                    </h6>
+                    <p class="card-text small mb-0">
+                        After your donation, you'll receive a tax-deductible certificate via email. 
+                        You can also download it from your donor dashboard.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Security Badge -->
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    <i class="bi bi-shield-check text-success"></i>
+                    Secure donation processing
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Currency symbol mapping
+        const currencySymbols = {
+            'ZAR': 'R',
+            'USD': '$',
+            'EUR': '€'
+        };
+
+        // Update currency symbol when currency changes
+        document.getElementById('currency').addEventListener('change', function() {
+            const currency = this.value;
+            document.getElementById('currencySymbol').textContent = currencySymbols[currency];
+        });
+
+        // Quick amount buttons
+        document.querySelectorAll('.quick-amount').forEach(button => {
+            button.addEventListener('click', function() {
+                const amount = this.getAttribute('data-amount');
+                const currency = document.getElementById('currency').value;
+                document.getElementById('Amount').value = amount;
+
+                // Highlight selected button
+                document.querySelectorAll('.quick-amount').forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-secondary');
+                });
+                this.classList.remove('btn-outline-secondary');
+                this.classList.add('btn-primary');
+            });
+        });
+
+        // Update quick amount button text with currency
+        document.getElementById('currency').addEventListener('change', function() {
+            const symbol = currencySymbols[this.value];
+            document.querySelectorAll('.quick-amount').forEach(btn => {
+                const amount = btn.getAttribute('data-amount');
+                btn.textContent = symbol + ' ' + amount;
+            });
+        });
+
+        // Initialize button text
+        window.addEventListener('DOMContentLoaded', function() {
+            const symbol = currencySymbols['ZAR'];
+            document.querySelectorAll('.quick-amount').forEach(btn => {
+                const amount = btn.getAttribute('data-amount');
+                btn.textContent = symbol + ' ' + amount;
+            });
+        });
+    </script>
+}
+

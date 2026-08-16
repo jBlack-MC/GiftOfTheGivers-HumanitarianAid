@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "Donation Confirmation";
+    var amount = ViewBag.Amount;
+    var currency = ViewBag.Currency ?? "ZAR";
+    var donationType = ViewBag.DonationType;
+    var transactionRef = ViewBag.TransactionRef;
+    var donationId = ViewBag.DonationId;
+
+    // Currency symbol mapping
+    var symbol = currency switch
+    {
+        "USD" => "$",
+        "EUR" => "€",
+        _ => "R"
+    };
+
+    // Format donation type display
+    var donationTypeDisplay = donationType == "Recurring" ? "Recurring" : "One-time";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <!-- Success Icon and Header -->
+                    <div class="text-center mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                        <h1 class="display-5 fw-bold mt-3 mb-2">THANK YOU</h1>
+                        <p class="text-muted">Your donation has been recorded.</p>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Donation Details -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <span class="text-muted">Amount:</span>
+                            <span class="fs-4 fw-bold text-success">@symbol@amount</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <span class="text-muted">Type:</span>
+                            <span class="fw-bold">@donationTypeDisplay</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <span class="text-muted">Currency:</span>
+                            <span class="fw-bold">@currency</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Reference:</span>
+                            <span class="fw-bold">
+                                <code class="bg-light px-2 py-1 rounded">DON-@transactionRef</code>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Tax Certificate Notice -->
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            A tax certificate will be available for download and sent to your email.
+                        </small>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 mt-4">
+                        @if (donationId != null)
+                        {
+                            <a asp-controller="Home" asp-action="TaxCertificate" asp-route-id="@donationId" 
+                               class="btn btn-success btn-lg">
+                                <i class="bi bi-file-earmark-check-fill me-2"></i>View Tax Certificate
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-success btn-lg" disabled>
+                                <i class="bi bi-file-earmark-check-fill me-2"></i>View Tax Certificate
+                            </button>
+                        }
+
+                        <a asp-action="Index" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-house-fill me-2"></i>Return Home
+                        </a>
+                    </div>
+
+                    @if (donationId == null)
+                    {
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                Tax certificate will be available after processing
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            @if (donationType == "Recurring")
+            {
+                <div class="alert alert-warning mt-3">
+                    <strong><i class="bi bi-repeat me-2"></i>Recurring Donation</strong>
+                    <p class="mb-0 small">This amount will be processed monthly. Manage your recurring donations from your dashboard.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

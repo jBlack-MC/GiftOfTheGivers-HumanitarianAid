@@ -1,0 +1,61 @@
+@model IEnumerable<GiftOfTheGivers.Models.Volunteer>
+
+@{
+    ViewData["Title"] = "Manage Volunteers";
+}
+
+<div class="container my-5">
+    <h1 class="display-4 mb-4">Volunteer Applications</h1>
+    <p class="lead">Review and manage volunteer applications.</p>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filter Tabs -->
+    <ul class="nav nav-tabs mb-4" id="volunteerTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button">
+                All (@Model.Count())
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+                Pending (@Model.Count(v => v.Status == "Pending"))
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button">
+                Approved (@Model.Count(v => v.Status == "Approved" || v.Status == "Active"))
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="all">
+            @await Html.PartialAsync("_VolunteerTable", Model)
+        </div>
+        <div class="tab-pane fade" id="pending">
+            @await Html.PartialAsync("_VolunteerTable", Model.Where(v => v.Status == "Pending"))
+        </div>
+        <div class="tab-pane fade" id="approved">
+            @await Html.PartialAsync("_VolunteerTable", Model.Where(v => v.Status == "Approved" || v.Status == "Active"))
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Dashboard" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>

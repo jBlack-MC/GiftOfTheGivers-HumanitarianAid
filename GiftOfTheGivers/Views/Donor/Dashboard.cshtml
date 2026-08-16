@@ -1,0 +1,124 @@
+@model GiftOfTheGivers.Models.ViewModels.DonorDashboardViewModel
+
+@{
+    ViewData["Title"] = "Donor Dashboard";
+}
+
+<div class="container my-5">
+    <h1 class="display-4 mb-4">Donor Dashboard</h1>
+    <p class="lead">Welcome back! Here's a summary of your contributions and impact.</p>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Donations</h5>
+                    <p class="display-4 mb-0">@Model.TotalDonations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Amount Donated</h5>
+                    <p class="display-4 mb-0">@Model.TotalAmountDonated.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Recent Donations</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentDonations.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Project</th>
+                                        <th>Amount</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var donation in Model.RecentDonations)
+                                    {
+                                        <tr>
+                                            <td>@donation.DonationDate.ToString("yyyy-MM-dd")</td>
+                                            <td>@(donation.ReliefProject?.Title ?? "General Donation")</td>
+                                            <td>@donation.Amount.ToString("C")</td>
+                                            <td>
+                                                <a asp-action="DonationDetails" asp-route-id="@donation.Id" class="btn btn-sm btn-primary">View</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <a asp-action="MyDonations" class="btn btn-outline-primary">View All Donations</a>
+                    }
+                    else
+                    {
+                        <p class="text-muted">You haven't made any donations yet.</p>
+                        <a asp-controller="Home" asp-action="Donate" class="btn btn-primary">Make Your First Donation</a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Featured Projects</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.FeaturedProjects.Any())
+                    {
+                        @foreach (var project in Model.FeaturedProjects)
+                        {
+                            <div class="mb-3 pb-3 border-bottom">
+                                <h6 class="fw-bold">@project.Title</h6>
+                                <p class="small text-muted mb-2">@project.Location</p>
+                                <div class="progress mb-2" style="height: 20px;">
+                                    @{
+                                        var percentage = project.FundsRequired > 0
+                                            ? (int)((project.FundsRaised / project.FundsRequired) * 100)
+                                            : 0;
+                                        percentage = Math.Min(percentage, 100);
+                                    }
+                                    <div class="progress-bar" role="progressbar" style="width: @percentage%">
+                                        @percentage%
+                                    </div>
+                                </div>
+                                <small class="text-muted">@project.FundsRaised.ToString("C") of @project.FundsRequired.ToString("C")</small>
+                                <a asp-controller="Home" asp-action="Donate" asp-route-projectId="@project.Id" class="btn btn-sm btn-success mt-2">Donate</a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No featured projects available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">Thank You!</h5>
+                <p class="mb-0">
+                    Your generosity makes a real difference in the lives of those in need. 
+                    Together, we're bringing hope and relief to communities around the world.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

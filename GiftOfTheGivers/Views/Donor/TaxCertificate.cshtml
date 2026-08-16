@@ -1,0 +1,126 @@
+@model GiftOfTheGivers.Models.Donation
+
+@{
+    ViewData["Title"] = "Tax Certificate";
+    var donorName = Model.Donor?.UserName ?? "Anonymous Donor";
+    var amount = Model.Amount;
+    var currency = "ZAR"; // Default currency - in a real app, this would come from the donation
+    var symbol = "R";
+    var dateFormatted = Model.DonationDate.ToString("dd MMMM yyyy");
+    var reference = $"DON-{Model.TransactionReference}";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+
+            <!-- Certificate Card -->
+            <div class="card border-3 shadow-lg" style="border-color: #0d6efd;" id="certificate">
+                <div class="card-body p-5">
+
+                    <!-- Header -->
+                    <div class="text-center mb-4 pb-3 border-bottom">
+                        <h1 class="display-5 fw-bold mb-2">GIFT OF THE GIVERS</h1>
+                        <h2 class="h3 text-primary mt-3">TAX CERTIFICATE</h2>
+                    </div>
+
+                    <!-- Certificate Details -->
+                    <div class="my-5">
+                        <div class="row mb-3">
+                            <div class="col-5 text-muted">Donor:</div>
+                            <div class="col-7 fw-bold">@donorName</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 text-muted">Donation:</div>
+                            <div class="col-7 fw-bold text-success fs-5">@symbol@amount</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 text-muted">Currency:</div>
+                            <div class="col-7 fw-bold">@currency</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 text-muted">Date:</div>
+                            <div class="col-7 fw-bold">@dateFormatted</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-5 text-muted">Reference:</div>
+                            <div class="col-7">
+                                <code class="bg-light px-2 py-1 rounded fw-bold">@reference</code>
+                            </div>
+                        </div>
+
+                        @if (Model.ReliefProject != null)
+                        {
+                            <div class="row mb-3">
+                                <div class="col-5 text-muted">Project:</div>
+                                <div class="col-7 fw-bold">@Model.ReliefProject.Title</div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Prototype Notice -->
+                    <div class="text-center my-4 py-3 bg-light rounded">
+                        <p class="mb-0 fw-bold text-uppercase text-muted">PROTOTYPE DOCUMENT</p>
+                        <small class="text-muted">This is a demonstration certificate for Part 1</small>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 mt-4">
+                        <button onclick="window.print()" class="btn btn-primary btn-lg">
+                            <i class="bi bi-printer-fill me-2"></i>Print
+                        </button>
+                        <form asp-action="DownloadTaxCertificate" asp-route-id="@Model.Id" method="post" class="d-grid">
+                            <button type="submit" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-download me-2"></i>Download
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Footer Info -->
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <small class="text-muted">
+                            Gift of the Givers Foundation | Tax Registration: 123-456-789<br>
+                            This certificate is valid for tax deduction purposes
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="mt-4 d-flex gap-2 justify-content-center">
+                <a asp-action="DonationDetails" asp-route-id="@Model.Id" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Details
+                </a>
+                <a asp-action="MyDonations" class="btn btn-outline-secondary">
+                    <i class="bi bi-list-ul me-2"></i>All Donations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        @@media print {
+            body * {
+                visibility: hidden;
+            }
+            #certificate, #certificate * {
+                visibility: visible;
+            }
+            #certificate {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .btn, nav, footer {
+                display: none !important;
+            }
+        }
+    </style>
+}

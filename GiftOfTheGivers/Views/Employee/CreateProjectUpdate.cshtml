@@ -1,0 +1,53 @@
+@model GiftOfTheGivers.Models.ProjectUpdate
+
+@{
+    ViewData["Title"] = "Create Project Update";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="display-4 mb-4">Create Project Update</h1>
+            <p class="lead">Project: <strong>@ViewBag.ProjectTitle</strong></p>
+
+            <div class="card shadow">
+                <div class="card-body">
+                    <form asp-action="CreateProjectUpdate" method="post">
+                        <input type="hidden" asp-for="ReliefProjectId" />
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label"></label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label"></label>
+                            <textarea asp-for="Content" class="form-control" rows="8"></textarea>
+                            <small class="form-text text-muted">
+                                Share updates about the project progress, challenges, achievements, or any relevant information.
+                            </small>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ImageUrl" class="form-label"></label>
+                            <input asp-for="ImageUrl" class="form-control" type="url" />
+                            <small class="form-text text-muted">Optional: Enter a URL for an image related to this update</small>
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">Publish Update</button>
+                            <a asp-action="ReliefProjects" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

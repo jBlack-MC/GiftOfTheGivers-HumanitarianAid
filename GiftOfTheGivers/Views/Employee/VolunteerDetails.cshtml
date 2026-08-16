@@ -1,0 +1,130 @@
+@model GiftOfTheGivers.Models.Volunteer
+
+@{
+    ViewData["Title"] = "Volunteer Details";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="display-4 mb-4">Volunteer Application</h1>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Personal Information</h4>
+                    <span class="badge bg-@(Model.Status == "Pending" ? "warning" : Model.Status == "Approved" ? "success" : Model.Status == "Active" ? "info" : "secondary")">
+                        @Model.Status
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Name:</strong><br>
+                            @Model.FirstName @Model.LastName
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Date of Birth:</strong><br>
+                            @Model.DateOfBirth.ToString("yyyy-MM-dd") (Age: @((DateTime.Now - Model.DateOfBirth).Days / 365))
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Email:</strong><br>
+                            <a href="mailto:@Model.Email">@Model.Email</a>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Phone:</strong><br>
+                            @Model.PhoneNumber
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Address:</strong><br>
+                            @Model.Address<br>
+                            @Model.City, @Model.Province @Model.PostalCode
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Skills and Experience:</strong><br>
+                            <p class="mt-2">@Model.Skills</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Availability:</strong><br>
+                            @Model.Availability
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Application Date:</strong><br>
+                            @Model.ApplicationDate.ToString("yyyy-MM-dd")
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.EmergencyContactName))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Emergency Contact:</strong><br>
+                                @Model.EmergencyContactName
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Emergency Phone:</strong><br>
+                                @Model.EmergencyContactPhone
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <strong>Notes:</strong><br>
+                                <p class="mt-2">@Model.Notes</p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Status == "Approved" && Model.ApprovalDate.HasValue)
+                    {
+                        <div class="alert alert-success">
+                            <strong>Approved on:</strong> @Model.ApprovalDate.Value.ToString("yyyy-MM-dd")
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Volunteers" class="btn btn-secondary">Back to List</a>
+                        @if (Model.Status == "Pending")
+                        {
+                            <div>
+                                <form asp-action="ApproveVolunteer" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to approve this volunteer?')">
+                                        <i class="bi bi-check-circle"></i> Approve
+                                    </button>
+                                </form>
+                                <form asp-action="RejectVolunteer" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this application?')">
+                                        <i class="bi bi-x-circle"></i> Reject
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

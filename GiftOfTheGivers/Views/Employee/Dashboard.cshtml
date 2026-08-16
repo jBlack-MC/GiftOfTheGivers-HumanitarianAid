@@ -1,0 +1,156 @@
+@model GiftOfTheGivers.Models.ViewModels.EmployeeDashboardViewModel
+
+@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+
+<div class="container my-5">
+    <h1 class="display-4 mb-4">Employee Dashboard</h1>
+    <p class="lead">Manage relief projects, volunteers, and donations.</p>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Active Projects</h5>
+                    <p class="display-4 mb-0">@Model.ActiveProjects</p>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="ReliefProjects" class="text-white text-decoration-none">View Projects →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Pending Volunteers</h5>
+                    <p class="display-4 mb-0">@Model.PendingVolunteers</p>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Volunteers" class="text-dark text-decoration-none">Review Applications →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Donations This Month</h5>
+                    <p class="display-4 mb-0">@Model.TotalDonationsThisMonth</p>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Donations" class="text-white text-decoration-none">View All →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Amount Raised</h5>
+                    <p class="display-4 mb-0">@Model.TotalAmountRaisedThisMonth.ToString("C0")</p>
+                </div>
+                <div class="card-footer">
+                    <small>This Month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Recent Projects -->
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Recent Projects</h4>
+                    <a asp-action="CreateReliefProject" class="btn btn-sm btn-primary">Create New</a>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentProjects.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                        <th>Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var project in Model.RecentProjects)
+                                    {
+                                        <tr>
+                                            <td>@project.Title</td>
+                                            <td>@project.Location</td>
+                                            <td>
+                                                <span class="badge bg-@(project.Status == "Active" ? "success" : project.Status == "Completed" ? "primary" : "secondary")">
+                                                    @project.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var percentage = project.FundsRequired > 0
+                                                        ? (int)((project.FundsRaised / project.FundsRequired) * 100)
+                                                        : 0;
+                                                }
+                                                <small>@percentage%</small>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <a asp-action="ReliefProjects" class="btn btn-outline-primary">View All Projects</a>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No projects available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Volunteer Applications -->
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Pending Volunteers</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentVolunteerApplications.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var volunteer in Model.RecentVolunteerApplications)
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">@volunteer.FirstName @volunteer.LastName</h6>
+                                            <small class="text-muted">@volunteer.Email</small><br>
+                                            <small class="text-muted">Applied: @volunteer.ApplicationDate.ToString("yyyy-MM-dd")</small>
+                                        </div>
+                                        <a asp-action="VolunteerDetails" asp-route-id="@volunteer.Id" class="btn btn-sm btn-primary">Review</a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <a asp-action="Volunteers" class="btn btn-outline-primary mt-3">View All Applications</a>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No pending applications.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

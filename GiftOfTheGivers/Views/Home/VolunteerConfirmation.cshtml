@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Volunteer Confirmation";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5 text-center">
+                    <!-- Success Icon -->
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    </div>
+
+                    <!-- Heading -->
+                    <h1 class="display-5 fw-bold mb-4">THANK YOU FOR VOLUNTEERING</h1>
+
+                    <!-- Confirmation Message -->
+                    <div class="mb-4">
+                        <p class="lead mb-3">Your interest has been registered.</p>
+                        <p class="text-muted">
+                            Our team will review your information and contact you when opportunities arise.
+                        </p>
+                    </div>
+
+                    <!-- Divider -->
+                    <hr class="my-4">
+
+                    <!-- Return Button -->
+                    <div class="d-grid">
+                        <a asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="bi bi-house-fill me-2"></i>Return Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info Card -->
+            <div class="alert alert-info mt-4">
+                <h6 class="alert-heading"><i class="bi bi-info-circle-fill me-2"></i>What's Next?</h6>
+                <small>
+                    <ul class="mb-0">
+                        <li>Your application is now in our system</li>
+                        <li>We'll match you with suitable volunteer opportunities</li>
+                        <li>You'll be contacted via email when opportunities become available</li>
+                    </ul>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

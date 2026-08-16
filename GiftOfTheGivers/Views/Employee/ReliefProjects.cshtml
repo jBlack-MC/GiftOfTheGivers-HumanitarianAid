@@ -1,0 +1,87 @@
+@model IEnumerable<GiftOfTheGivers.Models.ReliefProject>
+
+@{
+    ViewData["Title"] = "Manage Relief Projects";
+}
+
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-4">Relief Projects</h1>
+        <a asp-action="CreateReliefProject" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Create New Project
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var project in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@project.Title</h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt"></i> @project.Location
+                                </small>
+                            </p>
+                            <p class="card-text">
+                                @(project.Description.Length > 100 ? project.Description.Substring(0, 100) + "..." : project.Description)
+                            </p>
+                            <div class="mb-2">
+                                <span class="badge bg-@(project.Status == "Active" ? "success" : project.Status == "Completed" ? "primary" : "secondary")">
+                                    @project.Status
+                                </span>
+                            </div>
+                            <div class="progress mb-2" style="height: 20px;">
+                                @{
+                                    var percentage = project.FundsRequired > 0
+                                        ? (int)((project.FundsRaised / project.FundsRequired) * 100)
+                                        : 0;
+                                    percentage = Math.Min(percentage, 100);
+                                }
+                                <div class="progress-bar" role="progressbar" style="width: @percentage%">
+                                    @percentage%
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mb-3">
+                                @project.FundsRaised.ToString("C") of @project.FundsRequired.ToString("C")
+                            </small>
+                            <div class="d-grid gap-2">
+                                <a asp-action="EditReliefProject" asp-route-id="@project.Id" class="btn btn-outline-primary btn-sm">Edit Project</a>
+                                <a asp-action="CreateProjectUpdate" asp-route-projectId="@project.Id" class="btn btn-outline-success btn-sm">Add Update</a>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <small>Created: @project.CreatedDate.ToString("yyyy-MM-dd")</small>
+                            @if (project.ProjectUpdates != null && project.ProjectUpdates.Any())
+                            {
+                                <br><small>@project.ProjectUpdates.Count update(s)</small>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h4 class="alert-heading">No Projects</h4>
+            <p>There are no relief projects yet. Create your first project to get started.</p>
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-action="Dashboard" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>

@@ -1,0 +1,128 @@
+@model GiftOfTheGivers.Models.Donation
+
+@{
+    ViewData["Title"] = "Donation Details";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="display-4 mb-4">Donation Details</h1>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Transaction Information</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Transaction Reference:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <span class="font-monospace">@Model.TransactionReference</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Donation Date:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            @Model.DonationDate.ToString("dddd, MMMM dd, yyyy hh:mm tt")
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Amount:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <span class="fs-4 fw-bold text-success">@Model.Amount.ToString("C")</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Payment Method:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            @Model.PaymentMethod
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Project:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            @if (Model.ReliefProject != null)
+                            {
+                                <div>
+                                    <strong>@Model.ReliefProject.Title</strong><br>
+                                    <small class="text-muted">@Model.ReliefProject.Location</small>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">General Donation (Any Project)</span>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
+                                <strong>Notes:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                @Model.Notes
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Anonymous:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            @(Model.IsAnonymous ? "Yes" : "No")
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Tax Certificate:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            @if (Model.TaxCertificateIssued)
+                            {
+                                <span class="badge bg-success">Issued</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Not Yet Issued</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="MyDonations" class="btn btn-secondary">Back to My Donations</a>
+                        <a asp-action="TaxCertificate" asp-route-id="@Model.Id" class="btn btn-success">
+                            <i class="bi bi-file-earmark-text"></i> View Tax Certificate
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <h5 class="alert-heading">Thank You!</h5>
+                <p class="mb-0">
+                    Your generous donation of <strong>@Model.Amount.ToString("C")</strong> helps us continue our mission 
+                    of providing relief and hope to communities in need.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

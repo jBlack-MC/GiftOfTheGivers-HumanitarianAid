@@ -1,0 +1,50 @@
+@model IEnumerable<GiftOfTheGivers.Models.Volunteer>
+
+@if (Model.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Applied</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var volunteer in Model)
+                        {
+                            <tr>
+                                <td>@volunteer.FirstName @volunteer.LastName</td>
+                                <td>@volunteer.Email</td>
+                                <td>@volunteer.PhoneNumber</td>
+                                <td>@volunteer.ApplicationDate.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    <span class="badge bg-@(volunteer.Status == "Pending" ? "warning" : volunteer.Status == "Approved" ? "success" : volunteer.Status == "Active" ? "primary" : "secondary")">
+                                        @volunteer.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <a asp-action="VolunteerDetails" asp-route-id="@volunteer.Id" class="btn btn-sm btn-primary">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <p class="mb-0">No volunteers found in this category.</p>
+    </div>
+}

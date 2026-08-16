@@ -1,0 +1,675 @@
+@model IEnumerable<GiftOfTheGivers.Models.ReliefProject>
+
+@{
+    ViewData["Title"] = "Relief Projects";
+}
+
+<!-- Page Header -->
+<section class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-3">RELIEF PROJECTS</h1>
+        <p class="lead">Making a difference in communities that need it most</p>
+    </div>
+</section>
+
+<!-- Filter Section -->
+<section class="py-4 bg-light border-bottom">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="btn-group flex-wrap" role="group" aria-label="Project categories">
+                    <button type="button" class="btn btn-outline-primary active" data-filter="all">
+                        <i class="bi bi-grid-fill me-2"></i>All Projects
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="disaster-relief">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Disaster Relief
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="food-assistance">
+                        <i class="bi bi-basket-fill me-2"></i>Food Assistance
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="medical-assistance">
+                        <i class="bi bi-hospital-fill me-2"></i>Medical Assistance
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="community-support">
+                        <i class="bi bi-people-fill me-2"></i>Community Support
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="emergency-response">
+                        <i class="bi bi-lightning-fill me-2"></i>Emergency Response
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <span class="text-muted">
+                    <strong id="project-count">12</strong> Active Projects
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Projects Grid Section -->
+<section class="py-5">
+    <div class="container">
+        @if (Model != null && Model.Any())
+        {
+            <!-- Display actual projects from database -->
+            <div class="row g-4" id="projects-grid">
+                @foreach (var project in Model)
+                {
+                    <div class="col-md-6 col-lg-4 project-card" data-category="custom">
+                        <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                            @if (!string.IsNullOrEmpty(project.ImageUrl))
+                            {
+                                <img src="@project.ImageUrl" class="card-img-top" alt="@project.Title" style="height: 220px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                                     style="height: 220px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <i class="bi bi-image" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            }
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title fw-bold mb-0">@project.Title</h5>
+                                    <span class="badge bg-@(project.Status == "Active" ? "success" : project.Status == "Completed" ? "primary" : "secondary")">
+                                        @project.Status
+                                    </span>
+                                </div>
+                                <p class="text-muted mb-3">
+                                    <i class="bi bi-geo-alt-fill text-primary"></i> @project.Location
+                                </p>
+                                <p class="card-text text-muted mb-3">
+                                    @(project.Description.Length > 120 ? project.Description.Substring(0, 120) + "..." : project.Description)
+                                </p>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small class="text-muted">Progress</small>
+                                        <small class="text-muted">
+                                            @{
+                                                var percentage = project.FundsRequired > 0 
+                                                    ? (int)((project.FundsRaised / project.FundsRequired) * 100) 
+                                                    : 0;
+                                                percentage = Math.Min(percentage, 100);
+                                            }
+                                            <strong>@percentage%</strong>
+                                        </small>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-@(percentage >= 75 ? "success" : percentage >= 50 ? "info" : "warning")" 
+                                             role="progressbar" 
+                                             style="width: @percentage%" 
+                                             aria-valuenow="@percentage" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        @project.FundsRaised.ToString("C0") raised of @project.FundsRequired.ToString("C0") goal
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                                <a asp-action="Donate" asp-route-projectId="@project.Id" class="btn btn-primary">
+                                    <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <!-- Display sample/demonstration projects -->
+            <div class="row g-4" id="projects-grid">
+                <!-- Disaster Relief Projects -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="disaster-relief">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="bi bi-water" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Flood Relief</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Johannesburg
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-primary border">Disaster Relief</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Providing emergency supplies, shelter, and clean water to families affected by severe flooding in the region.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>75%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                                </div>
+                                <small class="text-muted">R750,000 raised of R1,000,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Food Assistance Projects -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="food-assistance">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="bi bi-basket" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Community Food Bank</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Cape Town
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-success border">Food Assistance</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Distributing nutritious meals and food parcels to vulnerable communities facing food insecurity.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>60%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 60%"></div>
+                                </div>
+                                <small class="text-muted">R300,000 raised of R500,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical Assistance Projects -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="medical-assistance">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="bi bi-hospital" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Mobile Clinic Service</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Durban
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-info border">Medical Assistance</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Providing free medical consultations, medications, and healthcare services to underserved areas.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>85%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
+                                </div>
+                                <small class="text-muted">R850,000 raised of R1,000,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Response Projects -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="emergency-response">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <i class="bi bi-lightning-charge" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Fire Emergency Response</h5>
+                                <span class="badge bg-danger">Urgent</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Knysna
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-danger border">Emergency Response</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Urgent assistance for families displaced by wildfires, providing temporary shelter and essential supplies.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>40%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"></div>
+                                </div>
+                                <small class="text-muted">R200,000 raised of R500,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-danger">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i>Urgent Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Community Support Projects -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="community-support">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                            <i class="bi bi-house-heart" style="font-size: 4rem; color: #333;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">School Building Project</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Limpopo
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-secondary border">Community Support</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Constructing and renovating school facilities to provide better education infrastructure for rural communities.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>55%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 55%"></div>
+                                </div>
+                                <small class="text-muted">R1,100,000 raised of R2,000,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Disaster Relief -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="disaster-relief">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+                            <i class="bi bi-house-fill" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Earthquake Recovery</h5>
+                                <span class="badge bg-warning text-dark">In Progress</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Turkey
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-primary border">Disaster Relief</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Supporting earthquake survivors with temporary housing, food, and essential supplies during recovery.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>92%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 92%"></div>
+                                </div>
+                                <small class="text-muted">R4,600,000 raised of R5,000,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Food Assistance -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="food-assistance">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                            <i class="bi bi-box-seam" style="font-size: 4rem; color: #333;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Winter Food Drive</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Eastern Cape
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-success border">Food Assistance</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Distributing warm meals and food parcels to families struggling during the cold winter months.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>70%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 70%"></div>
+                                </div>
+                                <small class="text-muted">R350,000 raised of R500,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Medical Assistance -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="medical-assistance">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                            <i class="bi bi-heart-pulse" style="font-size: 4rem; color: #333;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Maternal Health Program</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> KwaZulu-Natal
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-info border">Medical Assistance</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Providing prenatal care, health education, and medical support for expectant mothers in rural areas.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>48%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 48%"></div>
+                                </div>
+                                <small class="text-muted">R240,000 raised of R500,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Emergency Response -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="emergency-response">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%);">
+                            <i class="bi bi-wind" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Cyclone Relief</h5>
+                                <span class="badge bg-danger">Urgent</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Mozambique
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-danger border">Emergency Response</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Emergency response for communities devastated by cyclone, providing shelter, food, and clean water.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>35%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 35%"></div>
+                                </div>
+                                <small class="text-muted">R700,000 raised of R2,000,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-danger">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i>Urgent Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Community Support -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="community-support">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #fdcbf1 0%, #e6dee9 100%);">
+                            <i class="bi bi-book" style="font-size: 4rem; color: #333;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Library Development</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Free State
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-secondary border">Community Support</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Establishing community libraries with books, computers, and learning resources for children and adults.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>65%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 65%"></div>
+                                </div>
+                                <small class="text-muted">R325,000 raised of R500,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Disaster Relief -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="disaster-relief">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #c471f5 0%, #fa71cd 100%);">
+                            <i class="bi bi-tsunami" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Drought Relief</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Northern Cape
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-primary border">Disaster Relief</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Providing water tanks, boreholes, and livestock support to farming communities affected by severe drought.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>58%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 58%"></div>
+                                </div>
+                                <small class="text-muted">R870,000 raised of R1,500,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Food Assistance -->
+                <div class="col-md-6 col-lg-4 project-card" data-category="food-assistance">
+                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
+                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-white" 
+                             style="height: 220px; background: linear-gradient(135deg, #FFE985 0%, #FA742B 100%);">
+                            <i class="bi bi-cup-hot" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">Soup Kitchen Network</h5>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary"></i> Pretoria
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <span class="badge bg-light text-success border">Food Assistance</span>
+                            </p>
+                            <p class="card-text text-muted mb-3">
+                                Operating soup kitchens serving hot meals daily to homeless individuals and vulnerable families.
+                            </p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progress</small>
+                                    <small class="text-muted"><strong>80%</strong></small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 80%"></div>
+                                </div>
+                                <small class="text-muted">R400,000 raised of R500,000 goal</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-grid px-3 pb-3">
+                            <a asp-action="Donate" class="btn btn-primary">
+                                <i class="bi bi-heart-fill me-2"></i>Donate to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h2 class="display-5 fw-bold mb-3">Can't Find What You're Looking For?</h2>
+        <p class="lead text-muted mb-4">
+            You can make a general donation to support all our relief efforts, or contact us to learn more about specific projects.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a asp-action="Donate" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-heart-fill me-2"></i>Make General Donation
+            </a>
+            <a asp-action="Contact" class="btn btn-outline-primary btn-lg px-5">
+                <i class="bi bi-envelope-fill me-2"></i>Contact Us
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .project-card {
+        transition: transform 0.3s ease;
+    }
+
+    .project-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .project-card .card {
+        transition: box-shadow 0.3s ease;
+    }
+
+    .project-card:hover .card {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+    }
+</style>
+
+<script>
+    // Simple filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterButtons = document.querySelectorAll('[data-filter]');
+        const projectCards = document.querySelectorAll('.project-card');
+        const projectCount = document.getElementById('project-count');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                const filter = this.getAttribute('data-filter');
+                let visibleCount = 0;
+
+                projectCards.forEach(card => {
+                    if (filter === 'all' || card.getAttribute('data-category') === filter || card.getAttribute('data-category') === 'custom') {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                projectCount.textContent = visibleCount;
+            });
+        });
+    });
+</script>

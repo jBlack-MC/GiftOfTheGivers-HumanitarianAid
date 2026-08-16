@@ -1,0 +1,86 @@
+@model GiftOfTheGivers.Models.ViewModels.ContactViewModel
+
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="display-4 mb-4">Contact Us</h1>
+            <p class="lead mb-4">
+                Have questions or need assistance? We're here to help. 
+                Fill out the form below and we'll get back to you as soon as possible.
+            </p>
+
+            <div class="row mb-4">
+                <div class="col-md-4 text-center mb-3">
+                    <i class="bi bi-envelope fs-1 text-primary"></i>
+                    <h5 class="mt-2">Email</h5>
+                    <p>info@giftofthegivers.org</p>
+                </div>
+                <div class="col-md-4 text-center mb-3">
+                    <i class="bi bi-telephone fs-1 text-primary"></i>
+                    <h5 class="mt-2">Phone</h5>
+                    <p>+27 (0) 12 345 6789</p>
+                </div>
+                <div class="col-md-4 text-center mb-3">
+                    <i class="bi bi-geo-alt fs-1 text-primary"></i>
+                    <h5 class="mt-2">Address</h5>
+                    <p>123 Main Street<br>Cape Town, South Africa</p>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="mb-4">Send Us a Message</h4>
+                    <form asp-action="Contact" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" type="email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Subject" class="form-label"></label>
+                            <input asp-for="Subject" class="form-control" />
+                            <span asp-validation-for="Subject" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Message" class="form-label"></label>
+                            <textarea asp-for="Message" class="form-control" rows="5"></textarea>
+                            <span asp-validation-for="Message" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Office Hours</h5>
+                    <p class="mb-0">
+                        <strong>Monday - Friday:</strong> 8:00 AM - 5:00 PM<br>
+                        <strong>Saturday:</strong> 9:00 AM - 1:00 PM<br>
+                        <strong>Sunday:</strong> Closed
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

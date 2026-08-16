@@ -1,0 +1,83 @@
+@model GiftOfTheGivers.Models.ViewModels.VolunteerApplicationViewModel
+
+@{
+    ViewData["Title"] = "Volunteer";
+}
+
+<!-- Page Header -->
+<section class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-3">BECOME A VOLUNTEER</h1>
+        <p class="lead">Help us respond when communities need it most.</p>
+    </div>
+</section>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <form asp-action="Volunteer" method="post">
+                        <!-- Full Name -->
+                        <div class="mb-4">
+                            <label for="fullName" class="form-label fw-bold">Full Name</label>
+                            <input type="text" class="form-control form-control-lg" id="fullName" name="FullName" 
+                                   placeholder="Enter your full name" required>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label fw-bold"></label>
+                            <input asp-for="Email" class="form-control form-control-lg" type="email" 
+                                   placeholder="your.email@example.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="mb-4">
+                            <label asp-for="Skills" class="form-label fw-bold"></label>
+                            <textarea asp-for="Skills" class="form-control" rows="4" 
+                                      placeholder="e.g., Medical training, logistics, IT support, community outreach..."></textarea>
+                            <span asp-validation-for="Skills" class="text-danger"></span>
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="mb-4">
+                            <label asp-for="Availability" class="form-label fw-bold"></label>
+                            <input asp-for="Availability" class="form-control form-control-lg" 
+                                   placeholder="e.g., Weekdays, Weekends, Anytime, Specific dates..." />
+                            <span asp-validation-for="Availability" class="text-danger"></span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-hand-thumbs-up-fill me-2"></i>REGISTER INTEREST
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Additional Info Card -->
+            <div class="card mt-4 border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i>What Happens Next?</h6>
+                    <ul class="small mb-0">
+                        <li>We'll review your application</li>
+                        <li>You'll be contacted for an orientation session</li>
+                        <li>You'll be matched with opportunities that fit your skills</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
