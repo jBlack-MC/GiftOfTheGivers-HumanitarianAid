@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<GiftOfTheGivers.Models.ReliefProject>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -103,80 +105,47 @@
             <p class="lead text-muted">Making a difference in communities worldwide</p>
         </div>
 
-        <div class="row g-4">
-            <!-- Flood Relief -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0 project-card">
-                    <div class="card-img-top bg-primary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-                        <i class="bi bi-water" style="font-size: 4rem;"></i>
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Flood Relief</h5>
-                        <p class="card-text">
-                            Providing immediate assistance and emergency supplies to communities 
-                            affected by devastating floods.
-                        </p>
-                        <div class="progress mb-3" style="height: 8px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="row g-4">
+                @foreach (var project in Model)
+                {
+                    var percentage = project.FundsRequired > 0
+                        ? Math.Min((int)((project.FundsRaised / project.FundsRequired) * 100), 100)
+                        : 0;
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 project-card">
+                            <div class="card-img-top bg-primary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-heart-fill" style="font-size: 4rem;"></i>
+                            </div>
+                            <div class="card-body text-center">
+                                <h5 class="card-title fw-bold">@project.Title</h5>
+                                <p class="card-text">
+                                    @(project.Description.Length > 120 ? project.Description.Substring(0, 120) + "..." : project.Description)
+                                </p>
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted">@percentage% Funded</small>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 text-center pb-3">
+                                <a asp-action="ReliefProjects" class="btn btn-outline-primary">Learn More</a>
+                            </div>
                         </div>
-                        <small class="text-muted">75% Funded</small>
                     </div>
-                    <div class="card-footer bg-transparent border-0 text-center pb-3">
-                        <a asp-action="ReliefProjects" class="btn btn-outline-primary">Learn More</a>
-                    </div>
-                </div>
+                }
             </div>
 
-            <!-- Food Aid -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0 project-card">
-                    <div class="card-img-top bg-success text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-                        <i class="bi bi-basket" style="font-size: 4rem;"></i>
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Food Aid</h5>
-                        <p class="card-text">
-                            Ensuring families have access to nutritious meals and clean water 
-                            in areas facing food insecurity.
-                        </p>
-                        <div class="progress mb-3" style="height: 8px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <small class="text-muted">60% Funded</small>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 text-center pb-3">
-                        <a asp-action="ReliefProjects" class="btn btn-outline-success">Learn More</a>
-                    </div>
-                </div>
+            <div class="text-center mt-5">
+                <a asp-action="ReliefProjects" class="btn btn-primary btn-lg px-5">View All Projects</a>
             </div>
-
-            <!-- Emergency Response -->
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0 project-card">
-                    <div class="card-img-top bg-danger text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-                        <i class="bi bi-hospital" style="font-size: 4rem;"></i>
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Emergency Medical Aid</h5>
-                        <p class="card-text">
-                            Delivering critical healthcare services and medical supplies 
-                            to underserved and disaster-affected areas.
-                        </p>
-                        <div class="progress mb-3" style="height: 8px;">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <small class="text-muted">85% Funded</small>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 text-center pb-3">
-                        <a asp-action="ReliefProjects" class="btn btn-outline-danger">Learn More</a>
-                    </div>
-                </div>
+        }
+        else
+        {
+            <div class="text-center">
+                <p class="text-muted">No active relief projects right now &mdash; check back soon.</p>
             </div>
-        </div>
-
-        <div class="text-center mt-5">
-            <a asp-action="ReliefProjects" class="btn btn-primary btn-lg px-5">View All Projects</a>
-        </div>
+        }
     </div>
 </section>
 

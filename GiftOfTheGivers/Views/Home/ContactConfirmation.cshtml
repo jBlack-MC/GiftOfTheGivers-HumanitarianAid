@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Message Sent";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5 text-center">
+                    <!-- Success Icon -->
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    </div>
+
+                    <!-- Heading -->
+                    <h1 class="display-5 fw-bold mb-4">THANK YOU</h1>
+
+                    <!-- Confirmation Message -->
+                    <div class="mb-4">
+                        <p class="lead mb-3">Your message has been sent.</p>
+                        <p class="text-muted">
+                            We've received your inquiry and our team will respond as soon as possible.
+                        </p>
+                    </div>
+
+                    <!-- Divider -->
+                    <hr class="my-4">
+
+                    <!-- Return Button -->
+                    <div class="d-grid">
+                        <a asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="bi bi-house-fill me-2"></i>Return Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info Card -->
+            <div class="alert alert-info mt-4">
+                <h6 class="alert-heading"><i class="bi bi-info-circle-fill me-2"></i>What's Next?</h6>
+                <small>
+                    <ul class="mb-0">
+                        <li>We typically respond within 24-48 hours</li>
+                        <li>Check your email inbox (and spam folder)</li>
+                        <li>For urgent matters, call us at +27 (0) 12 345 6789</li>
+                    </ul>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

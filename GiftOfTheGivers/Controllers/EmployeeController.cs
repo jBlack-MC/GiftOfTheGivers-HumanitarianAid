@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GiftOfTheGivers.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Employee")]
     public class EmployeeController : Controller
     {
         private readonly ApplicationDbContext _context;

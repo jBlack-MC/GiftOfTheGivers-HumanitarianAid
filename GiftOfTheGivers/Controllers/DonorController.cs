@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace GiftOfTheGivers.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Donor")]
     public class DonorController : Controller
     {
         private readonly ApplicationDbContext _context;
