@@ -16,9 +16,15 @@ namespace GiftOfTheGivers.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var featuredProjects = await _context.ReliefProjects
+                .Where(p => p.Status == "Active")
+                .OrderByDescending(p => p.CreatedDate)
+                .Take(3)
+                .ToListAsync();
+
+            return View(featuredProjects);
         }
 
         public IActionResult About()
@@ -68,9 +74,9 @@ namespace GiftOfTheGivers.Controllers
 
                 var donation = new Donation
                 {
-                    DonorId = User.Identity?.IsAuthenticated == true 
-                        ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "Anonymous"
-                        : "Anonymous",
+                    DonorId = User.Identity?.IsAuthenticated == true
+                        ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                        : null,
                     ReliefProjectId = model.ReliefProjectId,
                     Amount = model.Amount,
                     PaymentMethod = model.PaymentMethod,
@@ -87,7 +93,7 @@ namespace GiftOfTheGivers.Controllers
                 TempData["DonationId"] = donation.Id;
                 TempData["DonorName"] = model.DonorName;
                 TempData["DonorEmail"] = model.DonorEmail;
-                TempData["Amount"] = model.Amount;
+                TempData["Amount"] = model.Amount.ToString("N2");
                 TempData["Currency"] = model.Currency;
                 TempData["DonationType"] = model.DonationType;
                 TempData["TransactionRef"] = donation.TransactionReference;
@@ -214,12 +220,18 @@ namespace GiftOfTheGivers.Controllers
             if (ModelState.IsValid)
             {
                 // In a real application, this would send an email
-                // For now, we'll just show a success message
-                TempData["SuccessMessage"] = "Thank you for contacting us! We will respond to your message shortly.";
-                return RedirectToAction("Index");
+                // For now, we'll just redirect to confirmation
+                return RedirectToAction("ContactConfirmation");
             }
 
             return View(model);
+        }
+
+        [HttpGet]
+        [Route("Contact/Confirmation")]
+        public IActionResult ContactConfirmation()
+        {
+            return View();
         }
 
         public IActionResult Privacy()

@@ -8,8 +8,7 @@ namespace GiftOfTheGivers.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        public string DonorId { get; set; } = string.Empty;
+        public string? DonorId { get; set; }
 
         [ForeignKey(nameof(DonorId))]
         public IdentityUser? Donor { get; set; }

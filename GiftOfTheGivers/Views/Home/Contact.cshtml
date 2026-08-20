@@ -1,80 +1,112 @@
 @model GiftOfTheGivers.Models.ViewModels.ContactViewModel
 
 @{
-    ViewData["Title"] = "Contact Us";
+    ViewData["Title"] = "Contact";
 }
+
+<!-- Page Header -->
+<section class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-3">CONTACT US</h1>
+        <p class="lead">We're here to help. Reach out anytime.</p>
+    </div>
+</section>
 
 <div class="container my-5">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h1 class="display-4 mb-4">Contact Us</h1>
-            <p class="lead mb-4">
-                Have questions or need assistance? We're here to help. 
-                Fill out the form below and we'll get back to you as soon as possible.
-            </p>
-
-            <div class="row mb-4">
-                <div class="col-md-4 text-center mb-3">
-                    <i class="bi bi-envelope fs-1 text-primary"></i>
-                    <h5 class="mt-2">Email</h5>
-                    <p>info@giftofthegivers.org</p>
-                </div>
-                <div class="col-md-4 text-center mb-3">
-                    <i class="bi bi-telephone fs-1 text-primary"></i>
-                    <h5 class="mt-2">Phone</h5>
-                    <p>+27 (0) 12 345 6789</p>
-                </div>
-                <div class="col-md-4 text-center mb-3">
-                    <i class="bi bi-geo-alt fs-1 text-primary"></i>
-                    <h5 class="mt-2">Address</h5>
-                    <p>123 Main Street<br>Cape Town, South Africa</p>
+        <!-- Contact Info -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-envelope-fill text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-2">Email</h5>
+                    <p class="text-muted mb-0">info@giftofthegivers.org</p>
                 </div>
             </div>
+        </div>
 
-            <div class="card shadow">
-                <div class="card-body">
-                    <h4 class="mb-4">Send Us a Message</h4>
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-telephone-fill text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-2">Phone</h5>
+                    <p class="text-muted mb-0">+27 (0) 12 345 6789</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-geo-alt-fill text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-2">Location</h5>
+                    <p class="text-muted mb-0">Cape Town<br>South Africa</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Contact Form -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-body p-5">
+                    <h3 class="mb-4">Send Us a Message</h3>
                     <form asp-action="Contact" method="post">
-                        <div class="mb-3">
-                            <label asp-for="Name" class="form-label"></label>
-                            <input asp-for="Name" class="form-control" />
+                        <!-- Name -->
+                        <div class="mb-4">
+                            <label asp-for="Name" class="form-label fw-bold"></label>
+                            <input asp-for="Name" class="form-control form-control-lg" placeholder="Your full name" />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" class="form-control" type="email" />
+                        <!-- Email -->
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label fw-bold"></label>
+                            <input asp-for="Email" class="form-control form-control-lg" type="email" placeholder="your.email@example.com" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Subject" class="form-label"></label>
-                            <input asp-for="Subject" class="form-control" />
+                        <!-- Subject -->
+                        <div class="mb-4">
+                            <label asp-for="Subject" class="form-label fw-bold"></label>
+                            <input asp-for="Subject" class="form-control form-control-lg" placeholder="What is this about?" />
                             <span asp-validation-for="Subject" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Message" class="form-label"></label>
-                            <textarea asp-for="Message" class="form-control" rows="5"></textarea>
+                        <!-- Message -->
+                        <div class="mb-4">
+                            <label asp-for="Message" class="form-label fw-bold"></label>
+                            <textarea asp-for="Message" class="form-control" rows="6" placeholder="Tell us how we can help..."></textarea>
                             <span asp-validation-for="Message" class="text-danger"></span>
                         </div>
 
+                        <!-- Submit Button -->
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
-                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send-fill me-2"></i>Send Message
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <div class="card mt-4">
-                <div class="card-body">
-                    <h5 class="card-title">Office Hours</h5>
-                    <p class="mb-0">
-                        <strong>Monday - Friday:</strong> 8:00 AM - 5:00 PM<br>
-                        <strong>Saturday:</strong> 9:00 AM - 1:00 PM<br>
-                        <strong>Sunday:</strong> Closed
-                    </p>
+            <!-- Office Hours -->
+            <div class="card border-0 bg-light">
+                <div class="card-body p-4">
+                    <h5 class="mb-3"><i class="bi bi-clock-fill text-primary me-2"></i>Office Hours</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-2"><strong>Monday - Friday</strong></p>
+                            <p class="text-muted">8:00 AM - 5:00 PM</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-2"><strong>Saturday</strong></p>
+                            <p class="text-muted">9:00 AM - 1:00 PM</p>
+                        </div>
+                    </div>
+                    <p class="mb-0"><strong>Sunday:</strong> <span class="text-muted">Closed</span></p>
                 </div>
             </div>
         </div>

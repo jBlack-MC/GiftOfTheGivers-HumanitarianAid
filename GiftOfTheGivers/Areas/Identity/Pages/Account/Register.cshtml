@@ -1,0 +1,70 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<section class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">CREATE ACCOUNT</h1>
+        <p class="lead">Join Gift of the Givers as a donor or an employee.</p>
+    </div>
+</section>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <h3 class="mb-4">Register</h3>
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold d-block">Account type</label>
+                            <div class="btn-group w-100" role="group" aria-label="Account type">
+                                <input type="radio" class="btn-check" name="Input.Role" id="roleDonor" value="Donor" autocomplete="off" checked="@(Model.Input?.Role != "Employee")">
+                                <label class="btn btn-outline-primary" for="roleDonor">
+                                    <i class="bi bi-heart-fill me-1"></i>Donor
+                                </label>
+
+                                <input type="radio" class="btn-check" name="Input.Role" id="roleEmployee" value="Employee" autocomplete="off" checked="@(Model.Input?.Role == "Employee")">
+                                <label class="btn btn-outline-primary" for="roleEmployee">
+                                    <i class="bi bi-briefcase-fill me-1"></i>Employee
+                                </label>
+                            </div>
+                            <span asp-validation-for="Input.Role" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Input.Email" class="form-label fw-bold"></label>
+                            <input asp-for="Input.Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Input.Password" class="form-label fw-bold"></label>
+                            <input asp-for="Input.Password" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" placeholder="Password" />
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Input.ConfirmPassword" class="form-label fw-bold"></label>
+                            <input asp-for="Input.ConfirmPassword" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" placeholder="Confirm password" />
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg">Register</button>
+                            <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-outline-secondary">Already have an account? Log in</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "giftofthegivers",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "GiftOfTheGivers/GiftOfTheGivers.csproj", "--urls", "http://localhost:5106"],
+      "port": 5106
+    }
+  ]
+}
