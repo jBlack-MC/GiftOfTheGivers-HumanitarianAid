@@ -2,6 +2,9 @@
 
 A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 8).
 
+🔗 **Live demo**: [giftgivers-app-bvefdybyc7baguaq.southafricanorth-01.azurewebsites.net](https://giftgivers-app-bvefdybyc7baguaq.southafricanorth-01.azurewebsites.net/)
+> Hosted on Azure App Service's Free (F1) tier — no "Always On", so the first request after a period of inactivity may take 10-20s to cold-start.
+
 ## 📋 Project Overview
 
 This application supports the Gift of the Givers Foundation's mission to provide humanitarian aid by offering a complete platform for:
@@ -94,11 +97,41 @@ GiftOfTheGivers/
 
 ## 🔐 Authentication & Authorization
 
-The application uses ASP.NET Core Identity with role-based authorization:
+The application uses **ASP.NET Core Identity** (scaffolded UI, under the `Identity` area) with role-based authorization:
 
-- **Public** - Access to home, about, projects, donate, volunteer, contact
-- **Donor** - Access to donation history and tax certificates
-- **Employee** - Full management capabilities
+- **Public** - Access to home, about, projects, donate, volunteer, contact (no account needed)
+- **Donor** - `[Authorize(Roles = "Donor")]` on `DonorController` - donation history and tax certificates
+- **Employee** - `[Authorize(Roles = "Employee")]` on `EmployeeController` - full relief-project/volunteer/donation management
+
+### Login / Register pages
+
+| Action | URL |
+| --- | --- |
+| Register | `/Identity/Account/Register` |
+| Login | `/Identity/Account/Login` |
+| Logout | `/Identity/Account/Logout` (POST, via the navbar) |
+| Manage account | `/Identity/Account/Manage` |
+
+Both links live in the navbar (top right) when signed out; a "Hello, `<name>`" menu + Logout replace them once signed in.
+
+### How registration works
+
+Anyone can self-register at `/Identity/Account/Register` and **picks their own account type** ("Donor" or "Employee") from a dropdown on the form. This is a Part-1 prototype simplification — a real deployment would not let the public grant themselves the Employee (staff) role; that would move behind an admin-invite or approval step in a later phase.
+
+- Email confirmation is **switched off** (`RequireConfirmedAccount = false` in `Program.cs`) and no real email sender is wired up, so new accounts are usable immediately after registering — no inbox check required.
+- Password rules are ASP.NET Identity's defaults: **at least 6 characters**, with at least one uppercase letter, one lowercase letter, one digit, and one non-alphanumeric character (e.g. `Donor#123`).
+- Roles (`Donor`, `Employee`) are created automatically the first time they're needed — no manual setup required.
+
+### Demo / seeded accounts
+
+On first run, `Data/DbSeeder.cs` seeds two ready-to-use accounts (Part 1 prototype only — **do not reuse these passwords for anything real**):
+
+| Role | Email | Password | Sees |
+| --- | --- | --- | --- |
+| Employee | `employee@giftofthegivers.org` | `Employee#123` | Employee dashboard - manage relief projects, review volunteers, oversee donations |
+| Donor | `donor@example.com` | `Donor#123` | Donor dashboard - donation history, tax certificates |
+
+These are safe to commit because they're seed-only, non-production credentials for a public student prototype — not real Azure/database secrets (see [DATABASE_SETUP.md](DATABASE_SETUP.md) for those).
 
 ## 🎨 UI Features
 
