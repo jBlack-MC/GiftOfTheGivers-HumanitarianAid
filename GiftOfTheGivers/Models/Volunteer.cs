@@ -1,10 +1,18 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiftOfTheGivers.Models
 {
     public class Volunteer
     {
         public int Id { get; set; }
+
+        // Links a volunteer record to the account that owns it (nullable: a
+        // volunteer can be registered from the public form without an account).
+        public string? UserId { get; set; }
+
+        [ForeignKey(nameof(UserId))]
+        public AppUser? User { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -58,5 +66,8 @@ namespace GiftOfTheGivers.Models
         public DateTime? ApprovalDate { get; set; }
 
         public string? Notes { get; set; }
+
+        // Projects this volunteer is assigned to (many-to-many via VolunteerAssignment).
+        public ICollection<VolunteerAssignment> Assignments { get; set; } = new List<VolunteerAssignment>();
     }
 }

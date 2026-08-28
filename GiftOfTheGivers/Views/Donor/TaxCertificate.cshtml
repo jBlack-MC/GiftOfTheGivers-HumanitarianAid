@@ -73,11 +73,9 @@
                         <button onclick="window.print()" class="btn btn-primary btn-lg">
                             <i class="bi bi-printer-fill me-2"></i>Print
                         </button>
-                        <form asp-action="DownloadTaxCertificate" asp-route-id="@Model.Id" method="post" class="d-grid">
-                            <button type="submit" class="btn btn-outline-primary btn-lg">
-                                <i class="bi bi-download me-2"></i>Download
-                            </button>
-                        </form>
+                        <a asp-controller="@(User.IsInRole("Donor") ? "Donor" : "Home")" asp-action="DownloadTaxCertificate" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-lg" target="_blank" rel="noopener">
+                            <i class="bi bi-download me-2"></i>Download PDF
+                        </a>
                     </div>
 
                     <!-- Footer Info -->

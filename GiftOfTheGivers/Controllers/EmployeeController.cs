@@ -83,6 +83,7 @@ namespace GiftOfTheGivers.Controllers
             if (ModelState.IsValid)
             {
                 project.CreatedDate = DateTime.Now;
+                project.CreatedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 _context.ReliefProjects.Add(project);
                 await _context.SaveChangesAsync();
 
@@ -167,6 +168,7 @@ namespace GiftOfTheGivers.Controllers
             {
                 update.CreatedDate = DateTime.Now;
                 update.CreatedBy = User.Identity?.Name ?? "Unknown";
+                update.PostedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 _context.ProjectUpdates.Add(update);
                 await _context.SaveChangesAsync();
 
