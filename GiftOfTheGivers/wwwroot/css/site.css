@@ -201,9 +201,10 @@ a {
   gap: 0.5rem;
 }
 
-.navbar-brand .bi {
-  color: var(--brand-accent);
-  font-size: 1.4rem;
+.navbar-logo {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-block;
 }
 
 .navbar .nav-link {

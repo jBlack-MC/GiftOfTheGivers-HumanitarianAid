@@ -6,7 +6,10 @@
      2.0 - 4.0   particles lock onto the compass silhouette; shards burst
      4.0 - 4.9   particles dissolve as the crisp SVG compass takes over
      3.7 - 8.0   CSS handles the symbol reveal, light sweep, title & subtitle
-     8.0         `gotg:introComplete` event fires, Replay button appears
+     8.0         `gotg:introComplete` fires; ambient sparkle keeps looping;
+                 if reached via the homepage's once-per-session gate
+                 (?auto=1) this hands off back to "/" after a brief hold —
+                 otherwise (direct visit) it just sits here, replayable
    ========================================================================== */
 (function () {
   "use strict";
@@ -22,6 +25,21 @@
   var DURATION = 8.0;                       // seconds of scripted timeline
   var COUNT    = 300;                       // particles
   var reduced  = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* Reached via the homepage's once-per-session gate (?auto=1)? Then this
+     run hands off back to "/" once it finishes/is skipped. Visited directly
+     (no query param) it just behaves as a normal, replayable standalone
+     page — no forced navigation. Either way the session is marked "seen"
+     so the homepage gate won't redirect here again this session. */
+  var AUTO = /(?:^|[?&])auto=1(?:&|$)/.test(location.search);
+  function markIntroSeen() {
+    try { sessionStorage.setItem("gotg-intro-seen", "1"); } catch (e) {}
+  }
+  function goHome(delayMs) {
+    markIntroSeen();
+    if (!AUTO) return;
+    setTimeout(function () { location.href = "/"; }, delayMs || 0);
+  }
 
   /* -------- compass geometry (also used to sample particle targets) -------
      Thick 4-point compass rose: wide blades tapering to sharp tips, with
@@ -317,11 +335,12 @@
     }
   }
 
-  function finishEvent() {
+  function finishEvent(homeDelayMs) {
     if (done) return;
     done = true;
     stage.classList.add("done");
     window.dispatchEvent(new CustomEvent("gotg:introComplete"));
+    goHome(homeDelayMs);
   }
 
   /* -------- controls ------------------------------------------------- */
@@ -336,13 +355,14 @@
 
     if (reduced) {
       stage.classList.add("reduced");
-      finishEvent();
+      finishEvent(0);                          // nothing to watch, hand off right away
       return;
     }
     startTs = 0; clock = 0; running = true;
     stage.classList.add("play");
     raf = requestAnimationFrame(loop);
-    endTimer = setTimeout(finishEvent, DURATION * 1000);
+    // brief hold on the finished mark before handing off to the real homepage
+    endTimer = setTimeout(function () { finishEvent(1200); }, DURATION * 1000);
   }
 
   function skip() {
@@ -352,7 +372,7 @@
     ctx.clearRect(0, 0, W, H);
     stage.classList.remove("play");
     stage.classList.add("finished");
-    finishEvent();
+    finishEvent(150);                          // skip means "get me there now"
   }
 
   btnRep.addEventListener("click", play);

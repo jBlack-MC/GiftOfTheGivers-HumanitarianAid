@@ -4,6 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Gift of the Givers</title>
+    <link rel="icon" type="image/svg+xml" href="~/img/logo.svg" />
+    <script>
+      // Show the cinematic intro once per browser session, only when landing
+      // on the homepage itself (not on deep links to other pages). The intro
+      // page marks itself seen (via ?auto=1) and redirects back here when done.
+      (function () {
+        try {
+          if (sessionStorage.getItem("gotg-intro-seen")) return;
+          var p = location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
+          if (p === "" || p === "/" || p === "/home" || p === "/home/index") {
+            location.replace("/intro/index.html?auto=1");
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script type="importmap"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +34,7 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 sticky-top">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-compass-fill"></i> Gift of the Givers
+                    <img src="~/img/logo.svg" alt="" class="navbar-logo" /> Gift of the Givers
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -99,7 +114,7 @@
         <div class="container py-5">
             <div class="row">
                 <div class="col-md-4 mb-4 mb-md-0">
-                    <h5 class="d-flex align-items-center gap-2"><i class="bi bi-compass-fill"></i> Gift of the Givers</h5>
+                    <h5 class="d-flex align-items-center gap-2"><img src="~/img/logo-light.svg" alt="" class="navbar-logo" /> Gift of the Givers</h5>
                     <p class="small mb-0">Bringing hope and relief to those in need.</p>
                 </div>
                 <div class="col-md-4 mb-4 mb-md-0">
