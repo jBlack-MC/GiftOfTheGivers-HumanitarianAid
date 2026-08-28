@@ -2,8 +2,38 @@
 
 A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 8).
 
+![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet&logoColor=white)
+![EF Core](https://img.shields.io/badge/Entity%20Framework%20Core-8.0-512BD4)
+![Azure SQL](https://img.shields.io/badge/Database-Azure%20SQL-0078D4?logo=microsoftazure&logoColor=white)
+![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
+![License](https://img.shields.io/badge/license-Educational-lightgrey)
+
 🔗 **Live demo**: [giftgivers-app-bvefdybyc7baguaq.southafricanorth-01.azurewebsites.net](https://giftgivers-app-bvefdybyc7baguaq.southafricanorth-01.azurewebsites.net/)
 > Hosted on Azure App Service's Free (F1) tier — no "Always On", so the first request after a period of inactivity may take 10-20s to cold-start.
+>
+> **🔑 Demo login** (works on the live site and locally)
+>
+> | Role | Email | Password |
+> | --- | --- | --- |
+> | **Employee** | `employee@giftofthegivers.org` | `Employee#123` |
+> | **Donor** | `donor@example.com` | `Donor#123` |
+>
+> Seeded automatically on first run by `Data/DbSeeder.cs` — see [Demo / seeded accounts](#demo--seeded-accounts) below for details.
+
+## 📑 Contents
+
+- [Project Overview](#-project-overview)
+- [Features](#-features)
+- [Technology Stack](#️-technology-stack)
+- [Getting Started](#-getting-started)
+- [Project Structure](#️-project-structure)
+- [Key Models](#-key-models)
+- [Authentication & Authorization](#-authentication--authorization)
+- [UI Features](#-ui-features)
+- [License](#-license)
+- [Contributing](#-contributing)
+- [Acknowledgments](#-acknowledgments)
 
 ## 📋 Project Overview
 
@@ -16,6 +46,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
 ## 🚀 Features
 
 ### Public Pages
+
 - **Home** - Landing page with mission statement and project highlights
 - **About** - Organization information and impact statistics
 - **Relief Projects** - Browse active humanitarian projects
@@ -24,12 +55,14 @@ This application supports the Gift of the Givers Foundation's mission to provide
 - **Contact** - Contact form for inquiries
 
 ### Donor Portal (Authenticated)
+
 - Donor dashboard with donation history
 - Tax-deductible certificate generation
 - Donation details and tracking
 - Recurring donation management
 
 ### Employee Portal (Authenticated)
+
 - Relief project creation and management
 - Project update system
 - Volunteer application review and approval
@@ -41,11 +74,13 @@ This application supports the Gift of the Givers Foundation's mission to provide
 - **Database**: Azure SQL Database via Entity Framework Core
 - **Authentication**: ASP.NET Core Identity
 - **UI**: Bootstrap 5 + Bootstrap Icons
+- **PDF generation**: QuestPDF (donor tax certificates)
 - **Development Environment**: Visual Studio 2026
 
 ## 📦 Getting Started
 
 ### Prerequisites
+
 - .NET 8 SDK
 - Visual Studio 2026 (or compatible IDE)
 - Access to the team's Azure SQL Database (see [DATABASE_SETUP.md](DATABASE_SETUP.md))
@@ -53,12 +88,14 @@ This application supports the Gift of the Givers Foundation's mission to provide
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <your-repo-url>
    cd GiftOfTheGivers
    ```
 
 2. **Restore dependencies**
+
    ```bash
    dotnet restore
    ```
@@ -67,6 +104,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
    - This project uses Azure SQL. See [DATABASE_SETUP.md](DATABASE_SETUP.md) for how to get the connection string and store it with `dotnet user-secrets` (never edit `appsettings.json` directly — this repo is public).
 
 4. **Run the application**
+
    ```bash
    dotnet run
    ```
@@ -75,25 +113,29 @@ This application supports the Gift of the Givers Foundation's mission to provide
 
 5. **Access the application**
    - Browse to the URL shown in the console (e.g. `http://localhost:5106`)
+   - Sign in with one of the [demo accounts](#demo--seeded-accounts) above, or [register](#how-registration-works) your own
 
 ## 🗂️ Project Structure
 
-```
+```text
 GiftOfTheGivers/
 ├── Controllers/          # MVC Controllers (Home, Donor, Employee)
-├── Models/              # Domain models and ViewModels
-├── Views/               # Razor views
-├── Data/                # DbContext and migrations
-├── wwwroot/             # Static files (CSS, JS, images)
-└── Areas/               # Identity area for authentication
+├── Models/                # Domain models and ViewModels
+├── Views/                 # Razor views
+├── Data/                  # DbContext, migrations, and DbSeeder
+├── Services/               # PDF generation and other app services
+├── wwwroot/                # Static files (CSS, JS, images, intro animation)
+└── Areas/                  # Identity area for authentication
 ```
 
 ## 📝 Key Models
 
 - **Donation** - Donation records with currency, amount, and tax certificate tracking
 - **Volunteer** - Volunteer applications with skills and availability
+- **VolunteerAssignment** - Links approved volunteers to the relief projects they're assigned to
 - **ReliefProject** - Humanitarian projects with location, goals, and progress
 - **ProjectUpdate** - Status updates for active projects
+- **AppUser** - Application user (extends ASP.NET Identity) with `FullName` and `DateRegistered`
 
 ## 🔐 Authentication & Authorization
 
@@ -140,6 +182,7 @@ These are safe to commit because they're seed-only, non-production credentials f
 - Success/confirmation pages for all submissions
 - Print-friendly tax certificates
 - Mobile-optimized layouts
+- Cinematic intro animation on first visit each browser session
 
 ## 📄 License
 
