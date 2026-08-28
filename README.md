@@ -1,6 +1,6 @@
 # Gift of the Givers - Humanitarian Aid Management System
 
-A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 10).
+A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 8).
 
 ## 📋 Project Overview
 
@@ -34,8 +34,8 @@ This application supports the Gift of the Givers Foundation's mission to provide
 
 ## 🛠️ Technology Stack
 
-- **Framework**: ASP.NET Core MVC (.NET 10)
-- **Database**: Entity Framework Core with SQL Server/SQLite
+- **Framework**: ASP.NET Core MVC (.NET 8)
+- **Database**: Azure SQL Database via Entity Framework Core
 - **Authentication**: ASP.NET Core Identity
 - **UI**: Bootstrap 5 + Bootstrap Icons
 - **Development Environment**: Visual Studio 2026
@@ -43,9 +43,9 @@ This application supports the Gift of the Givers Foundation's mission to provide
 ## 📦 Getting Started
 
 ### Prerequisites
-- .NET 10 SDK
+- .NET 8 SDK
 - Visual Studio 2026 (or compatible IDE)
-- SQL Server or SQLite
+- Access to the team's Azure SQL Database (see [DATABASE_SETUP.md](DATABASE_SETUP.md))
 
 ### Installation
 
@@ -60,21 +60,18 @@ This application supports the Gift of the Givers Foundation's mission to provide
    dotnet restore
    ```
 
-3. **Update database connection**
-   - Edit `appsettings.json` to configure your database connection string
+3. **Set up the database connection**
+   - This project uses Azure SQL. See [DATABASE_SETUP.md](DATABASE_SETUP.md) for how to get the connection string and store it with `dotnet user-secrets` (never edit `appsettings.json` directly — this repo is public).
 
-4. **Run migrations**
-   ```bash
-   dotnet ef database update
-   ```
-
-5. **Run the application**
+4. **Run the application**
    ```bash
    dotnet run
    ```
 
-6. **Access the application**
-   - Browse to `https://localhost:5001` or the displayed URL
+   Pending migrations are applied automatically on startup — no separate migration step needed.
+
+5. **Access the application**
+   - Browse to the URL shown in the console (e.g. `http://localhost:5106`)
 
 ## 🗂️ Project Structure
 
