@@ -1,10 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GiftOfTheGivers.Models
 {
     public class ReliefProject
     {
         public int Id { get; set; }
+
+        // The employee who created the project (Section B: ReliefProjects.CreatedByUserID).
+        public string? CreatedByUserId { get; set; }
+
+        [ForeignKey(nameof(CreatedByUserId))]
+        public AppUser? CreatedByUser { get; set; }
 
         [Required]
         [StringLength(200)]
@@ -40,5 +47,6 @@ namespace GiftOfTheGivers.Models
         // Navigation properties
         public ICollection<Donation> Donations { get; set; } = new List<Donation>();
         public ICollection<ProjectUpdate> ProjectUpdates { get; set; } = new List<ProjectUpdate>();
+        public ICollection<VolunteerAssignment> VolunteerAssignments { get; set; } = new List<VolunteerAssignment>();
     }
 }

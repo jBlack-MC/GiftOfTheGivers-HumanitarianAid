@@ -78,6 +78,8 @@ namespace GiftOfTheGivers.Controllers
                         ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                         : null,
                     ReliefProjectId = model.ReliefProjectId,
+                    DonationType = model.DonationType,
+                    Currency = model.Currency,
                     Amount = model.Amount,
                     PaymentMethod = model.PaymentMethod,
                     IsAnonymous = model.IsAnonymous,
@@ -156,6 +158,25 @@ namespace GiftOfTheGivers.Controllers
         }
 
         [HttpGet]
+        [Route("Donate/Tax-Certificate/{id}/download")]
+        public async Task<IActionResult> DownloadTaxCertificate(int id)
+        {
+            var donation = await _context.Donations
+                .Include(d => d.ReliefProject)
+                .Include(d => d.Donor)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            if (donation == null)
+            {
+                return NotFound();
+            }
+
+            var pdf = Services.TaxCertificatePdf.Generate(donation);
+            return File(pdf, "application/pdf",
+                $"TaxCertificate_{donation.TransactionReference ?? donation.Id.ToString()}.pdf");
+        }
+
+        [HttpGet]
         public IActionResult Volunteer()
         {
             return View(new VolunteerApplicationViewModel());
@@ -174,6 +195,9 @@ namespace GiftOfTheGivers.Controllers
 
                 var volunteer = new Volunteer
                 {
+                    UserId = User.Identity?.IsAuthenticated == true
+                        ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                        : null,
                     FirstName = firstName,
                     LastName = lastName,
                     Email = model.Email,

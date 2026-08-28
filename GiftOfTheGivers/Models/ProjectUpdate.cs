@@ -25,6 +25,12 @@ namespace GiftOfTheGivers.Models
         [Required]
         public string CreatedBy { get; set; } = string.Empty;
 
+        // The employee account that posted the update (Section B: ProjectUpdates.PostedByUserID).
+        public string? PostedByUserId { get; set; }
+
+        [ForeignKey(nameof(PostedByUserId))]
+        public AppUser? PostedByUser { get; set; }
+
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         public DateTime? LastModifiedDate { get; set; }

@@ -117,7 +117,7 @@ namespace GiftOfTheGivers.Controllers
             return View(donation);
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> DownloadTaxCertificate(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -132,27 +132,9 @@ namespace GiftOfTheGivers.Controllers
                 return NotFound();
             }
 
-            // In a real application, this would generate a PDF
-            // For now, we'll just return a simple text file
-            var content = $@"
-TAX CERTIFICATE
-
-Gift of the Givers
-Tax Registration Number: 123-456-789
-
-This is to certify that {donation.Donor?.UserName ?? "Anonymous"} 
-made a donation of {donation.Amount:C} on {donation.DonationDate:yyyy-MM-dd}.
-
-Transaction Reference: {donation.TransactionReference}
-{(donation.ReliefProject != null ? $"Project: {donation.ReliefProject.Title}" : "General Donation")}
-
-This donation is tax-deductible according to applicable tax laws.
-
-Date Issued: {DateTime.Now:yyyy-MM-dd}
-";
-
-            var bytes = System.Text.Encoding.UTF8.GetBytes(content);
-            return File(bytes, "text/plain", $"TaxCertificate_{donation.TransactionReference}.txt");
+            var pdf = Services.TaxCertificatePdf.Generate(donation);
+            return File(pdf, "application/pdf",
+                $"TaxCertificate_{donation.TransactionReference ?? donation.Id.ToString()}.pdf");
         }
     }
 }

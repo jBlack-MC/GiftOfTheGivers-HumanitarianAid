@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Gift of the Givers — Intro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="intro.css" />
+</head>
+<body>
+  <!-- 8-second cinematic intro. Storyboard:
+       0-2s  soft light + particles gather
+       2-4s  compass symbol forms from particles
+       4-5s  symbol completes, light sweeps across
+       5-6s  main title fades in
+       6-7s  subtitle appears
+       7-8s  final logo hold -->
+  <div id="stage" class="stage" aria-label="Gift of the Givers Relief Management System">
+    <div class="bloom"></div>
+    <canvas id="fx"></canvas>
+    <div class="streak"></div>
+
+    <div class="core">
+      <div class="logo-wrap">
+        <div id="compass" class="compass"></div>
+        <div class="clip"><span class="sweep"></span></div>
+      </div>
+
+      <div class="titles">
+        <h1 class="title">GIFT OF THE GIVERS</h1>
+        <div class="subwrap">
+          <span class="underline"></span>
+          <p class="subtitle">RELIEF MANAGEMENT SYSTEM</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn skip" id="skip" type="button">Skip &rsaquo;</button>
+    <button class="btn replay" id="replay" type="button">&#9654; Replay</button>
+    <button class="btn theme" id="theme" type="button" aria-label="Toggle light / dark">&#9788;</button>
+  </div>
+
+  <script>
+    // Optional: honour a saved preference for the standalone demo page.
+    try {
+      var t = localStorage.getItem("gotg-intro-theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  </script>
+  <script src="intro.js"></script>
+</body>
+</html>

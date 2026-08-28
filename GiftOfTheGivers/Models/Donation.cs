@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,15 +7,24 @@ namespace GiftOfTheGivers.Models
     {
         public int Id { get; set; }
 
+        // Nullable so anonymous, non-logged-in donations are still possible.
         public string? DonorId { get; set; }
 
         [ForeignKey(nameof(DonorId))]
-        public IdentityUser? Donor { get; set; }
+        public AppUser? Donor { get; set; }
 
         public int? ReliefProjectId { get; set; }
 
         [ForeignKey(nameof(ReliefProjectId))]
         public ReliefProject? ReliefProject { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string DonationType { get; set; } = "OneTime"; // OneTime or Recurring
+
+        [Required]
+        [StringLength(3)]
+        public string Currency { get; set; } = "ZAR"; // ZAR, USD or EUR
 
         [Required]
         [DataType(DataType.Currency)]
