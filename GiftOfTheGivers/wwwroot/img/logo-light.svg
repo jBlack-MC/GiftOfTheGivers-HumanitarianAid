@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Gift of the Givers">
+  <path d="M100 1L114.09 62.56L100 100ZM136.77 63.23L136.43 83.49L100 100ZM195 100L137.44 114.09L100 100ZM136.77 136.77L116.51 136.43L100 100ZM100 195L85.91 137.44L100 100ZM63.23 136.77L63.57 116.51L100 100ZM5 100L62.56 85.91L100 100ZM63.23 63.23L83.49 63.57L100 100Z" fill="#16294d" stroke="#0b1a38" stroke-width="1.1" stroke-linejoin="round"/>
+  <path d="M100 1L85.91 62.56L100 100ZM136.77 63.23L116.51 63.57L100 100ZM195 100L137.44 85.91L100 100ZM136.77 136.77L136.43 116.51L100 100ZM100 195L114.09 137.44L100 100ZM63.23 136.77L83.49 136.43L100 100ZM5 100L62.56 114.09L100 100ZM63.23 63.23L63.57 83.49L100 100Z" fill="#eef4ff" stroke="#0b1a38" stroke-width="1.1" stroke-linejoin="round"/>
+  <circle cx="100" cy="100" r="12.5" fill="#eef4ff" stroke="#0b1a38" stroke-width="1.6"/>
+  <circle cx="100" cy="100" r="6.5" fill="#16294d"/>
+</svg>
