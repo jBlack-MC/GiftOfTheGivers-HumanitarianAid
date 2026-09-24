@@ -1,20 +1,35 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
 trigger:
-- main
+  branches:
+    include:
+      - main
+      - feature/*
+
+pr:
+  branches:
+    include:
+      - main
 
 pool:
   vmImage: ubuntu-latest
 
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: Release
 
 steps:
-- script: dotnet restore
-  displayName: 'dotnet restore'
+  - task: UseDotNet@2
+    displayName: Install .NET SDK
+    inputs:
+      packageType: sdk
+      version: 10.x
 
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+  - script: dotnet restore GiftOfTheGivers.slnx
+    displayName: Restore dependencies
+
+  - script: dotnet build GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-restore
+    displayName: Build solution
+
+  - script: dotnet test GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-build --logger "trx;LogFileName=test-results.trx"
+    displayName: Run tests
+
+  - script: dotnet list GiftOfTheGivers.slnx package --vulnerable --include-transitive
+    displayName: Check vulnerable packages
