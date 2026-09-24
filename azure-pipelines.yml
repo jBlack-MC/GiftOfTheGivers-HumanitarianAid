@@ -1,0 +1,35 @@
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: Release
+
+steps:
+  - task: UseDotNet@2
+    displayName: Install .NET SDK
+    inputs:
+      packageType: sdk
+      version: 10.x
+
+  - script: dotnet restore GiftOfTheGivers.slnx
+    displayName: Restore dependencies
+
+  - script: dotnet build GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-restore
+    displayName: Build solution
+
+  - script: dotnet test GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-build --logger "trx;LogFileName=test-results.trx"
+    displayName: Run tests
+
+  - script: dotnet list GiftOfTheGivers.slnx package --vulnerable --include-transitive
+    displayName: Check vulnerable packages

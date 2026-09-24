@@ -42,6 +42,22 @@ This application supports the Gift of the Givers Foundation's mission to provide
 
 ## 📦 Getting Started
 
+### Mirror GitHub pushes to Azure DevOps
+
+The repository includes a GitHub Actions workflow that mirrors every branch
+and tag push to Azure DevOps.
+
+1. Create the destination Git repository in Azure DevOps.
+2. Create an Azure DevOps PAT with **Code: Read & write** permission.
+3. Add these GitHub repository secrets under **Settings → Secrets and variables → Actions**:
+   - `AZURE_DEVOPS_REPO_URL`: for example, `https://dev.azure.com/ORG/PROJECT/_git/REPO`
+   - `AZURE_DEVOPS_PAT`: the Azure DevOps PAT
+4. Push to GitHub. The `Mirror to Azure DevOps` workflow will synchronize all branches and tags.
+
+The workflow uses `git push --mirror`, so deleted GitHub branches and tags are
+also deleted from the Azure DevOps mirror. Do not make independent changes in
+the Azure DevOps repository.
+
 ### Prerequisites
 - .NET 10 SDK
 - Visual Studio 2026 (or compatible IDE)

@@ -1,0 +1,36 @@
+name: Mirror to Azure DevOps
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout all refs
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mirror repository
+        env:
+          AZURE_DEVOPS_REPO_URL: ${{ secrets.AZURE_DEVOPS_REPO_URL }}
+          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+        run: |
+          set -euo pipefail
+
+          test -n "$AZURE_DEVOPS_REPO_URL" || {
+            echo "AZURE_DEVOPS_REPO_URL is not configured"
+            exit 1
+          }
+          test -n "$AZURE_DEVOPS_PAT" || {
+            echo "AZURE_DEVOPS_PAT is not configured"
+            exit 1
+          }
+
+          auth_header="$(printf ':%s' "$AZURE_DEVOPS_PAT" | base64 -w 0)"
+          git -c "http.extraheader=AUTHORIZATION: Basic $auth_header" \
+            push --mirror "$AZURE_DEVOPS_REPO_URL"
