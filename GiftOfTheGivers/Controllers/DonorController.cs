@@ -93,6 +93,7 @@ namespace GiftOfTheGivers.Controllers
             return View(donation);
         }
 
+        [Authorize(Roles = "Donor,Employee")]
         public async Task<IActionResult> TaxCertificate(int? id)
         {
             if (id == null)
@@ -100,48 +101,44 @@ namespace GiftOfTheGivers.Controllers
                 return NotFound();
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             var donation = await _context.Donations
                 .Include(d => d.ReliefProject)
-                .Include(d => d.Donor)
-                .FirstOrDefaultAsync(d => d.Id == id && d.DonorId == userId);
+                .FirstOrDefaultAsync(d => d.Id == id);
 
-            if (donation == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isEmployee = User.IsInRole("Employee");
+
+            if (donation is null || (donation.DonorId != userId && !isEmployee))
+            {
+                return NotFound();
+            }
+
+            await _auditService.LogAsync(userId!, "CertificateViewed", nameof(Donation), donation.Id);
+
+            return View(donation);
+        }
+
+        [Authorize(Roles = "Donor,Employee")]
+        [HttpGet]
+        public async Task<IActionResult> DownloadTaxCertificate(int id)
+        {
+            var donation = await _context.Donations
+                .Include(d => d.ReliefProject)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isEmployee = User.IsInRole("Employee");
+
+            if (donation is null || (donation.DonorId != userId && !isEmployee))
             {
                 return NotFound();
             }
 
             await _auditService.LogAsync(userId!, "CertificateDownloaded", nameof(Donation), donation.Id);
 
-            // Mark tax certificate as issued
-            if (!donation.TaxCertificateIssued)
-            {
-                donation.TaxCertificateIssued = true;
-                await _context.SaveChangesAsync();
-            }
-
-            return View(donation);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> DownloadTaxCertificate(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var donation = await _context.Donations
-                .Include(d => d.ReliefProject)
-                .Include(d => d.Donor)
-                .FirstOrDefaultAsync(d => d.Id == id && d.DonorId == userId);
-
-            if (donation == null)
-            {
-                return NotFound();
-            }
-
             var pdf = Services.TaxCertificatePdf.Generate(donation);
             return File(pdf, "application/pdf",
-                $"TaxCertificate_{donation.TransactionReference ?? donation.Id.ToString()}.pdf");
+                $"TaxCertificate-{donation.TransactionReference}.pdf");
         }
     }
 }

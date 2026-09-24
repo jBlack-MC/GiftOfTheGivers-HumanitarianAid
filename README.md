@@ -96,6 +96,7 @@ also deleted from the Azure DevOps mirror. Do not make independent changes in
 the Azure DevOps repository.
 
 ### Prerequisites
+
 - .NET 10 SDK
 - Visual Studio 2026 (or compatible IDE)
 - Access to the team's Azure SQL Database (see [DATABASE_SETUP.md](DATABASE_SETUP.md))
