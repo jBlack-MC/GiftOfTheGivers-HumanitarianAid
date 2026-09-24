@@ -2,9 +2,9 @@
 
 A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 10).
 
-![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
+![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)
 ![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet&logoColor=white)
-![EF Core](https://img.shields.io/badge/Entity%20Framework%20Core-8.0-512BD4)
+![EF Core](https://img.shields.io/badge/Entity%20Framework%20Core-10.0-512BD4)
 ![Azure SQL](https://img.shields.io/badge/Database-Azure%20SQL-0078D4?logo=microsoftazure&logoColor=white)
 ![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
 ![License](https://img.shields.io/badge/license-Educational-lightgrey)
