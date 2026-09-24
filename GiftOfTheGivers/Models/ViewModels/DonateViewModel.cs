@@ -4,6 +4,8 @@ namespace GiftOfTheGivers.Models.ViewModels
 {
     public class DonateViewModel
     {
+        public Guid IdempotencyToken { get; set; } = Guid.NewGuid();
+
         public int? ReliefProjectId { get; set; }
         public string? ProjectTitle { get; set; }
 

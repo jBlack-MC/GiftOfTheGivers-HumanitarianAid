@@ -1,0 +1,33 @@
+@model IEnumerable<GiftOfTheGivers.Models.Inquiry>
+@{ ViewData["Title"] = "Inquiries"; }
+
+<div class="container my-5">
+    <h1 class="mb-4">Contact inquiries</h1>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead><tr><th>Submitted</th><th>Name</th><th>Email</th><th>Subject</th><th>Message</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var inquiry in Model)
+            {
+                <tr>
+                    <td>@inquiry.SubmittedDate.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@inquiry.Name</td>
+                    <td><a href="mailto:@inquiry.Email">@inquiry.Email</a></td>
+                    <td>@inquiry.Subject</td>
+                    <td>@inquiry.Message</td>
+                    <td>@(inquiry.Handled ? "Handled" : "Open")</td>
+                    <td>
+                        @if (!inquiry.Handled)
+                        {
+                            <form asp-action="MarkInquiryHandled" method="post">
+                                <input type="hidden" name="id" value="@inquiry.Id" />
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Mark handled</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

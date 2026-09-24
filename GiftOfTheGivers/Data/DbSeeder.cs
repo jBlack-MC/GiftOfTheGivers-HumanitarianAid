@@ -77,7 +77,7 @@ namespace GiftOfTheGivers.Data
                     Description = "Providing emergency supplies, shelter, and clean water to families affected by severe flooding in the region.",
                     Location = "Johannesburg",
                     StartDate = DateTime.Now.AddMonths(-2),
-                    Status = "Active",
+                    Status = ProjectStatus.Active,
                     FundsRequired = 1_000_000,
                     FundsRaised = 750_000,
                     CreatedByUserId = employeeId
@@ -88,7 +88,7 @@ namespace GiftOfTheGivers.Data
                     Description = "Distributing nutritious meals and food parcels to vulnerable communities facing food insecurity.",
                     Location = "Cape Town",
                     StartDate = DateTime.Now.AddMonths(-4),
-                    Status = "Active",
+                    Status = ProjectStatus.Active,
                     FundsRequired = 500_000,
                     FundsRaised = 300_000,
                     CreatedByUserId = employeeId
@@ -99,7 +99,7 @@ namespace GiftOfTheGivers.Data
                     Description = "Providing free medical consultations, medications, and healthcare services to underserved areas.",
                     Location = "Durban",
                     StartDate = DateTime.Now.AddMonths(-6),
-                    Status = "Active",
+                    Status = ProjectStatus.Active,
                     FundsRequired = 1_000_000,
                     FundsRaised = 850_000,
                     CreatedByUserId = employeeId
@@ -110,7 +110,7 @@ namespace GiftOfTheGivers.Data
                     Description = "Urgent assistance for families displaced by wildfires, providing temporary shelter and essential supplies.",
                     Location = "Knysna",
                     StartDate = DateTime.Now.AddMonths(-1),
-                    Status = "Active",
+                    Status = ProjectStatus.Active,
                     FundsRequired = 500_000,
                     FundsRaised = 200_000,
                     CreatedByUserId = employeeId
@@ -121,7 +121,7 @@ namespace GiftOfTheGivers.Data
                     Description = "Constructing and renovating school facilities to provide better education infrastructure for rural communities.",
                     Location = "Limpopo",
                     StartDate = DateTime.Now.AddMonths(-8),
-                    Status = "Active",
+                    Status = ProjectStatus.Active,
                     FundsRequired = 2_000_000,
                     FundsRaised = 1_100_000,
                     CreatedByUserId = employeeId
@@ -132,7 +132,7 @@ namespace GiftOfTheGivers.Data
                     Description = "Providing water tanks, boreholes, and livestock support to farming communities affected by severe drought.",
                     Location = "Northern Cape",
                     StartDate = DateTime.Now.AddMonths(-5),
-                    Status = "Active",
+                    Status = ProjectStatus.Active,
                     FundsRequired = 1_500_000,
                     FundsRaised = 870_000,
                     CreatedByUserId = employeeId
@@ -162,7 +162,7 @@ namespace GiftOfTheGivers.Data
                     DateOfBirth = new DateTime(1994, 5, 12),
                     Skills = "Logistics, driving (Code 10), first aid",
                     Availability = "Weekends",
-                    Status = "Approved",
+                    Status = VolunteerStatus.Approved,
                     ApplicationDate = DateTime.Now.AddDays(-20),
                     ApprovalDate = DateTime.Now.AddDays(-14)
                 },
@@ -177,7 +177,7 @@ namespace GiftOfTheGivers.Data
                     DateOfBirth = new DateTime(1990, 11, 3),
                     Skills = "Registered nurse, triage, community health",
                     Availability = "Weekdays",
-                    Status = "Active",
+                    Status = VolunteerStatus.Approved,
                     ApplicationDate = DateTime.Now.AddDays(-40),
                     ApprovalDate = DateTime.Now.AddDays(-33)
                 },
@@ -192,7 +192,7 @@ namespace GiftOfTheGivers.Data
                     DateOfBirth = new DateTime(1988, 2, 27),
                     Skills = "Search and rescue, 4x4 recovery",
                     Availability = "Anytime",
-                    Status = "Pending",
+                    Status = VolunteerStatus.Pending,
                     ApplicationDate = DateTime.Now.AddDays(-3)
                 }
             );
@@ -261,7 +261,7 @@ namespace GiftOfTheGivers.Data
             }
 
             var volunteers = await context.Volunteers
-                .Where(v => v.Status == "Approved" || v.Status == "Active")
+                .Where(v => v.Status == VolunteerStatus.Approved)
                 .OrderBy(v => v.Id).ToListAsync();
             var projects = await context.ReliefProjects
                 .OrderBy(p => p.Id).Take(2).ToListAsync();

@@ -35,10 +35,10 @@
                                 </small>
                             </p>
                             <p class="card-text">
-                                @(project.Description.Length > 100 ? project.Description.Substring(0, 100) + "..." : project.Description)
+                                @(project.Description?.Length > 100 ? project.Description.Substring(0, 100) + "..." : project.Description)
                             </p>
                             <div class="mb-2">
-                                <span class="badge bg-@(project.Status == "Active" ? "success" : project.Status == "Completed" ? "primary" : "secondary")">
+                                <span class="badge bg-@(project.Status == ProjectStatus.Active ? "success" : project.Status == ProjectStatus.Completed ? "primary" : "secondary")">
                                     @project.Status
                                 </span>
                             </div>

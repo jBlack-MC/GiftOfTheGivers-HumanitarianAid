@@ -17,7 +17,7 @@ namespace GiftOfTheGivers.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.30")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -135,6 +135,9 @@ namespace GiftOfTheGivers.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ReliefProjectId")
                         .HasColumnType("int");
 
@@ -150,6 +153,12 @@ namespace GiftOfTheGivers.Data.Migrations
                     b.HasIndex("DonorId");
 
                     b.HasIndex("ReliefProjectId");
+
+                    b.HasIndex("TransactionReference")
+                        .IsUnique()
+                        .HasFilter("[TransactionReference] IS NOT NULL");
+
+                    b.HasIndex("DonorId", "DonationDate");
 
                     b.ToTable("Donations", t =>
                         {
@@ -242,6 +251,11 @@ namespace GiftOfTheGivers.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
@@ -349,6 +363,8 @@ namespace GiftOfTheGivers.Data.Migrations
                     b.HasIndex("Email");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("Status", "ApplicationDate");
 
                     b.ToTable("Volunteers", t =>
                         {
@@ -465,12 +481,10 @@ namespace GiftOfTheGivers.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -507,12 +521,10 @@ namespace GiftOfTheGivers.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -532,7 +544,7 @@ namespace GiftOfTheGivers.Data.Migrations
                     b.HasOne("GiftOfTheGivers.Models.ReliefProject", "ReliefProject")
                         .WithMany("Donations")
                         .HasForeignKey("ReliefProjectId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Donor");
 
@@ -549,7 +561,7 @@ namespace GiftOfTheGivers.Data.Migrations
                     b.HasOne("GiftOfTheGivers.Models.ReliefProject", "ReliefProject")
                         .WithMany("ProjectUpdates")
                         .HasForeignKey("ReliefProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("PostedByUser");

@@ -1,6 +1,6 @@
 # Gift of the Givers - Humanitarian Aid Management System
 
-A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 8).
+A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 10).
 
 ## 📋 Project Overview
 
@@ -34,7 +34,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
 
 ## 🛠️ Technology Stack
 
-- **Framework**: ASP.NET Core MVC (.NET 8)
+- **Framework**: ASP.NET Core MVC (.NET 10)
 - **Database**: Azure SQL Database via Entity Framework Core
 - **Authentication**: ASP.NET Core Identity
 - **UI**: Bootstrap 5 + Bootstrap Icons
@@ -43,7 +43,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
 ## 📦 Getting Started
 
 ### Prerequisites
-- .NET 8 SDK
+- .NET 10 SDK
 - Visual Studio 2026 (or compatible IDE)
 - Access to the team's Azure SQL Database (see [DATABASE_SETUP.md](DATABASE_SETUP.md))
 

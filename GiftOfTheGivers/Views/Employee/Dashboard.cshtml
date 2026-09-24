@@ -92,7 +92,7 @@
                                             <td>@project.Title</td>
                                             <td>@project.Location</td>
                                             <td>
-                                                <span class="badge bg-@(project.Status == "Active" ? "success" : project.Status == "Completed" ? "primary" : "secondary")">
+                                                <span class="badge bg-@(project.Status == ProjectStatus.Active ? "success" : project.Status == ProjectStatus.Completed ? "primary" : "secondary")">
                                                     @project.Status
                                                 </span>
                                             </td>

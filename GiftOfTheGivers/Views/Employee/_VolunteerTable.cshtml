@@ -25,7 +25,7 @@
                                 <td>@volunteer.PhoneNumber</td>
                                 <td>@volunteer.ApplicationDate.ToString("yyyy-MM-dd")</td>
                                 <td>
-                                    <span class="badge bg-@(volunteer.Status == "Pending" ? "warning" : volunteer.Status == "Approved" ? "success" : volunteer.Status == "Active" ? "primary" : "secondary")">
+                                    <span class="badge bg-@(volunteer.Status == VolunteerStatus.Pending ? "warning" : volunteer.Status == VolunteerStatus.Approved ? "success" : "secondary")">
                                         @volunteer.Status
                                     </span>
                                 </td>

@@ -30,17 +30,28 @@ namespace GiftOfTheGivers.Models
         [DataType(DataType.Date)]
         public DateTime? EndDate { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Status { get; set; } = "Active"; // Active, Completed, Suspended
+        public ProjectStatus Status { get; set; } = ProjectStatus.Active;
 
         [DataType(DataType.Currency)]
         public decimal FundsRequired { get; set; }
 
+        // FundsRaised is derived from the Donations that point at this project and is
+        // maintained server-side only (see HomeController.Donate). It must never be
+        // bound from a form: the Create/Edit project views no longer render it.
         [DataType(DataType.Currency)]
         public decimal FundsRaised { get; set; }
 
         public string? ImageUrl { get; set; }
+
+        /// <summary>
+        /// SQL Server <c>rowversion</c> concurrency token. Every update of a project
+        /// (including the FundsRaised increment made by a donation) must match the value
+        /// that was read, so two concurrent donations against the same project fail fast
+        /// with a <see cref="Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException"/>
+        /// instead of silently lost-updating each other.
+        /// </summary>
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = default!;
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
