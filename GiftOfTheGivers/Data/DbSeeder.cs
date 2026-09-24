@@ -1,6 +1,8 @@
 using GiftOfTheGivers.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GiftOfTheGivers.Data
 {
@@ -14,11 +16,20 @@ namespace GiftOfTheGivers.Data
     /// </summary>
     public static class DbSeeder
     {
-        public static async Task SeedAsync(
-            ApplicationDbContext context,
-            RoleManager<IdentityRole> roleManager,
-            UserManager<AppUser> userManager)
+        public static async Task SeedAsync(IServiceProvider services, IWebHostEnvironment env)
         {
+            var context = services.GetRequiredService<ApplicationDbContext>();
+
+            await context.Database.MigrateAsync();
+
+            if (!env.IsDevelopment())
+            {
+                return;
+            }
+
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = services.GetRequiredService<UserManager<AppUser>>();
+
             foreach (var role in new[] { "Donor", "Employee" })
             {
                 if (!await roleManager.RoleExistsAsync(role))

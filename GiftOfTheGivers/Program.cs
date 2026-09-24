@@ -46,15 +46,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var db = services.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
-
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<AppUser>>();
-    if (app.Environment.IsDevelopment())
-    {
-        await DbSeeder.SeedAsync(db, roleManager, userManager);
-    }
+    await DbSeeder.SeedAsync(services, app.Environment);
 }
 
 // Configure the HTTP request pipeline.

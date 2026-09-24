@@ -80,7 +80,7 @@ namespace GiftOfTheGivers.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Donate(DonateViewModel model)
+        public async Task<IActionResult> Donate(DonateViewModel model, int? projectId)
         {
             if (!ModelState.IsValid)
             {
@@ -92,73 +92,78 @@ namespace GiftOfTheGivers.Controllers
                 .FirstOrDefaultAsync(d => d.IdempotencyKey == model.IdempotencyToken);
             if (existingDonation is not null)
             {
-                TempData["DonationId"] = existingDonation.Id;
+                TempData["Amount"] = existingDonation.Amount;
+                TempData["Currency"] = existingDonation.Currency;
+                TempData["DonationType"] = existingDonation.DonationType;
                 TempData["TransactionRef"] = existingDonation.TransactionReference;
+                TempData["DonationId"] = existingDonation.Id;
+
                 return RedirectToAction(nameof(Confirmation));
             }
+
+            var selectedProjectId = model.ReliefProjectId ?? projectId;
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var donation = new Donation
                 {
-                    DonorId = User.Identity?.IsAuthenticated == true
-                        ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                        : null,
+                    Amount = model.Amount,
+                    DonationDate = DateTime.UtcNow,
+                    PaymentMethod = model.PaymentMethod,
+                    Notes = model.Notes,
+                    IsAnonymous = model.IsAnonymous,
                     DonorEmail = model.DonorEmail,
-                    ReliefProjectId = model.ReliefProjectId,
                     DonationType = model.DonationType,
                     Currency = model.Currency,
-                    Amount = model.Amount,
-                    PaymentMethod = model.PaymentMethod,
-                    IsAnonymous = model.IsAnonymous,
-                    Notes = model.Notes,
-                    DonationDate = DateTime.UtcNow,
-                    TransactionReference = Guid.NewGuid().ToString("N")[..16].ToUpperInvariant(),
+                    ReliefProjectId = selectedProjectId,
+                    TransactionReference = Guid.NewGuid().ToString("N"),
                     IdempotencyKey = model.IdempotencyToken,
-                    PaymentStatus = PaymentStatus.Pending
+                    PaymentStatus = PaymentStatus.Pending,
+                    DonorId = User.Identity?.IsAuthenticated == true
+                        ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                        : null
                 };
 
                 _context.Donations.Add(donation);
-                if (model.ReliefProjectId.HasValue)
+                await _context.SaveChangesAsync();
+
+                if (selectedProjectId.HasValue)
                 {
-                    var project = await _context.ReliefProjects.FindAsync(model.ReliefProjectId.Value);
+                    var project = await _context.ReliefProjects.FindAsync(selectedProjectId.Value);
                     if (project is null)
                     {
                         ModelState.AddModelError(nameof(model.ReliefProjectId), "The selected project no longer exists.");
+                        await transaction.RollbackAsync();
                         await PopulateProjectsAsync(model);
                         return View(model);
                     }
 
+                    project.FundsRaised += model.Amount;
+                    await _context.SaveChangesAsync();
                 }
 
-                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                _logger.LogInformation(
-                    "Donation {DonationId} created for {Amount} {Currency}, project {ProjectId}",
-                    donation.Id, donation.Amount, donation.Currency, donation.ReliefProjectId);
+                TempData["Amount"] = donation.Amount;
+                TempData["Currency"] = donation.Currency;
+                TempData["DonationType"] = donation.DonationType;
+                TempData["TransactionRef"] = donation.TransactionReference;
+                TempData["DonationId"] = donation.Id;
 
-                return Redirect(_paymentGateway.BuildCheckoutRedirectUrl(donation));
+                return RedirectToAction(nameof(Confirmation));
             }
             catch (DbUpdateConcurrencyException)
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError(string.Empty, "This project's funding total just changed. Please try again.");
+                ModelState.AddModelError(string.Empty,
+                    "This project's funding total just changed — please try again.");
                 await PopulateProjectsAsync(model);
                 return View(model);
             }
-            catch (DbUpdateException)
+            catch
             {
                 await transaction.RollbackAsync();
-                var committedDonation = await _context.Donations
-                    .FirstOrDefaultAsync(d => d.IdempotencyKey == model.IdempotencyToken);
-                if (committedDonation is not null)
-                {
-                    TempData["DonationId"] = committedDonation.Id;
-                    TempData["TransactionRef"] = committedDonation.TransactionReference;
-                    return RedirectToAction(nameof(Confirmation));
-                }
                 throw;
             }
         }
@@ -188,6 +193,7 @@ namespace GiftOfTheGivers.Controllers
             return View("DonationSuccess");
         }
 
+        [Authorize(Roles = "Donor,Employee")]
         [HttpGet]
         [Route("Donate/Tax-Certificate/{id}")]
         public async Task<IActionResult> TaxCertificate(int? id)

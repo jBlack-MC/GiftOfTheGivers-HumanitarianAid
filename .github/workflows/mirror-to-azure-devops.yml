@@ -1,6 +1,6 @@
 name: Mirror to Azure DevOps
 
-on:
+"on":
   push:
 
 permissions:
