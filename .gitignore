@@ -37,6 +37,10 @@ diag*.txt
 # Visual Studio Code
 .vscode/
 
+# Local AI assistant state
+.claude/
+.copilot/
+
 # JetBrains Rider
 .idea/
 *.sln.iml
