@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using GiftOfTheGivers.Services;
 
 namespace GiftOfTheGivers.Controllers
 {
@@ -12,10 +13,12 @@ namespace GiftOfTheGivers.Controllers
     public class DonorController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAuditService _auditService;
 
-        public DonorController(ApplicationDbContext context)
+        public DonorController(ApplicationDbContext context, IAuditService auditService)
         {
             _context = context;
+            _auditService = auditService;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -38,7 +41,7 @@ namespace GiftOfTheGivers.Controllers
                 .ToListAsync();
 
             var featuredProjects = await _context.ReliefProjects
-                .Where(p => p.Status == "Active")
+                .Where(p => p.Status == ProjectStatus.Active)
                 .OrderByDescending(p => p.CreatedDate)
                 .Take(3)
                 .ToListAsync();
@@ -85,6 +88,8 @@ namespace GiftOfTheGivers.Controllers
                 return NotFound();
             }
 
+            await _auditService.LogAsync(userId!, "CertificateViewed", nameof(Donation), donation.Id);
+
             return View(donation);
         }
 
@@ -106,6 +111,8 @@ namespace GiftOfTheGivers.Controllers
             {
                 return NotFound();
             }
+
+            await _auditService.LogAsync(userId!, "CertificateDownloaded", nameof(Donation), donation.Id);
 
             // Mark tax certificate as issued
             if (!donation.TaxCertificateIssued)

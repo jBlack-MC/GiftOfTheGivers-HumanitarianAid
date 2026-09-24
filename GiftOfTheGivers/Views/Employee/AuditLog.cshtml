@@ -1,0 +1,17 @@
+@model IEnumerable<GiftOfTheGivers.Models.AuditLog>
+@{ ViewData["Title"] = "Audit log"; }
+
+<div class="container my-5">
+    <h1 class="mb-4">Audit log</h1>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Entity</th><th>Target ID</th></tr></thead>
+            <tbody>
+            @foreach (var entry in Model)
+            {
+                <tr><td>@entry.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td><td>@entry.UserId</td><td>@entry.Action</td><td>@entry.TargetEntity</td><td>@entry.TargetId</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

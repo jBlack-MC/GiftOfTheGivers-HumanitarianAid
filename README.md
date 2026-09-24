@@ -1,10 +1,10 @@
 # Gift of the Givers - Humanitarian Aid Management System
 
-A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 8).
+A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 10).
 
-![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
+![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)
 ![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet&logoColor=white)
-![EF Core](https://img.shields.io/badge/Entity%20Framework%20Core-8.0-512BD4)
+![EF Core](https://img.shields.io/badge/Entity%20Framework%20Core-10.0-512BD4)
 ![Azure SQL](https://img.shields.io/badge/Database-Azure%20SQL-0078D4?logo=microsoftazure&logoColor=white)
 ![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
 ![License](https://img.shields.io/badge/license-Educational-lightgrey)
@@ -70,7 +70,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
 
 ## 🛠️ Technology Stack
 
-- **Framework**: ASP.NET Core MVC (.NET 8)
+- **Framework**: ASP.NET Core MVC (.NET 10)
 - **Database**: Azure SQL Database via Entity Framework Core
 - **Authentication**: ASP.NET Core Identity
 - **UI**: Bootstrap 5 + Bootstrap Icons
@@ -80,8 +80,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
 ## 📦 Getting Started
 
 ### Prerequisites
-
-- .NET 8 SDK
+- .NET 10 SDK
 - Visual Studio 2026 (or compatible IDE)
 - Access to the team's Azure SQL Database (see [DATABASE_SETUP.md](DATABASE_SETUP.md))
 

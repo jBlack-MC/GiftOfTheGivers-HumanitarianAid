@@ -20,7 +20,7 @@ namespace GiftOfTheGivers.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.30")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -153,6 +153,11 @@ namespace GiftOfTheGivers.Data.Migrations
                     b.HasIndex("DonorId");
 
                     b.HasIndex("ReliefProjectId");
+                     b.HasIndex("TransactionReference")
+                         .IsUnique();
+
+                     b.HasIndex("DonorId", "DonationDate");
+
 
                     b.ToTable("Donations", t =>
                         {
@@ -352,6 +357,8 @@ namespace GiftOfTheGivers.Data.Migrations
                     b.HasIndex("Email");
 
                     b.HasIndex("UserId");
+
+                     b.HasIndex("Status", "ApplicationDate");
 
                     b.ToTable("Volunteers", t =>
                         {

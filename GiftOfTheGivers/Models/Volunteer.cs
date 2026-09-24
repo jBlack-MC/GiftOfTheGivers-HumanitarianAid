@@ -58,8 +58,7 @@ namespace GiftOfTheGivers.Models
         [Phone]
         public string? EmergencyContactPhone { get; set; }
 
-        [StringLength(50)]
-        public string Status { get; set; } = "Pending"; // Pending, Approved, Active, Inactive
+        public VolunteerStatus Status { get; set; } = VolunteerStatus.Pending;
 
         public DateTime ApplicationDate { get; set; } = DateTime.Now;
 

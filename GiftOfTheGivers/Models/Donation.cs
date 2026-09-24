@@ -37,8 +37,21 @@ namespace GiftOfTheGivers.Models
         [StringLength(50)]
         public string PaymentMethod { get; set; } = "Card"; // Card, EFT, Cash
 
+        /// <summary>
+        /// Settlement state of this donation. Defaults to <see cref="PaymentStatus.Pending"/>
+        /// because no payment gateway is wired up yet - a donation is only marked
+        /// <see cref="PaymentStatus.Verified"/> once a provider confirms it.
+        /// </summary>
+        public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
+
+        public Guid IdempotencyKey { get; set; } = Guid.NewGuid();
+
         [StringLength(100)]
         public string? TransactionReference { get; set; }
+
+        [EmailAddress]
+        [StringLength(200)]
+        public string? DonorEmail { get; set; }
 
         public bool IsAnonymous { get; set; } = false;
 

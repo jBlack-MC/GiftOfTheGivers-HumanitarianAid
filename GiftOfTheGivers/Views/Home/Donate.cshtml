@@ -28,6 +28,7 @@
                     <h3 class="text-center mb-4">How would you like to donate?</h3>
 
                     <form asp-action="Donate" method="post" id="donateForm">
+                        <input type="hidden" asp-for="IdempotencyToken" />
                         <!-- Donation Type -->
                         <div class="mb-4">
                             <div class="form-check mb-2">

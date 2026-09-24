@@ -4,6 +4,7 @@ using GiftOfTheGivers.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using GiftOfTheGivers.Services;
 
 namespace GiftOfTheGivers.Controllers
 {
@@ -11,20 +12,22 @@ namespace GiftOfTheGivers.Controllers
     public class EmployeeController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public EmployeeController(ApplicationDbContext context)
+        public EmployeeController(ApplicationDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         public async Task<IActionResult> Dashboard()
         {
             var activeProjects = await _context.ReliefProjects
-                .Where(p => p.Status == "Active")
+                .Where(p => p.Status == ProjectStatus.Active)
                 .CountAsync();
 
             var pendingVolunteers = await _context.Volunteers
-                .Where(v => v.Status == "Pending")
+                .Where(v => v.Status == VolunteerStatus.Pending)
                 .CountAsync();
 
             var firstDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
@@ -42,7 +45,7 @@ namespace GiftOfTheGivers.Controllers
                 .ToListAsync();
 
             var recentVolunteers = await _context.Volunteers
-                .Where(v => v.Status == "Pending")
+                .Where(v => v.Status == VolunteerStatus.Pending)
                 .OrderByDescending(v => v.ApplicationDate)
                 .Take(5)
                 .ToListAsync();
@@ -73,24 +76,36 @@ namespace GiftOfTheGivers.Controllers
         [HttpGet]
         public IActionResult CreateReliefProject()
         {
-            return View(new ReliefProject());
+            return View(new CreateReliefProjectInput());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateReliefProject(ReliefProject project)
+        public async Task<IActionResult> CreateReliefProject(CreateReliefProjectInput input)
         {
             if (ModelState.IsValid)
             {
-                project.CreatedDate = DateTime.Now;
-                project.CreatedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var project = new ReliefProject
+                {
+                    Title = input.Title,
+                    Description = input.Description,
+                    Location = input.Location,
+                    Status = input.Status,
+                    StartDate = input.StartDate,
+                    EndDate = input.EndDate,
+                    FundsRequired = input.FundsRequired,
+                    ImageUrl = input.ImageUrl,
+                    FundsRaised = 0m,
+                    CreatedDate = DateTime.UtcNow,
+                    CreatedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                };
                 _context.ReliefProjects.Add(project);
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Relief project created successfully.";
                 return RedirectToAction(nameof(ReliefProjects));
             }
-            return View(project);
+            return View(input);
         }
 
         [HttpGet]
@@ -107,37 +122,56 @@ namespace GiftOfTheGivers.Controllers
                 return NotFound();
             }
 
-            return View(project);
+            return View(new EditReliefProjectInput
+            {
+                Id = project.Id,
+                Title = project.Title,
+                Description = project.Description,
+                Location = project.Location,
+                Status = project.Status,
+                StartDate = project.StartDate,
+                EndDate = project.EndDate,
+                FundsRequired = project.FundsRequired,
+                ImageUrl = project.ImageUrl
+            });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditReliefProject(int id, ReliefProject project)
+        public async Task<IActionResult> EditReliefProject(EditReliefProjectInput input)
         {
-            if (id != project.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(project);
+                    var project = await _context.ReliefProjects.FindAsync(input.Id);
+                    if (project is null)
+                    {
+                        return NotFound();
+                    }
+
+                    project.Title = input.Title;
+                    project.Description = input.Description;
+                    project.Location = input.Location;
+                    project.Status = input.Status;
+                    project.StartDate = input.StartDate;
+                    project.EndDate = input.EndDate;
+                    project.FundsRequired = input.FundsRequired;
+                    project.ImageUrl = input.ImageUrl;
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Relief project updated successfully.";
                     return RedirectToAction(nameof(ReliefProjects));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await ReliefProjectExists(project.Id))
+                    if (!await ReliefProjectExists(input.Id))
                     {
                         return NotFound();
                     }
                     throw;
                 }
             }
-            return View(project);
+            return View(input);
         }
 
         // Project Updates Management
@@ -156,19 +190,26 @@ namespace GiftOfTheGivers.Controllers
             }
 
             ViewBag.ProjectTitle = project.Title;
-            var model = new ProjectUpdate { ReliefProjectId = projectId.Value };
+            var model = new CreateProjectUpdateInput { ReliefProjectId = projectId.Value };
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateProjectUpdate(ProjectUpdate update)
+        public async Task<IActionResult> CreateProjectUpdate(CreateProjectUpdateInput input)
         {
             if (ModelState.IsValid)
             {
-                update.CreatedDate = DateTime.Now;
-                update.CreatedBy = User.Identity?.Name ?? "Unknown";
-                update.PostedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var update = new ProjectUpdate
+                {
+                    ReliefProjectId = input.ReliefProjectId,
+                    Title = input.Title,
+                    Content = input.Content,
+                    ImageUrl = input.ImageUrl,
+                    CreatedDate = DateTime.UtcNow,
+                    CreatedBy = User.Identity?.Name ?? "Unknown",
+                    PostedByUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                };
                 _context.ProjectUpdates.Add(update);
                 await _context.SaveChangesAsync();
 
@@ -176,9 +217,9 @@ namespace GiftOfTheGivers.Controllers
                 return RedirectToAction(nameof(ReliefProjects));
             }
 
-            var project = await _context.ReliefProjects.FindAsync(update.ReliefProjectId);
+            var project = await _context.ReliefProjects.FindAsync(input.ReliefProjectId);
             ViewBag.ProjectTitle = project?.Title ?? "Unknown";
-            return View(update);
+            return View(input);
         }
 
         [HttpGet]
@@ -199,31 +240,41 @@ namespace GiftOfTheGivers.Controllers
             }
 
             ViewBag.ProjectTitle = update.ReliefProject?.Title ?? "Unknown";
-            return View(update);
+            return View(new EditProjectUpdateInput
+            {
+                Id = update.Id,
+                ReliefProjectId = update.ReliefProjectId,
+                Title = update.Title,
+                Content = update.Content,
+                ImageUrl = update.ImageUrl
+            });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProjectUpdate(int id, ProjectUpdate update)
+        public async Task<IActionResult> EditProjectUpdate(EditProjectUpdateInput input)
         {
-            if (id != update.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    update.LastModifiedDate = DateTime.Now;
-                    _context.Update(update);
+                    var update = await _context.ProjectUpdates.FindAsync(input.Id);
+                    if (update is null)
+                    {
+                        return NotFound();
+                    }
+
+                    update.Title = input.Title;
+                    update.Content = input.Content;
+                    update.ImageUrl = input.ImageUrl;
+                    update.LastModifiedDate = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Project update modified successfully.";
                     return RedirectToAction(nameof(ReliefProjects));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await ProjectUpdateExists(update.Id))
+                    if (!await ProjectUpdateExists(input.Id))
                     {
                         return NotFound();
                     }
@@ -231,9 +282,9 @@ namespace GiftOfTheGivers.Controllers
                 }
             }
 
-            var project = await _context.ReliefProjects.FindAsync(update.ReliefProjectId);
+            var project = await _context.ReliefProjects.FindAsync(input.ReliefProjectId);
             ViewBag.ProjectTitle = project?.Title ?? "Unknown";
-            return View(update);
+            return View(input);
         }
 
         // Volunteers Management
@@ -271,9 +322,10 @@ namespace GiftOfTheGivers.Controllers
                 return NotFound();
             }
 
-            volunteer.Status = "Approved";
-            volunteer.ApprovalDate = DateTime.Now;
+            volunteer.Status = VolunteerStatus.Approved;
+            volunteer.ApprovalDate = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+            await _emailService.SendVolunteerStatusEmailAsync(volunteer);
 
             TempData["SuccessMessage"] = $"Volunteer {volunteer.FirstName} {volunteer.LastName} has been approved.";
             return RedirectToAction(nameof(Volunteers));
@@ -289,8 +341,9 @@ namespace GiftOfTheGivers.Controllers
                 return NotFound();
             }
 
-            volunteer.Status = "Inactive";
+            volunteer.Status = VolunteerStatus.Rejected;
             await _context.SaveChangesAsync();
+            await _emailService.SendVolunteerStatusEmailAsync(volunteer);
 
             TempData["InfoMessage"] = $"Volunteer application for {volunteer.FirstName} {volunteer.LastName} has been marked as inactive.";
             return RedirectToAction(nameof(Volunteers));
@@ -305,6 +358,38 @@ namespace GiftOfTheGivers.Controllers
                 .OrderByDescending(d => d.DonationDate)
                 .ToListAsync();
             return View(donations);
+        }
+
+        public async Task<IActionResult> Inquiries()
+        {
+            var inquiries = await _context.Inquiries
+                .OrderByDescending(i => i.SubmittedDate)
+                .ToListAsync();
+            return View(inquiries);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkInquiryHandled(int id)
+        {
+            var inquiry = await _context.Inquiries.FindAsync(id);
+            if (inquiry is null)
+            {
+                return NotFound();
+            }
+
+            inquiry.Handled = true;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Inquiries));
+        }
+
+        public async Task<IActionResult> AuditLog()
+        {
+            var entries = await _context.AuditLogs
+                .OrderByDescending(a => a.Timestamp)
+                .Take(200)
+                .ToListAsync();
+            return View(entries);
         }
 
         // Helper methods

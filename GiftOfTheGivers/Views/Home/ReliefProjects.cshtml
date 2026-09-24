@@ -46,7 +46,7 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h5 class="card-title fw-bold mb-0">@project.Title</h5>
-                                    <span class="badge bg-@(project.Status == "Active" ? "success" : project.Status == "Completed" ? "primary" : "secondary")">
+                                    <span class="badge bg-@(project.Status == ProjectStatus.Active ? "success" : project.Status == ProjectStatus.Completed ? "primary" : "secondary")">
                                         @project.Status
                                     </span>
                                 </div>
@@ -54,7 +54,7 @@
                                     <i class="bi bi-geo-alt-fill text-primary"></i> @project.Location
                                 </p>
                                 <p class="card-text text-muted mb-3">
-                                    @(project.Description.Length > 120 ? project.Description.Substring(0, 120) + "..." : project.Description)
+                                    @(project.Description?.Length > 120 ? project.Description.Substring(0, 120) + "..." : project.Description)
                                 </p>
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between mb-1">

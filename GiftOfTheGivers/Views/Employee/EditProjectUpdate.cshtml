@@ -1,4 +1,4 @@
-@model GiftOfTheGivers.Models.ProjectUpdate
+@model GiftOfTheGivers.Models.ViewModels.EditProjectUpdateInput
 
 @{
     ViewData["Title"] = "Edit Project Update";
@@ -15,8 +15,6 @@
                     <form asp-action="EditProjectUpdate" method="post">
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="ReliefProjectId" />
-                        <input type="hidden" asp-for="CreatedBy" />
-                        <input type="hidden" asp-for="CreatedDate" />
 
                         <div class="mb-3">
                             <label asp-for="Title" class="form-label"></label>
@@ -39,7 +37,7 @@
 
                         <div class="alert alert-info">
                             <small>
-                                <strong>Created by:</strong> @Model.CreatedBy on @Model.CreatedDate.ToString("yyyy-MM-dd hh:mm tt")
+                                Original author and date are preserved when this update is edited.
                             </small>
                         </div>
 

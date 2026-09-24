@@ -20,7 +20,7 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Personal Information</h4>
-                    <span class="badge bg-@(Model.Status == "Pending" ? "warning" : Model.Status == "Approved" ? "success" : Model.Status == "Active" ? "info" : "secondary")">
+                    <span class="badge bg-@(Model.Status == VolunteerStatus.Pending ? "warning" : Model.Status == VolunteerStatus.Approved ? "success" : "secondary")">
                         @Model.Status
                     </span>
                 </div>
@@ -97,7 +97,7 @@
                         </div>
                     }
 
-                    @if (Model.Status == "Approved" && Model.ApprovalDate.HasValue)
+                    @if (Model.Status == VolunteerStatus.Approved && Model.ApprovalDate.HasValue)
                     {
                         <div class="alert alert-success">
                             <strong>Approved on:</strong> @Model.ApprovalDate.Value.ToString("yyyy-MM-dd")
@@ -107,7 +107,7 @@
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
                         <a asp-action="Volunteers" class="btn btn-secondary">Back to List</a>
-                        @if (Model.Status == "Pending")
+                        @if (Model.Status == VolunteerStatus.Pending)
                         {
                             <div>
                                 <form asp-action="ApproveVolunteer" asp-route-id="@Model.Id" method="post" class="d-inline">

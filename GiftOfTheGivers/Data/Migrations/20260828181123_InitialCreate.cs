@@ -260,7 +260,7 @@ namespace GiftOfTheGivers.Data.Migrations
                         column: x => x.ReliefProjectId,
                         principalTable: "ReliefProjects",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -292,7 +292,7 @@ namespace GiftOfTheGivers.Data.Migrations
                         column: x => x.ReliefProjectId,
                         principalTable: "ReliefProjects",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -372,6 +372,17 @@ namespace GiftOfTheGivers.Data.Migrations
                 column: "ReliefProjectId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Donations_TransactionReference",
+                table: "Donations",
+                column: "TransactionReference",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Donations_DonorId_DonationDate",
+                table: "Donations",
+                columns: new[] { "DonorId", "DonationDate" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProjectUpdates_PostedByUserId",
                 table: "ProjectUpdates",
                 column: "PostedByUserId");
@@ -411,6 +422,11 @@ namespace GiftOfTheGivers.Data.Migrations
                 name: "IX_Volunteers_UserId",
                 table: "Volunteers",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Volunteers_Status_ApplicationDate",
+                table: "Volunteers",
+                columns: new[] { "Status", "ApplicationDate" });
         }
 
         /// <inheritdoc />

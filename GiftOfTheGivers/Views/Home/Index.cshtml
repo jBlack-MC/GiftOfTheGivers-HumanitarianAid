@@ -121,7 +121,7 @@
                             <div class="card-body text-center">
                                 <h5 class="card-title fw-bold">@project.Title</h5>
                                 <p class="card-text">
-                                    @(project.Description.Length > 120 ? project.Description.Substring(0, 120) + "..." : project.Description)
+                                    @(project.Description?.Length > 120 ? project.Description.Substring(0, 120) + "..." : project.Description)
                                 </p>
                                 <div class="progress mb-3" style="height: 8px;">
                                     <div class="progress-bar bg-primary" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
