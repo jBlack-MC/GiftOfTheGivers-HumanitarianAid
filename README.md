@@ -2,6 +2,39 @@
 
 A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 10).
 
+![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet&logoColor=white)
+![EF Core](https://img.shields.io/badge/Entity%20Framework%20Core-8.0-512BD4)
+![Azure SQL](https://img.shields.io/badge/Database-Azure%20SQL-0078D4?logo=microsoftazure&logoColor=white)
+![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
+![License](https://img.shields.io/badge/license-Educational-lightgrey)
+
+🔗 **Live demo**: [giftgivers-app-bvefdybyc7baguaq.southafricanorth-01.azurewebsites.net](https://giftgivers-app-bvefdybyc7baguaq.southafricanorth-01.azurewebsites.net/)
+> Hosted on Azure App Service's Free (F1) tier — no "Always On", so the first request after a period of inactivity may take 10-20s to cold-start.
+>
+> **🔑 Demo login** (works on the live site and locally)
+>
+> | Role | Email | Password |
+> | --- | --- | --- |
+> | **Employee** | `employee@giftofthegivers.org` | `Employee#123` |
+> | **Donor** | `donor@example.com` | `Donor#123` |
+>
+> Seeded automatically on first run by `Data/DbSeeder.cs` — see [Demo / seeded accounts](#demo--seeded-accounts) below for details.
+
+## 📑 Contents
+
+- [Project Overview](#-project-overview)
+- [Features](#-features)
+- [Technology Stack](#️-technology-stack)
+- [Getting Started](#-getting-started)
+- [Project Structure](#️-project-structure)
+- [Key Models](#-key-models)
+- [Authentication & Authorization](#-authentication--authorization)
+- [UI Features](#-ui-features)
+- [License](#-license)
+- [Contributing](#-contributing)
+- [Acknowledgments](#-acknowledgments)
+
 ## 📋 Project Overview
 
 This application supports the Gift of the Givers Foundation's mission to provide humanitarian aid by offering a complete platform for:
@@ -13,6 +46,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
 ## 🚀 Features
 
 ### Public Pages
+
 - **Home** - Landing page with mission statement and project highlights
 - **About** - Organization information and impact statistics
 - **Relief Projects** - Browse active humanitarian projects
@@ -21,12 +55,14 @@ This application supports the Gift of the Givers Foundation's mission to provide
 - **Contact** - Contact form for inquiries
 
 ### Donor Portal (Authenticated)
+
 - Donor dashboard with donation history
 - Tax-deductible certificate generation
 - Donation details and tracking
 - Recurring donation management
 
 ### Employee Portal (Authenticated)
+
 - Relief project creation and management
 - Project update system
 - Volunteer application review and approval
@@ -38,6 +74,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
 - **Database**: Azure SQL Database via Entity Framework Core
 - **Authentication**: ASP.NET Core Identity
 - **UI**: Bootstrap 5 + Bootstrap Icons
+- **PDF generation**: QuestPDF (donor tax certificates)
 - **Development Environment**: Visual Studio 2026
 
 ## 📦 Getting Started
@@ -50,12 +87,14 @@ This application supports the Gift of the Givers Foundation's mission to provide
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <your-repo-url>
    cd GiftOfTheGivers
    ```
 
 2. **Restore dependencies**
+
    ```bash
    dotnet restore
    ```
@@ -64,6 +103,7 @@ This application supports the Gift of the Givers Foundation's mission to provide
    - This project uses Azure SQL. See [DATABASE_SETUP.md](DATABASE_SETUP.md) for how to get the connection string and store it with `dotnet user-secrets` (never edit `appsettings.json` directly — this repo is public).
 
 4. **Run the application**
+
    ```bash
    dotnet run
    ```
@@ -72,33 +112,67 @@ This application supports the Gift of the Givers Foundation's mission to provide
 
 5. **Access the application**
    - Browse to the URL shown in the console (e.g. `http://localhost:5106`)
+   - Sign in with one of the [demo accounts](#demo--seeded-accounts) above, or [register](#how-registration-works) your own
 
 ## 🗂️ Project Structure
 
-```
+```text
 GiftOfTheGivers/
 ├── Controllers/          # MVC Controllers (Home, Donor, Employee)
-├── Models/              # Domain models and ViewModels
-├── Views/               # Razor views
-├── Data/                # DbContext and migrations
-├── wwwroot/             # Static files (CSS, JS, images)
-└── Areas/               # Identity area for authentication
+├── Models/                # Domain models and ViewModels
+├── Views/                 # Razor views
+├── Data/                  # DbContext, migrations, and DbSeeder
+├── Services/               # PDF generation and other app services
+├── wwwroot/                # Static files (CSS, JS, images, intro animation)
+└── Areas/                  # Identity area for authentication
 ```
 
 ## 📝 Key Models
 
 - **Donation** - Donation records with currency, amount, and tax certificate tracking
 - **Volunteer** - Volunteer applications with skills and availability
+- **VolunteerAssignment** - Links approved volunteers to the relief projects they're assigned to
 - **ReliefProject** - Humanitarian projects with location, goals, and progress
 - **ProjectUpdate** - Status updates for active projects
+- **AppUser** - Application user (extends ASP.NET Identity) with `FullName` and `DateRegistered`
 
 ## 🔐 Authentication & Authorization
 
-The application uses ASP.NET Core Identity with role-based authorization:
+The application uses **ASP.NET Core Identity** (scaffolded UI, under the `Identity` area) with role-based authorization:
 
-- **Public** - Access to home, about, projects, donate, volunteer, contact
-- **Donor** - Access to donation history and tax certificates
-- **Employee** - Full management capabilities
+- **Public** - Access to home, about, projects, donate, volunteer, contact (no account needed)
+- **Donor** - `[Authorize(Roles = "Donor")]` on `DonorController` - donation history and tax certificates
+- **Employee** - `[Authorize(Roles = "Employee")]` on `EmployeeController` - full relief-project/volunteer/donation management
+
+### Login / Register pages
+
+| Action | URL |
+| --- | --- |
+| Register | `/Identity/Account/Register` |
+| Login | `/Identity/Account/Login` |
+| Logout | `/Identity/Account/Logout` (POST, via the navbar) |
+| Manage account | `/Identity/Account/Manage` |
+
+Both links live in the navbar (top right) when signed out; a "Hello, `<name>`" menu + Logout replace them once signed in.
+
+### How registration works
+
+Anyone can self-register at `/Identity/Account/Register` and **picks their own account type** ("Donor" or "Employee") from a dropdown on the form. This is a Part-1 prototype simplification — a real deployment would not let the public grant themselves the Employee (staff) role; that would move behind an admin-invite or approval step in a later phase.
+
+- Email confirmation is **switched off** (`RequireConfirmedAccount = false` in `Program.cs`) and no real email sender is wired up, so new accounts are usable immediately after registering — no inbox check required.
+- Password rules are ASP.NET Identity's defaults: **at least 6 characters**, with at least one uppercase letter, one lowercase letter, one digit, and one non-alphanumeric character (e.g. `Donor#123`).
+- Roles (`Donor`, `Employee`) are created automatically the first time they're needed — no manual setup required.
+
+### Demo / seeded accounts
+
+On first run, `Data/DbSeeder.cs` seeds two ready-to-use accounts (Part 1 prototype only — **do not reuse these passwords for anything real**):
+
+| Role | Email | Password | Sees |
+| --- | --- | --- | --- |
+| Employee | `employee@giftofthegivers.org` | `Employee#123` | Employee dashboard - manage relief projects, review volunteers, oversee donations |
+| Donor | `donor@example.com` | `Donor#123` | Donor dashboard - donation history, tax certificates |
+
+These are safe to commit because they're seed-only, non-production credentials for a public student prototype — not real Azure/database secrets (see [DATABASE_SETUP.md](DATABASE_SETUP.md) for those).
 
 ## 🎨 UI Features
 
@@ -107,6 +181,7 @@ The application uses ASP.NET Core Identity with role-based authorization:
 - Success/confirmation pages for all submissions
 - Print-friendly tax certificates
 - Mobile-optimized layouts
+- Cinematic intro animation on first visit each browser session
 
 ## 📄 License
 
