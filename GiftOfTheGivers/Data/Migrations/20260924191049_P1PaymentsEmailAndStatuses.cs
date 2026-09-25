@@ -37,6 +37,17 @@ namespace GiftOfTheGivers.Data.Migrations
                 oldType: "nvarchar(50)",
                 oldMaxLength: 50);
 
+            migrationBuilder.AlterColumn<byte[]>(
+                name: "RowVersion",
+                table: "ReliefProjects",
+                type: "rowversion",
+                rowVersion: true,
+                nullable: false,
+                defaultValue: new byte[0],
+                oldClrType: typeof(byte[]),
+                oldType: "rowversion",
+                oldRowVersion: true,
+                oldNullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "DonorEmail",
@@ -179,6 +190,15 @@ namespace GiftOfTheGivers.Data.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
+            migrationBuilder.AlterColumn<byte[]>(
+                name: "RowVersion",
+                table: "ReliefProjects",
+                type: "rowversion",
+                rowVersion: true,
+                nullable: true,
+                oldClrType: typeof(byte[]),
+                oldType: "rowversion",
+                oldRowVersion: true);
 
             migrationBuilder.AddCheckConstraint(
                 name: "CK_Volunteer_Status",

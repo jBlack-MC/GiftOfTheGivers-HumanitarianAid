@@ -11,6 +11,7 @@
     <Description>Reusable fundraising and donation calculation helpers for Gift of the Givers applications.</Description>
     <PackageTags>donations;fundraising;calculations</PackageTags>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
 </Project>

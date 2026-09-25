@@ -1,0 +1,34 @@
+# Normalize line endings for all text files; git checks out LF regardless of OS.
+* text=auto eol=lf
+
+# Explicitly mark common text types (defensive, in case of extension-based tooling overrides)
+*.cs text
+*.cshtml text
+*.csproj text
+*.sln text
+*.slnx text
+*.json text
+*.md text
+*.yml text
+*.yaml text
+*.js text
+*.css text
+*.scss text
+*.html text
+*.ps1 text eol=crlf
+*.sh text eol=lf
+
+# Binary files must never be diffed/converted
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.dll binary
+*.exe binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
