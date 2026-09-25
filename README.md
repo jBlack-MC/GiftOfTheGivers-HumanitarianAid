@@ -131,6 +131,36 @@ the Azure DevOps repository.
    - Browse to the URL shown in the console (e.g. `http://localhost:5106`)
    - Sign in with one of the [demo accounts](#demo--seeded-accounts) above, or [register](#how-registration-works) your own
 
+### Docker (app + SQL Server)
+
+Use Docker Compose to run the web app and SQL Server together.
+
+Run these commands from the **repository root** (`GiftOfTheGivers-HumanitarianAid`), not the `GiftOfTheGivers` subfolder.
+
+1. Create an env file from the example:
+
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+2. Start both containers:
+
+   ```powershell
+   docker compose up --build -d
+   ```
+
+3. Open `http://localhost:8080`
+
+4. Stop containers when done:
+
+   ```powershell
+   docker compose down
+   ```
+
+If you see `SA_PASSWORD variable is not set`, create `.env` first and set a strong password.
+
+> `appsettings.json` uses LocalDB for local Visual Studio runs. LocalDB is Windows-only and does not work inside Linux containers, so the compose file overrides `ConnectionStrings__DefaultConnection` for container runtime.
+
 ## 🗂️ Project Structure
 
 ```text

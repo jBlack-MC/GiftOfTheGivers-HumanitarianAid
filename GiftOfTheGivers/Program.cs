@@ -3,6 +3,7 @@ using GiftOfTheGivers.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using GiftOfTheGivers.Services;
 using QuestPDF.Infrastructure;
 using SendGrid;
@@ -22,7 +23,8 @@ builder.Host.UseSerilog((context, _, configuration) => configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString)
+           .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
@@ -32,9 +34,16 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.Configure<PayFastOptions>(builder.Configuration.GetSection("PayFast"));
 builder.Services.AddHttpClient<IPaymentGateway, PayFastPaymentService>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
-builder.Services.AddSingleton<ISendGridClient>(_ =>
-    new SendGridClient(builder.Configuration["SendGrid:ApiKey"] ?? string.Empty));
-builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+var sendGridApiKey = builder.Configuration["SendGrid:ApiKey"];
+if (!string.IsNullOrWhiteSpace(sendGridApiKey))
+{
+    builder.Services.AddSingleton<ISendGridClient>(_ => new SendGridClient(sendGridApiKey));
+    builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+}
+else
+{
+    builder.Services.AddScoped<IEmailService, NoOpEmailService>();
+}
 builder.Services.AddHealthChecks();
 builder.Services.AddControllersWithViews(options =>
 {

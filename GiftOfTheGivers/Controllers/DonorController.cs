@@ -138,7 +138,7 @@ namespace GiftOfTheGivers.Controllers
 
             var pdf = Services.TaxCertificatePdf.Generate(donation);
             return File(pdf, "application/pdf",
-                $"TaxCertificate-{donation.TransactionReference}.pdf");
+                $"TaxCertificate-{GiftOfTheGivers.Helpers.TaxCertificateNumber.Format(donation.TransactionReference, donation.Id)}.pdf");
         }
     }
 }

@@ -23,7 +23,9 @@ namespace GiftOfTheGivers.Services
                     ? donation.Donor.UserName ?? "Donor"
                     : donation.Donor.FullName);
 
-            var reference = donation.TransactionReference ?? $"GOTG-{donation.Id:D8}";
+            var reference = GiftOfTheGivers.Helpers.TaxCertificateNumber.Format(
+                donation.TransactionReference,
+                donation.Id);
             var project = donation.ReliefProject?.Title ?? "General Fund";
 
             var document = Document.Create(container =>
@@ -32,7 +34,7 @@ namespace GiftOfTheGivers.Services
                 {
                     page.Size(PageSizes.A4);
                     page.Margin(48);
-                    page.DefaultTextStyle(t => t.FontSize(11).FontColor(Colors.Grey.Darken3).FontFamily("Arial"));
+                    page.DefaultTextStyle(t => t.FontSize(11).FontColor(Colors.Grey.Darken3));
 
                     page.Header().Column(header =>
                     {
