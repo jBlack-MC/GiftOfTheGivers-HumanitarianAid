@@ -34,9 +34,16 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.Configure<PayFastOptions>(builder.Configuration.GetSection("PayFast"));
 builder.Services.AddHttpClient<IPaymentGateway, PayFastPaymentService>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
-builder.Services.AddSingleton<ISendGridClient>(_ =>
-    new SendGridClient(builder.Configuration["SendGrid:ApiKey"] ?? string.Empty));
-builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+var sendGridApiKey = builder.Configuration["SendGrid:ApiKey"];
+if (!string.IsNullOrWhiteSpace(sendGridApiKey))
+{
+    builder.Services.AddSingleton<ISendGridClient>(_ => new SendGridClient(sendGridApiKey));
+    builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+}
+else
+{
+    builder.Services.AddScoped<IEmailService, NoOpEmailService>();
+}
 builder.Services.AddHealthChecks();
 builder.Services.AddControllersWithViews(options =>
 {
