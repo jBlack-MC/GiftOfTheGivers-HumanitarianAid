@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>GiftOfTheGivers.Helpers</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Gift of the Givers</Authors>
+    <Company>Gift of the Givers</Company>
+    <Description>Reusable fundraising and donation calculation helpers for Gift of the Givers applications.</Description>
+    <PackageTags>donations;fundraising;calculations</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+</Project>

@@ -44,10 +44,7 @@
                             </div>
                             <div class="progress mb-2" style="height: 20px;">
                                 @{
-                                    var percentage = project.FundsRequired > 0
-                                        ? (int)((project.FundsRaised / project.FundsRequired) * 100)
-                                        : 0;
-                                    percentage = Math.Min(percentage, 100);
+                                    var percentage = project.FundingPercentage(clampTo100: true);
                                 }
                                 <div class="progress-bar" role="progressbar" style="width: @percentage%">
                                     @percentage%

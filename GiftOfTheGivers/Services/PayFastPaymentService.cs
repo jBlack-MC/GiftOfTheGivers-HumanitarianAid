@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using GiftOfTheGivers.Models;
@@ -18,29 +19,30 @@ public sealed class PayFastPaymentService(IOptions<PayFastOptions> options, Http
             ? "https://sandbox.payfast.co.za/eng/process"
             : "https://www.payfast.co.za/eng/process";
 
-        var fields = new SortedDictionary<string, string>
+        var fields = new List<KeyValuePair<string, string>>
         {
-            ["merchant_id"] = _options.MerchantId,
-            ["merchant_key"] = _options.MerchantKey,
-            ["return_url"] = _options.ReturnUrl,
-            ["cancel_url"] = _options.CancelUrl,
-            ["notify_url"] = _options.NotifyUrl,
-            ["m_payment_id"] = donation.TransactionReference ?? string.Empty,
-            ["amount"] = donation.Amount.ToString("F2", CultureInfo.InvariantCulture),
-            ["item_name"] = $"Donation - {donation.ReliefProject?.Title ?? "General Fund"}"
+            new("merchant_id", _options.MerchantId),
+            new("merchant_key", _options.MerchantKey),
+            new("return_url", _options.ReturnUrl),
+            new("cancel_url", _options.CancelUrl),
+            new("notify_url", _options.NotifyUrl),
+            new("m_payment_id", donation.TransactionReference ?? string.Empty),
+            new("amount", donation.Amount.ToString("F2", CultureInfo.InvariantCulture)),
+            new("item_name", $"Donation - {donation.ReliefProject?.Title ?? "General Fund"}")
         };
 
         var signature = CreateSignature(fields);
-        var query = string.Join("&", fields.Select(field => $"{field.Key}={Uri.EscapeDataString(field.Value)}"));
+        var query = string.Join("&", fields.Select(field => $"{field.Key}={UrlEncode(field.Value)}"));
         return $"{baseUrl}?{query}&signature={signature}";
     }
 
     public async Task<bool> VerifyNotificationAsync(IFormCollection payload)
     {
+        // ITN signatures use the posted field order; alphabetically sorting fields changes the signed string.
         var fields = payload
             .Where(field => field.Key != "signature")
-            .OrderBy(field => field.Key)
-            .ToDictionary(field => field.Key, field => field.Value.ToString());
+            .Select(field => new KeyValuePair<string, string>(field.Key, field.Value.ToString()))
+            .ToList();
 
         if (!payload.TryGetValue("signature", out var providedSignature) ||
             !CryptographicOperations.FixedTimeEquals(
@@ -60,16 +62,19 @@ public sealed class PayFastPaymentService(IOptions<PayFastOptions> options, Http
 
     private string CreateSignature(IEnumerable<KeyValuePair<string, string>> fields)
     {
-        var signatureString = string.Join("&", fields.Select(field =>
-            $"{field.Key}={Uri.EscapeDataString(field.Value)}"));
+        var signatureString = string.Join("&", fields
+            .Where(field => !string.IsNullOrEmpty(field.Value))
+            .Select(field => $"{field.Key}={UrlEncode(field.Value.Trim())}"));
         if (!string.IsNullOrEmpty(_options.Passphrase))
         {
-            signatureString += $"&passphrase={Uri.EscapeDataString(_options.Passphrase)}";
+            signatureString += $"&passphrase={UrlEncode(_options.Passphrase.Trim())}";
         }
 
         var hash = MD5.HashData(Encoding.UTF8.GetBytes(signatureString));
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
+
+    private static string UrlEncode(string value) => WebUtility.UrlEncode(value);
 }
 
 public sealed class PayFastOptions

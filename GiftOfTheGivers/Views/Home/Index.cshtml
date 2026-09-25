@@ -1,4 +1,4 @@
-﻿@model IEnumerable<GiftOfTheGivers.Models.ReliefProject>
+@model IEnumerable<GiftOfTheGivers.Models.ReliefProject>
 
 @{
     ViewData["Title"] = "Home Page";
@@ -110,9 +110,7 @@
             <div class="row g-4">
                 @foreach (var project in Model)
                 {
-                    var percentage = project.FundsRequired > 0
-                        ? Math.Min((int)((project.FundsRaised / project.FundsRequired) * 100), 100)
-                        : 0;
+                    var percentage = project.FundingPercentage(clampTo100: true);
                     <div class="col-md-4">
                         <div class="card h-100 shadow-sm border-0 project-card">
                             <div class="card-img-top bg-primary text-white d-flex align-items-center justify-content-center" style="height: 200px;">

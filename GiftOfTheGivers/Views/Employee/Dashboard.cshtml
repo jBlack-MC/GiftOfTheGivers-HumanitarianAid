@@ -98,9 +98,7 @@
                                             </td>
                                             <td>
                                                 @{
-                                                    var percentage = project.FundsRequired > 0
-                                                        ? (int)((project.FundsRaised / project.FundsRequired) * 100)
-                                                        : 0;
+                                                    var percentage = project.FundingPercentage();
                                                 }
                                                 <small>@percentage%</small>
                                             </td>

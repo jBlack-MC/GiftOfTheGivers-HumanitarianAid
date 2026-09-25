@@ -176,7 +176,7 @@ namespace GiftOfTheGivers.Controllers
                 .ToListAsync();
         }
 
-        [Authorize(Roles = "Donor,Employee")]
+        [AllowAnonymous]
         [HttpGet]
         [Route("Donate/Confirmation")]
         public IActionResult Confirmation()
@@ -247,7 +247,7 @@ namespace GiftOfTheGivers.Controllers
 
             var pdf = Services.TaxCertificatePdf.Generate(donation);
             return File(pdf, "application/pdf",
-                $"TaxCertificate_{donation.TransactionReference ?? donation.Id.ToString()}.pdf");
+                $"TaxCertificate_{GiftOfTheGivers.Helpers.TaxCertificateNumber.Format(donation.TransactionReference, donation.Id)}.pdf");
         }
 
         [HttpGet]

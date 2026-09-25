@@ -21,11 +21,11 @@
                         <p class="text-muted">Total Donations</p>
                     </div>
                     <div class="col-md-4">
-                        <h3>@Model.Sum(d => d.Amount).ToString("C")</h3>
+                        <h3>@DonationCalculations.TotalAmount(Model.Select(d => d.Amount)).ToString("C")</h3>
                         <p class="text-muted">Total Amount</p>
                     </div>
                     <div class="col-md-4">
-                        <h3>@Model.Average(d => d.Amount).ToString("C")</h3>
+                        <h3>@DonationCalculations.AverageAmount(Model.Select(d => d.Amount)).ToString("C")</h3>
                         <p class="text-muted">Average Donation</p>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                         <tfoot class="table-light">
                             <tr>
                                 <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                                <td colspan="4"><strong>@Model.Sum(d => d.Amount).ToString("C")</strong></td>
+                                <td colspan="4"><strong>@DonationCalculations.TotalAmount(Model.Select(d => d.Amount)).ToString("C")</strong></td>
                             </tr>
                         </tfoot>
                     </table>
