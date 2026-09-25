@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using GiftOfTheGivers.Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace GiftOfTheGivers.Controllers
 {
@@ -92,7 +93,7 @@ namespace GiftOfTheGivers.Controllers
                 .FirstOrDefaultAsync(d => d.IdempotencyKey == model.IdempotencyToken);
             if (existingDonation is not null)
             {
-                TempData["Amount"] = existingDonation.Amount;
+                TempData["Amount"] = existingDonation.Amount.ToString(CultureInfo.InvariantCulture);
                 TempData["Currency"] = existingDonation.Currency;
                 TempData["DonationType"] = existingDonation.DonationType;
                 TempData["TransactionRef"] = existingDonation.TransactionReference;
@@ -145,7 +146,7 @@ namespace GiftOfTheGivers.Controllers
 
                 await transaction.CommitAsync();
 
-                TempData["Amount"] = donation.Amount;
+                TempData["Amount"] = donation.Amount.ToString(CultureInfo.InvariantCulture);
                 TempData["Currency"] = donation.Currency;
                 TempData["DonationType"] = donation.DonationType;
                 TempData["TransactionRef"] = donation.TransactionReference;
@@ -209,9 +210,14 @@ namespace GiftOfTheGivers.Controllers
                 .FirstOrDefaultAsync(d => d.Id == id);
 
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (donation == null || (donation.DonorId != userId && !User.IsInRole("Employee")))
+            if (donation == null)
             {
                 return NotFound();
+            }
+
+            if (donation.DonorId != userId && !User.IsInRole("Employee"))
+            {
+                return StatusCode(403);
             }
 
             await _auditService.LogAsync(userId!, "CertificateViewed", nameof(Donation), donation.Id);
@@ -238,9 +244,14 @@ namespace GiftOfTheGivers.Controllers
                 .FirstOrDefaultAsync(d => d.Id == id);
 
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (donation == null || (donation.DonorId != userId && !User.IsInRole("Employee")))
+            if (donation == null)
             {
                 return NotFound();
+            }
+
+            if (donation.DonorId != userId && !User.IsInRole("Employee"))
+            {
+                return StatusCode(403);
             }
 
             await _auditService.LogAsync(userId!, "CertificateDownloaded", nameof(Donation), donation.Id);
