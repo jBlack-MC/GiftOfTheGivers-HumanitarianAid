@@ -13,12 +13,14 @@ public sealed class GenerateTaxCertificateFunction(
     ApplicationDbContext context,
     ILogger<GenerateTaxCertificateFunction> logger)
 {
-    [Function(nameof(GenerateTaxCertificateFunction))]
-    public async Task<HttpResponseData> Run(
+    [Function(nameof(GenerateTaxCertificate))]
+    public async Task<HttpResponseData> GenerateTaxCertificate(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = "tax-certificates/{donationId}")]
         HttpRequestData request,
         string donationId)
     {
+        logger.LogInformation("Received tax certificate request for donation {DonationId}.", donationId);
+
         if (!int.TryParse(donationId, NumberStyles.None, CultureInfo.InvariantCulture, out var id) || id <= 0)
         {
             logger.LogWarning("Rejected invalid tax certificate donation ID {DonationId}.", donationId);

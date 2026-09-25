@@ -95,19 +95,72 @@ The workflow uses `git push --mirror`, so deleted GitHub branches and tags are
 also deleted from the Azure DevOps mirror. Do not make independent changes in
 the Azure DevOps repository.
 
+### Publish NuGet package to Azure Artifacts
+
+The repository includes a GitHub Actions workflow (`Publish Helpers Package to Azure Artifacts`) that packs and publishes `GiftOfTheGivers.Helpers` to Azure Artifacts.
+
+1. Create an Azure DevOps PAT with **Packaging: Read & write** permission.
+2. Add these GitHub repository secrets under **Settings → Secrets and variables → Actions**:
+   - `AZURE_ARTIFACTS_NUGET_URL`: your feed source URL (for example, `https://pkgs.dev.azure.com/ORG/_packaging/FEED/nuget/v3/index.json`)
+   - `AZURE_ARTIFACTS_PAT`: the Azure DevOps PAT
+3. Push a tag in this format to publish a specific package version:
+
+   ```bash
+   git tag helpers-v1.0.1
+   git push origin helpers-v1.0.1
+   ```
+
+You can also run the workflow manually from the Actions tab and provide `package_version`.
+
+### Azure Pipelines + Azure Environment deployment
+
+The repository contains `azure-pipelines.yml` so the mirrored Azure DevOps repo can build/test automatically, publish an artifact, and deploy from `main` to an Azure DevOps environment.
+
+1. In Azure DevOps, open the mirrored repo and create a pipeline from existing YAML: `azure-pipelines.yml`.
+2. Create or confirm an Azure Resource Manager service connection that can deploy to your App Service.
+3. In the pipeline variables, set:
+   - `azureServiceConnection` = your service connection name
+   - `azureWebAppName` = your Azure App Service name
+4. In Azure DevOps, create an environment named `giftgivers-dev` (Pipelines → Environments).
+5. Push to GitHub `main`.
+
+Flow after setup:
+- GitHub push triggers `Mirror to Azure DevOps`
+- Azure DevOps receives the mirrored commit
+- `azure-pipelines.yml` runs CI
+- If branch is `main` and deployment variables are set, it deploys to `giftgivers-dev`
+
 ### Prerequisites
 
-- .NET 10 SDK
-- Visual Studio 2026 (or compatible IDE)
-- Access to the team's Azure SQL Database (see [DATABASE_SETUP.md](DATABASE_SETUP.md))
+- **.NET 10 SDK** — version is pinned in [global.json](global.json) (currently `10.0.401`); `dotnet build` will fail fast with a clear error if it's missing instead of silently using a different SDK.
+- **SQL Server** — either **LocalDB** (ships with Visual Studio, Windows-only) or access to the team's **Azure SQL Database** (see [DATABASE_SETUP.md](DATABASE_SETUP.md)). Mac/Linux contributors should use the [Docker Compose](#docker-app--sql-server) setup instead of LocalDB.
+- **EF Core tools** — `dotnet-ef` is pinned as a local tool in [.config/dotnet-tools.json](.config/dotnet-tools.json); `dotnet tool restore` installs the exact version the team uses (no need to `dotnet tool install --global`).
+- Visual Studio 2026 (or compatible IDE) — optional, any editor works.
 
 ### Installation
+
+**Option A — one-time setup script (recommended)**
+
+```powershell
+# Windows
+.\setup.ps1
+```
+
+```bash
+# Mac/Linux
+chmod +x setup.sh
+./setup.sh
+```
+
+This restores NuGet packages (using the committed `packages.lock.json` files, so everyone gets identical package versions), restores the `dotnet-ef` local tool, and applies EF Core migrations to LocalDB. It prints the run command and demo login at the end.
+
+**Option B — manual steps**
 
 1. **Clone the repository**
 
    ```bash
    git clone <your-repo-url>
-   cd GiftOfTheGivers
+   cd GiftOfTheGivers-HumanitarianAid
    ```
 
 2. **Restore dependencies**
@@ -116,20 +169,47 @@ the Azure DevOps repository.
    dotnet restore
    ```
 
-3. **Set up the database connection**
-   - This project uses Azure SQL. See [DATABASE_SETUP.md](DATABASE_SETUP.md) for how to get the connection string and store it with `dotnet user-secrets` (never edit `appsettings.json` directly — this repo is public).
-
-4. **Run the application**
+3. **Restore local dotnet tools**
 
    ```bash
-   dotnet run
+   dotnet tool restore
    ```
 
-   Pending migrations are applied automatically on startup — no separate migration step needed.
+4. **Set up the database connection**
+   - The default connection string in `appsettings.json` points at LocalDB, which works out of the box on Windows.
+   - To use Azure SQL instead, see [DATABASE_SETUP.md](DATABASE_SETUP.md) for how to get the connection string (never edit `appsettings.json` directly — this repo is public; use `dotnet user-secrets` instead, see below).
 
-5. **Access the application**
+5. **Apply EF Core migrations**
+
+   ```bash
+   dotnet ef database update --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj
+   ```
+
+   (Pending migrations are also applied automatically on startup, so this step is optional if you're fine letting `dotnet run` do it.)
+
+6. **Run the application**
+
+   ```bash
+   dotnet run --project GiftOfTheGivers/GiftOfTheGivers.csproj
+   ```
+
+7. **Access the application**
    - Browse to the URL shown in the console (e.g. `http://localhost:5106`)
    - Sign in with one of the [demo accounts](#demo--seeded-accounts) above, or [register](#how-registration-works) your own
+
+### Managing local secrets
+
+Never commit real connection strings or API keys — `appsettings.json` is public. Use [.NET user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) to store your own PayFast/SendGrid keys (or an Azure SQL connection string) locally; they're stored outside the repo and never get pushed.
+
+```bash
+cd GiftOfTheGivers
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<your-azure-sql-connection-string>"
+dotnet user-secrets set "PayFast:MerchantId" "<your-merchant-id>"
+dotnet user-secrets set "SendGrid:ApiKey" "<your-sendgrid-key>"
+```
+
+See [DATABASE_SETUP.md](DATABASE_SETUP.md) for the exact keys the app reads.
 
 ### Docker (app + SQL Server)
 
@@ -236,7 +316,7 @@ This is a student project created for educational purposes.
 
 ## 👥 Contributing
 
-This is an academic project. For questions or suggestions, please contact the development team.
+This is an academic project. For questions or suggestions, please contact the development team. See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming and workflow conventions.
 
 ## 🙏 Acknowledgments
 

@@ -14,22 +14,76 @@ pool:
 
 variables:
   buildConfiguration: Release
+  # Set these in Azure DevOps Pipeline variables to enable deployment.
+  azureServiceConnection: ''
+  azureWebAppName: ''
 
-steps:
-  - task: UseDotNet@2
-    displayName: Install .NET SDK
-    inputs:
-      packageType: sdk
-      version: 10.x
+stages:
+  - stage: BuildAndTest
+    displayName: Build and test
+    jobs:
+      - job: Build
+        displayName: Restore, build, test, and publish artifact
+        steps:
+          - task: UseDotNet@2
+            displayName: Install .NET SDK
+            inputs:
+              packageType: sdk
+              version: 10.x
 
-  - script: dotnet restore GiftOfTheGivers.slnx
-    displayName: Restore dependencies
+          - task: NuGetAuthenticate@1
+            displayName: Authenticate to Azure Artifacts feeds
 
-  - script: dotnet build GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-restore
-    displayName: Build solution
+          - script: dotnet restore GiftOfTheGivers.slnx
+            displayName: Restore dependencies
 
-  - script: dotnet test GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-build --logger "trx;LogFileName=test-results.trx"
-    displayName: Run tests
+          - script: dotnet build GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-restore
+            displayName: Build solution
 
-  - script: dotnet list GiftOfTheGivers.slnx package --vulnerable --include-transitive
-    displayName: Check vulnerable packages
+          - script: dotnet test GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-build --logger "trx;LogFileName=test-results.trx"
+            displayName: Run tests
+
+          - script: dotnet list GiftOfTheGivers.slnx package --vulnerable --include-transitive
+            displayName: Check vulnerable packages
+
+          - script: dotnet publish GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/webapp
+            displayName: Publish web app files
+
+          - task: ArchiveFiles@2
+            displayName: Archive web app files
+            inputs:
+              rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/webapp'
+              includeRootFolder: false
+              archiveType: zip
+              archiveFile: '$(Build.ArtifactStagingDirectory)/webapp.zip'
+              replaceExistingArchive: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish artifact
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/webapp.zip'
+              ArtifactName: webapp
+              publishLocation: Container
+
+  - stage: DeployDev
+    displayName: Deploy to Azure App Service (dev)
+    dependsOn: BuildAndTest
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['azureServiceConnection'], ''), ne(variables['azureWebAppName'], ''))
+    jobs:
+      - deployment: DeployWebApp
+        displayName: Deploy web app
+        environment: giftgivers-dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: webapp
+
+                - task: AzureWebApp@1
+                  displayName: Deploy artifact to Azure Web App
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    appType: webApp
+                    appName: '$(azureWebAppName)'
+                    package: '$(Pipeline.Workspace)/webapp/webapp.zip'
