@@ -97,20 +97,21 @@ the Azure DevOps repository.
 
 ### Publish NuGet package to Azure Artifacts
 
-The repository includes a GitHub Actions workflow (`Publish Helpers Package to Azure Artifacts`) that packs and publishes `GiftOfTheGivers.Helpers` to Azure Artifacts.
+The repository includes a GitHub Actions workflow (`Publish Helpers Package to Azure Artifacts`) that packs and publishes `GiftOfTheGivers.Helpers` to this feed:
+
+- `https://pkgs.dev.azure.com/ST10438928/663d5a52-1332-4463-92cb-b12591f7fde0/_packaging/giftgivers-helpers/nuget/v3/index.json`
 
 1. Create an Azure DevOps PAT with **Packaging: Read & write** permission.
-2. Add these GitHub repository secrets under **Settings → Secrets and variables → Actions**:
-   - `AZURE_ARTIFACTS_NUGET_URL`: your feed source URL (for example, `https://pkgs.dev.azure.com/ORG/_packaging/FEED/nuget/v3/index.json`)
+2. Add this GitHub repository secret under **Settings → Secrets and variables → Actions**:
    - `AZURE_ARTIFACTS_PAT`: the Azure DevOps PAT
-3. Push a tag in this format to publish a specific package version:
+3. Push `main` to publish an automatic CI package (`1.0.0-ci.<runNumber>`), or push a version tag to publish a fixed version:
 
    ```bash
    git tag helpers-v1.0.1
    git push origin helpers-v1.0.1
    ```
 
-You can also run the workflow manually from the Actions tab and provide `package_version`.
+If you do not see packages in Azure DevOps Artifacts, open GitHub **Actions** and check the latest `Publish Helpers Package to Azure Artifacts` run first.
 
 ### Azure Pipelines + Azure Environment deployment
 

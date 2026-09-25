@@ -2,6 +2,8 @@ name: Publish Helpers Package to Azure Artifacts
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "helpers-v*"
   workflow_dispatch:
@@ -13,6 +15,9 @@ on:
 
 permissions:
   contents: read
+
+env:
+  AZURE_ARTIFACTS_NUGET_URL: "https://pkgs.dev.azure.com/ST10438928/663d5a52-1332-4463-92cb-b12591f7fde0/_packaging/giftgivers-helpers/nuget/v3/index.json"
 
 jobs:
   publish:
@@ -37,10 +42,20 @@ jobs:
           elif [[ -n "${{ inputs.package_version }}" ]]; then
             resolved="${{ inputs.package_version }}"
           else
-            resolved="0.0.0-ci.${GITHUB_RUN_NUMBER}"
+            resolved="1.0.0-ci.${GITHUB_RUN_NUMBER}"
           fi
 
           echo "package_version=$resolved" >> "$GITHUB_OUTPUT"
+
+      - name: Validate required secret
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${{ secrets.AZURE_ARTIFACTS_PAT }}" ]]; then
+            echo "AZURE_ARTIFACTS_PAT is not configured"
+            exit 1
+          fi
 
       - name: Pack GiftOfTheGivers.Helpers
         run: |
@@ -51,8 +66,8 @@ jobs:
 
       - name: Add Azure Artifacts source
         run: |
-          dotnet nuget add source "${{ secrets.AZURE_ARTIFACTS_NUGET_URL }}" \
-            --name "azure-artifacts" \
+          dotnet nuget add source "$AZURE_ARTIFACTS_NUGET_URL" \
+            --name "giftgivers-helpers" \
             --username "github-actions" \
             --password "${{ secrets.AZURE_ARTIFACTS_PAT }}" \
             --store-password-in-clear-text
@@ -60,5 +75,5 @@ jobs:
       - name: Push package
         run: |
           dotnet nuget push "./artifacts/nuget/*.nupkg" \
-            --source "azure-artifacts" \
+            --source "giftgivers-helpers" \
             --skip-duplicate
