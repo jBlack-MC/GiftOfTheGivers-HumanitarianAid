@@ -216,4 +216,6 @@ This is an academic project. For questions or suggestions, please contact the de
 
 ---
 
-**Note**: This is Part 1 of the project - a prototype implementation with dummy payment processing and placeholder features. Real payment gateway integration and production security features would be added in future phases.
+**Note**: This is an educational project. Payment processing, email delivery,
+and production hardening depend on environment-specific configuration and
+must be verified before production use.
