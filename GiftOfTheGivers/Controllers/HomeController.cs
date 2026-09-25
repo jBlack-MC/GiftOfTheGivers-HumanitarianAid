@@ -210,9 +210,14 @@ namespace GiftOfTheGivers.Controllers
                 .FirstOrDefaultAsync(d => d.Id == id);
 
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (donation == null || (donation.DonorId != userId && !User.IsInRole("Employee")))
+            if (donation == null)
             {
                 return NotFound();
+            }
+
+            if (donation.DonorId != userId && !User.IsInRole("Employee"))
+            {
+                return StatusCode(403);
             }
 
             await _auditService.LogAsync(userId!, "CertificateViewed", nameof(Donation), donation.Id);
@@ -239,9 +244,14 @@ namespace GiftOfTheGivers.Controllers
                 .FirstOrDefaultAsync(d => d.Id == id);
 
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (donation == null || (donation.DonorId != userId && !User.IsInRole("Employee")))
+            if (donation == null)
             {
                 return NotFound();
+            }
+
+            if (donation.DonorId != userId && !User.IsInRole("Employee"))
+            {
+                return StatusCode(403);
             }
 
             await _auditService.LogAsync(userId!, "CertificateDownloaded", nameof(Donation), donation.Id);

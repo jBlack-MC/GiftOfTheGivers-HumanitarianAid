@@ -67,11 +67,17 @@
 
                     <!-- Action Buttons -->
                     <div class="d-grid gap-2 mt-4">
-                        @if (donationId != null)
+                        @if (donationId != null && User.Identity?.IsAuthenticated == true && (User.IsInRole("Donor") || User.IsInRole("Employee")))
                         {
                             <a asp-controller="Home" asp-action="TaxCertificate" asp-route-id="@donationId" 
                                class="btn btn-success btn-lg">
                                 <i class="bi bi-file-earmark-check-fill me-2"></i>View Tax Certificate
+                            </a>
+                        }
+                        else if (donationId != null)
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-success btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign in to view tax certificate
                             </a>
                         }
                         else
