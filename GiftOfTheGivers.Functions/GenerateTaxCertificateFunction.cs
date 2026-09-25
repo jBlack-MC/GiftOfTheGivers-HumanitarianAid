@@ -15,7 +15,7 @@ public sealed class GenerateTaxCertificateFunction(
 {
     [Function(nameof(GenerateTaxCertificate))]
     public async Task<HttpResponseData> GenerateTaxCertificate(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "tax-certificates/{donationId}")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "tax-certificate/{donationId}")]
         HttpRequestData request,
         string donationId)
     {
