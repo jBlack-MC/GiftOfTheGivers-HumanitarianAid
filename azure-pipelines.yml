@@ -14,6 +14,7 @@ pool:
 
 variables:
   buildConfiguration: Release
+  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -41,17 +42,19 @@ stages:
               restoreKeys: |
                 nuget | "$(Agent.OS)"
               path: $(NUGET_PACKAGES)
-            env:
-              NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
 
           - task: NuGetAuthenticate@1
             displayName: Authenticate to Azure Artifacts feeds
 
           - script: dotnet restore GiftOfTheGivers.slnx
             displayName: Restore dependencies
+            env:
+              NUGET_PACKAGES: $(NUGET_PACKAGES)
 
           - script: dotnet build GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-restore
             displayName: Build solution
+            env:
+              NUGET_PACKAGES: $(NUGET_PACKAGES)
 
           - script: >
               dotnet test GiftOfTheGivers.slnx
@@ -60,6 +63,8 @@ stages:
               --logger "trx;LogFileName=test-results.trx"
               --results-directory $(Agent.TempDirectory)/TestResults
             displayName: Run tests
+            env:
+              NUGET_PACKAGES: $(NUGET_PACKAGES)
 
           - task: PublishTestResults@2
             displayName: Publish test results
@@ -79,9 +84,13 @@ stages:
                 exit 1
               fi
             displayName: Check vulnerable packages
+            env:
+              NUGET_PACKAGES: $(NUGET_PACKAGES)
 
           - script: dotnet publish GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/webapp
             displayName: Publish web app files
+            env:
+              NUGET_PACKAGES: $(NUGET_PACKAGES)
 
           - task: ArchiveFiles@2
             displayName: Archive web app files

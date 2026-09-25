@@ -83,6 +83,7 @@ ScaffoldingReadMe.txt
 **/Migrations/backup/
 
 # Local connection strings (if applicable)
+.env
 appsettings.Development.json
 appsettings.Local.json
 
