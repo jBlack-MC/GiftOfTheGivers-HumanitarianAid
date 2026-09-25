@@ -16,11 +16,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Normalize image repository name
+        id: image
         shell: bash
-        run: echo "IMAGE_REPOSITORY=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+        run: echo "repository=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: GiftOfTheGivers/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ github.sha }}
+          tags: ghcr.io/${{ steps.image.outputs.repository }}:${{ github.sha }}
