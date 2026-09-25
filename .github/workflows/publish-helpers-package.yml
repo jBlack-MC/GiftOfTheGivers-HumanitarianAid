@@ -47,17 +47,21 @@ jobs:
 
           echo "package_version=$resolved" >> "$GITHUB_OUTPUT"
 
-      - name: Validate required secret
+      - name: Check publish credentials
+        id: publish-credentials
         shell: bash
         run: |
           set -euo pipefail
 
           if [[ -z "${{ secrets.AZURE_ARTIFACTS_PAT }}" ]]; then
-            echo "AZURE_ARTIFACTS_PAT is not configured"
-            exit 1
+            echo "::warning::AZURE_ARTIFACTS_PAT is not configured. Skipping package publish."
+            echo "can_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "can_publish=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Pack GiftOfTheGivers.Helpers
+        if: steps.publish-credentials.outputs.can_publish == 'true'
         run: |
           dotnet pack ./GiftOfTheGivers.Helpers/GiftOfTheGivers.Helpers.csproj \
             --configuration Release \
@@ -65,6 +69,7 @@ jobs:
             -p:PackageVersion=${{ steps.version.outputs.package_version }}
 
       - name: Add Azure Artifacts source
+        if: steps.publish-credentials.outputs.can_publish == 'true'
         run: |
           dotnet nuget add source "$AZURE_ARTIFACTS_NUGET_URL" \
             --name "giftgivers-helpers" \
@@ -73,6 +78,7 @@ jobs:
             --store-password-in-clear-text
 
       - name: Push package
+        if: steps.publish-credentials.outputs.can_publish == 'true'
         run: |
           dotnet nuget push "./artifacts/nuget/*.nupkg" \
             --source "giftgivers-helpers" \
