@@ -37,6 +37,10 @@ diag*.txt
 # Visual Studio Code
 .vscode/
 
+# Local AI assistant state
+.claude/
+.copilot/
+
 # JetBrains Rider
 .idea/
 *.sln.iml
@@ -79,6 +83,7 @@ ScaffoldingReadMe.txt
 **/Migrations/backup/
 
 # Local connection strings (if applicable)
+.env
 appsettings.Development.json
 appsettings.Local.json
 
