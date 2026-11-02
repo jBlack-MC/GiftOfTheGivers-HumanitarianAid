@@ -17,7 +17,7 @@ namespace GiftOfTheGivers.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -105,11 +105,17 @@ namespace GiftOfTheGivers.Data.Migrations
 
                     b.Property<string>("Action")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("TargetEntity")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("TargetId")
                         .HasColumnType("int");
@@ -119,7 +125,8 @@ namespace GiftOfTheGivers.Data.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -139,6 +146,10 @@ namespace GiftOfTheGivers.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AmountZar")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -162,6 +173,14 @@ namespace GiftOfTheGivers.Data.Migrations
                     b.Property<string>("DonorId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("DonorName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("ExchangeRateToZar")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
                     b.Property<Guid>("IdempotencyKey")
                         .HasColumnType("uniqueidentifier");
 
@@ -179,6 +198,16 @@ namespace GiftOfTheGivers.Data.Migrations
 
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("PaymentVerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("PrivacyConsentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProviderPaymentId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int?>("ReliefProjectId")
                         .HasColumnType("int");
@@ -205,11 +234,19 @@ namespace GiftOfTheGivers.Data.Migrations
 
                     b.HasIndex("DonorId", "DonationDate");
 
+                    b.HasIndex("PaymentStatus", "DonationDate");
+
                     b.ToTable("Donations", t =>
                         {
                             t.HasCheckConstraint("CK_Donation_Amount", "[Amount] > 0");
 
+                            t.HasCheckConstraint("CK_Donation_AmountZar", "[AmountZar] > 0");
+
                             t.HasCheckConstraint("CK_Donation_Currency", "[Currency] IN ('ZAR','USD','EUR')");
+
+                            t.HasCheckConstraint("CK_Donation_ExchangeRate", "[ExchangeRateToZar] > 0");
+
+                            t.HasCheckConstraint("CK_Donation_PaymentMethod", "[PaymentMethod] IN ('Card','EFT','Cash')");
 
                             t.HasCheckConstraint("CK_Donation_Type", "[DonationType] IN ('OneTime','Recurring')");
                         });
@@ -240,6 +277,9 @@ namespace GiftOfTheGivers.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("PrivacyConsentAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -336,6 +376,10 @@ namespace GiftOfTheGivers.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<decimal>("OfflineFundsZar")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -363,6 +407,8 @@ namespace GiftOfTheGivers.Data.Migrations
                             t.HasCheckConstraint("CK_ReliefProject_Dates", "[EndDate] IS NULL OR [EndDate] >= [StartDate]");
 
                             t.HasCheckConstraint("CK_ReliefProject_FundsRequired_NonNegative", "[FundsRequired] >= 0");
+
+                            t.HasCheckConstraint("CK_ReliefProject_OfflineFunds_NonNegative", "[OfflineFundsZar] >= 0");
 
                             t.HasCheckConstraint("CK_ReliefProject_Status", "[Status] IN ('Active','Completed','Suspended')");
                         });
@@ -394,7 +440,7 @@ namespace GiftOfTheGivers.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -403,10 +449,12 @@ namespace GiftOfTheGivers.Data.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("EmergencyContactName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("EmergencyContactPhone")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -422,13 +470,15 @@ namespace GiftOfTheGivers.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("PostalCode")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("PrivacyConsentAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Province")
                         .HasMaxLength(50)
@@ -486,6 +536,25 @@ namespace GiftOfTheGivers.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("VolunteerAssignments");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

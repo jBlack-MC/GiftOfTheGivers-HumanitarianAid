@@ -28,7 +28,7 @@
                             <strong>Donation Date:</strong>
                         </div>
                         <div class="col-sm-8">
-                            @Model.DonationDate.ToString("dddd, MMMM dd, yyyy hh:mm tt")
+                            @Model.DonationDate.ToString("dddd, dd MMMM yyyy HH:mm") UTC
                         </div>
                     </div>
 
@@ -37,7 +37,20 @@
                             <strong>Amount:</strong>
                         </div>
                         <div class="col-sm-8">
-                            <span class="fs-4 fw-bold text-success">@Model.Amount.ToString("C")</span>
+                            <span class="fs-4 fw-bold text-success">@Money.Format(Model.Amount, Model.Currency)</span>
+                            @if (Model.Currency != "ZAR")
+                            {
+                                <div class="small text-muted">@Money.Zar(Model.AmountZar) at R @Model.ExchangeRateToZar.ToString("0.####") per @Model.Currency</div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Payment Status:</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <partial name="_PaymentStatusBadge" model="Model.PaymentStatus" />
                         </div>
                     </div>
 
@@ -95,13 +108,13 @@
                             <strong>Tax Certificate:</strong>
                         </div>
                         <div class="col-sm-8">
-                            @if (Model.TaxCertificateIssued)
+                            @if (Model.PaymentStatus == PaymentStatus.Verified)
                             {
-                                <span class="badge bg-success">Issued</span>
+                                <span class="badge bg-success">Available</span>
                             }
                             else
                             {
-                                <span class="badge bg-warning text-dark">Not Yet Issued</span>
+                                <span class="badge bg-secondary">Available once payment is confirmed</span>
                             }
                         </div>
                     </div>
@@ -109,9 +122,12 @@
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
                         <a asp-action="MyDonations" class="btn btn-secondary">Back to My Donations</a>
-                        <a asp-action="TaxCertificate" asp-route-id="@Model.Id" class="btn btn-success">
-                            <i class="bi bi-file-earmark-text"></i> View Tax Certificate
-                        </a>
+                        @if (Model.PaymentStatus == PaymentStatus.Verified)
+                        {
+                            <a asp-action="TaxCertificate" asp-route-id="@Model.Id" class="btn btn-success">
+                                <i class="bi bi-file-earmark-text" aria-hidden="true"></i> View Tax Certificate
+                            </a>
+                        }
                     </div>
                 </div>
             </div>
@@ -119,7 +135,7 @@
             <div class="alert alert-info mt-4">
                 <h5 class="alert-heading">Thank You!</h5>
                 <p class="mb-0">
-                    Your generous donation of <strong>@Model.Amount.ToString("C")</strong> helps us continue our mission 
+                    Your generous donation of <strong>@Money.Format(Model.Amount, Model.Currency)</strong> helps us continue our mission 
                     of providing relief and hope to communities in need.
                 </p>
             </div>

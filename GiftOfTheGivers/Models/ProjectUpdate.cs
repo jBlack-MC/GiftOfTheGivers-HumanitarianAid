@@ -31,7 +31,7 @@ namespace GiftOfTheGivers.Models
         [ForeignKey(nameof(PostedByUserId))]
         public AppUser? PostedByUser { get; set; }
 
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public DateTime? LastModifiedDate { get; set; }
     }

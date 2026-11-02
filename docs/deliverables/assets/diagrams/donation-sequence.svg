@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5">
+  <title>Donation and payment verification sequence</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1B2430"/></marker>
+    <style>
+      .h{fill:#155E9E;rx:6}.ht{fill:#fff;font-weight:600}
+      .life{stroke:#BBD6EA;stroke-width:2;stroke-dasharray:6 4}
+      .m{stroke:#1B2430;stroke-width:1.4;marker-end:url(#a)}
+      .r{stroke:#1B2430;stroke-width:1.2;stroke-dasharray:5 3;marker-end:url(#a)}
+      .t{fill:#1B2430}.n{fill:#6B7684;font-size:11px}
+      .note{fill:#FDF1E7;stroke:#E8833A}
+      .ok{fill:#E8F5EE;stroke:#2E8B57}
+    </style>
+  </defs>
+  <rect x="20" y="16" width="140" height="34" class="h"/><text x="90" y="38" text-anchor="middle" class="ht">Donor (browser)</text>
+  <rect x="250" y="16" width="160" height="34" class="h"/><text x="330" y="38" text-anchor="middle" class="ht">HomeController</text>
+  <rect x="470" y="16" width="160" height="34" class="h"/><text x="550" y="38" text-anchor="middle" class="ht">DonationService + DB</text>
+  <rect x="690" y="16" width="120" height="34" class="h"/><text x="750" y="38" text-anchor="middle" class="ht">PayFast</text>
+  <rect x="840" y="16" width="110" height="34" class="h"/><text x="895" y="38" text-anchor="middle" class="ht">Payments ctrl</text>
+  <line x1="90" y1="50" x2="90" y2="600" class="life"/>
+  <line x1="330" y1="50" x2="330" y2="600" class="life"/>
+  <line x1="550" y1="50" x2="550" y2="600" class="life"/>
+  <line x1="750" y1="50" x2="750" y2="600" class="life"/>
+  <line x1="895" y1="50" x2="895" y2="600" class="life"/>
+
+  <line x1="90" y1="80" x2="326" y2="80" class="m"/><text x="100" y="74" class="t">1. POST /Home/Donate (anti-forgery, consent)</text>
+  <line x1="330" y1="110" x2="546" y2="110" class="m"/><text x="340" y="104" class="t">2. CaptureAsync(model)</text>
+  <rect x="560" y="96" width="185" height="70" class="note"/>
+  <text x="568" y="114" class="t">Idempotency key check</text>
+  <text x="568" y="130" class="t">Project must be Active</text>
+  <text x="568" y="146" class="t">AmountZar = Amount × rate</text>
+  <text x="568" y="162" class="t">INSERT Donation (Pending)</text>
+  <line x1="546" y1="182" x2="334" y2="182" class="r"/><text x="360" y="176" class="n">Created (FundsRaised unchanged)</text>
+  <line x1="330" y1="212" x2="94" y2="212" class="r"/><text x="110" y="206" class="t">3. 302 → signed PayFast URL (rand amount)</text>
+  <line x1="90" y1="244" x2="746" y2="244" class="m"/><text x="300" y="238" class="t">4. Donor pays on PayFast (card / EFT)</text>
+
+  <line x1="750" y1="284" x2="899" y2="284" class="m"/><text x="756" y="278" class="t">5. ITN POST /Payments/Notify</text>
+  <line x1="895" y1="314" x2="754" y2="314" class="m"/><text x="760" y="308" class="t">6. signature + /validate</text>
+  <line x1="750" y1="338" x2="891" y2="338" class="r"/><text x="800" y="352" class="n">VALID</text>
+  <line x1="895" y1="370" x2="554" y2="370" class="m"/><text x="600" y="364" class="t">7. ApplyPaymentNotificationAsync</text>
+  <rect x="380" y="384" width="330" height="104" class="ok"/>
+  <text x="390" y="402" class="t">merchant_id must match · amount_gross = AmountZar</text>
+  <text x="390" y="420" class="t">already Verified → no-op (replay safe)</text>
+  <text x="390" y="438" class="t">COMPLETE → Verified, FundsRaised += AmountZar</text>
+  <text x="390" y="456" class="t">FAILED/CANCELLED → Failed (totals untouched)</text>
+  <text x="390" y="474" class="t">audit PaymentVerified · rowversion retry ×3</text>
+  <line x1="895" y1="506" x2="754" y2="506" class="r"/><text x="770" y="500" class="n">200 OK (email sent)</text>
+
+  <line x1="750" y1="540" x2="94" y2="540" class="m"/><text x="200" y="534" class="t">8. Return to /Donate/Confirmation?reference=… (status shown live)</text>
+  <line x1="90" y1="580" x2="546" y2="580" class="m"/><text x="100" y="574" class="t">9. Donor portal → certificate (Verified + owner only)</text>
+</svg>

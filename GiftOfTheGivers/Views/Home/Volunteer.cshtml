@@ -17,42 +17,84 @@
         <div class="col-lg-6 mx-auto">
             <div class="card shadow-lg border-0">
                 <div class="card-body p-5">
-                    <form asp-action="Volunteer" method="post">
-                        <!-- Full Name -->
+                    <form asp-action="Volunteer" method="post" novalidate>
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
                         <div class="mb-4">
-                            <label for="fullName" class="form-label fw-bold">Full Name</label>
-                            <input type="text" class="form-control form-control-lg" id="fullName" name="FullName" 
-                                   placeholder="Enter your full name" required>
+                            <label asp-for="FullName" class="form-label fw-bold"></label>
+                            <input asp-for="FullName" class="form-control form-control-lg" autocomplete="name" placeholder="Enter your full name" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
                         </div>
 
-                        <!-- Email -->
                         <div class="mb-4">
                             <label asp-for="Email" class="form-label fw-bold"></label>
-                            <input asp-for="Email" class="form-control form-control-lg" type="email" 
+                            <input asp-for="Email" class="form-control form-control-lg" type="email" autocomplete="email"
                                    placeholder="your.email@example.com" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
 
-                        <!-- Skills -->
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="PhoneNumber" class="form-label fw-bold"></label>
+                                <input asp-for="PhoneNumber" class="form-control" type="tel" autocomplete="tel" placeholder="e.g. 082 123 4567" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="City" class="form-label fw-bold"></label>
+                                <input asp-for="City" class="form-control" autocomplete="address-level2" />
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                        </div>
+
                         <div class="mb-4">
                             <label asp-for="Skills" class="form-label fw-bold"></label>
-                            <textarea asp-for="Skills" class="form-control" rows="4" 
+                            <textarea asp-for="Skills" class="form-control" rows="4"
                                       placeholder="e.g., Medical training, logistics, IT support, community outreach..."></textarea>
                             <span asp-validation-for="Skills" class="text-danger"></span>
                         </div>
 
-                        <!-- Availability -->
                         <div class="mb-4">
                             <label asp-for="Availability" class="form-label fw-bold"></label>
-                            <input asp-for="Availability" class="form-control form-control-lg" 
+                            <input asp-for="Availability" class="form-control form-control-lg"
                                    placeholder="e.g., Weekdays, Weekends, Anytime, Specific dates..." />
                             <span asp-validation-for="Availability" class="text-danger"></span>
                         </div>
 
-                        <!-- Submit Button -->
+                        <details class="mb-4">
+                            <summary class="fw-bold">Optional details (helps us plan deployments)</summary>
+                            <div class="mt-3">
+                                <div class="mb-3">
+                                    <label asp-for="DateOfBirth" class="form-label"></label>
+                                    <input asp-for="DateOfBirth" class="form-control" type="date" />
+                                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="EmergencyContactName" class="form-label"></label>
+                                        <input asp-for="EmergencyContactName" class="form-control" />
+                                        <span asp-validation-for="EmergencyContactName" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="EmergencyContactPhone" class="form-label"></label>
+                                        <input asp-for="EmergencyContactPhone" class="form-control" type="tel" />
+                                        <span asp-validation-for="EmergencyContactPhone" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <p class="small text-muted mb-0">Only give an emergency contact's details if they have agreed to it.</p>
+                            </div>
+                        </details>
+
+                        <div class="mb-4 form-check">
+                            <input asp-for="PrivacyConsent" class="form-check-input" type="checkbox" />
+                            <label asp-for="PrivacyConsent" class="form-check-label">
+                                I have read the <a asp-action="Privacy" target="_blank" rel="noopener">privacy notice</a> and agree to my details being used to assess and coordinate my volunteering.
+                            </label>
+                            <span asp-validation-for="PrivacyConsent" class="text-danger d-block"></span>
+                        </div>
+
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-hand-thumbs-up-fill me-2"></i>REGISTER INTEREST
+                                <i class="bi bi-hand-thumbs-up-fill me-2" aria-hidden="true"></i>REGISTER INTEREST
                             </button>
                             <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
                         </div>
@@ -60,10 +102,9 @@
                 </div>
             </div>
 
-            <!-- Additional Info Card -->
             <div class="card mt-4 border-0 bg-light">
                 <div class="card-body">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i>What Happens Next?</h6>
+                    <h2 class="h6 fw-bold mb-3"><i class="bi bi-info-circle-fill text-primary me-2" aria-hidden="true"></i>What Happens Next?</h2>
                     <ul class="small mb-0">
                         <li>We'll review your application</li>
                         <li>You'll be contacted for an orientation session</li>

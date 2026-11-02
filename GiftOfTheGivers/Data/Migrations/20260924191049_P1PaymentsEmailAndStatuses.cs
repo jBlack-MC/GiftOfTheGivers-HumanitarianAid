@@ -37,17 +37,11 @@ namespace GiftOfTheGivers.Data.Migrations
                 oldType: "nvarchar(50)",
                 oldMaxLength: 50);
 
-            migrationBuilder.AlterColumn<byte[]>(
-                name: "RowVersion",
-                table: "ReliefProjects",
-                type: "rowversion",
-                rowVersion: true,
-                nullable: false,
-                defaultValue: new byte[0],
-                oldClrType: typeof(byte[]),
-                oldType: "rowversion",
-                oldRowVersion: true,
-                oldNullable: true);
+            // Audit fix (AUD-2026-11-01, F-21): the scaffolded AlterColumn on ReliefProjects.RowVersion
+            // (nullable -> non-nullable) was removed. SQL Server cannot ALTER a rowversion column
+            // ("Cannot alter column 'RowVersion' to be data type timestamp"), so this migration failed
+            // on every empty database. SQL Server always populates rowversion values, so the
+            // nullability flag has no practical effect and the model snapshot is unchanged.
 
             migrationBuilder.AddColumn<string>(
                 name: "DonorEmail",
@@ -190,15 +184,7 @@ namespace GiftOfTheGivers.Data.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
-            migrationBuilder.AlterColumn<byte[]>(
-                name: "RowVersion",
-                table: "ReliefProjects",
-                type: "rowversion",
-                rowVersion: true,
-                nullable: true,
-                oldClrType: typeof(byte[]),
-                oldType: "rowversion",
-                oldRowVersion: true);
+            // RowVersion AlterColumn intentionally omitted; see Up().
 
             migrationBuilder.AddCheckConstraint(
                 name: "CK_Volunteer_Status",

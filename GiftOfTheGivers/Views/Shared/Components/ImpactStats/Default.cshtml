@@ -1,0 +1,25 @@
+@model GiftOfTheGivers.Models.ViewModels.ImpactStatsViewModel
+<section class="py-5 bg-primary text-white" aria-labelledby="impact-heading">
+    <div class="container">
+        <h2 id="impact-heading" class="visually-hidden">Impact in numbers</h2>
+        <div class="row text-center g-4">
+            <div class="col-6 col-md-3">
+                <div class="display-5 fw-bold mb-2">@Model.ActiveProjects</div>
+                <div class="fs-5">Active Projects</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="display-5 fw-bold mb-2">@Money.Zar(Model.TotalRaisedZar, 0)</div>
+                <div class="fs-5">Raised Across Projects</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="display-5 fw-bold mb-2">@Model.VerifiedDonations</div>
+                <div class="fs-5">Confirmed Online Donations</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="display-5 fw-bold mb-2">@Model.ApprovedVolunteers</div>
+                <div class="fs-5">Approved Volunteers</div>
+            </div>
+        </div>
+        <p class="text-center small mt-4 mb-0 opacity-75">Live figures from this system. Funds raised include offline contributions recorded by staff.</p>
+    </div>
+</section>

@@ -10,7 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="local.settings.json" />
+    <!-- Local developer settings: copied for `func start`, never published or committed. -->
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

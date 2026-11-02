@@ -1,57 +1,82 @@
-@model IEnumerable<GiftOfTheGivers.Models.Donation>
+@model GiftOfTheGivers.Models.ViewModels.DonationsPageViewModel
 
 @{
     ViewData["Title"] = "Manage Donations";
+    var filters = new (PaymentStatus? Status, string Label)[]
+    {
+        (null, "All"), (PaymentStatus.Verified, "Paid"), (PaymentStatus.Pending, "Awaiting payment"), (PaymentStatus.Failed, "Failed")
+    };
+    var route = new Dictionary<string, string?> { ["status"] = Model.StatusFilter?.ToString() };
 }
 
 <div class="container my-5">
-    <h1 class="display-4 mb-4">Donations Management</h1>
-    <p class="lead">View and manage all donations received.</p>
+    <h1 class="display-4 mb-4">Donations</h1>
+    <p class="lead">All donations captured online. Only <strong>paid</strong> donations (confirmed by PayFast) count toward project totals.</p>
 
-    @if (Model.Any())
-    {
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Summary</h5>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-md-4">
-                        <h3>@Model.Count()</h3>
-                        <p class="text-muted">Total Donations</p>
-                    </div>
-                    <div class="col-md-4">
-                        <h3>@DonationCalculations.TotalAmount(Model.Select(d => d.Amount)).ToString("C")</h3>
-                        <p class="text-muted">Total Amount</p>
-                    </div>
-                    <div class="col-md-4">
-                        <h3>@DonationCalculations.AverageAmount(Model.Select(d => d.Amount)).ToString("C")</h3>
-                        <p class="text-muted">Average Donation</p>
-                    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">Summary (paid donations, in rand)</h2>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <p class="h3">@Model.VerifiedCount</p>
+                    <p class="text-muted">Paid donations</p>
+                </div>
+                <div class="col-md-3">
+                    <p class="h3">@Money.Zar(Model.VerifiedTotalZar)</p>
+                    <p class="text-muted">Total received</p>
+                </div>
+                <div class="col-md-3">
+                    <p class="h3">@Money.Zar(Model.VerifiedCount == 0 ? 0 : Model.VerifiedTotalZar / Model.VerifiedCount)</p>
+                    <p class="text-muted">Average donation</p>
+                </div>
+                <div class="col-md-3">
+                    <p class="h3">@Model.PendingCount</p>
+                    <p class="text-muted">Awaiting payment</p>
                 </div>
             </div>
         </div>
+    </div>
 
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <ul class="nav nav-pills" aria-label="Filter by payment status">
+            @foreach (var (status, label) in filters)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(Model.StatusFilter == status ? "active" : "")" asp-action="Donations" asp-route-status="@status"
+                       aria-current="@(Model.StatusFilter == status ? "page" : null)">@label</a>
+                </li>
+            }
+        </ul>
+        <a asp-action="ExportDonations" asp-route-status="@Model.StatusFilter" class="btn btn-outline-primary">
+            <i class="bi bi-filetype-csv me-1" aria-hidden="true"></i>Export CSV
+        </a>
+    </div>
+
+    @if (Model.Donations.TotalCount > 0)
+    {
         <div class="card shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table table-striped table-hover align-middle">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Donor</th>
-                                <th>Project</th>
-                                <th>Amount</th>
-                                <th>Payment Method</th>
-                                <th>Reference</th>
-                                <th>Tax Cert</th>
+                                <th scope="col">Date (UTC)</th>
+                                <th scope="col">Donor</th>
+                                <th scope="col">Project</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">ZAR</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Reference</th>
+                                <th scope="col"><span class="visually-hidden">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var donation in Model)
+                            @foreach (var donation in Model.Donations.Items)
                             {
                                 <tr>
-                                    <td>@donation.DonationDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@donation.DonationDate.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>
                                         @if (donation.IsAnonymous)
                                         {
@@ -59,53 +84,35 @@
                                         }
                                         else
                                         {
-                                            <span>@(donation.Donor?.UserName ?? "N/A")</span>
+                                            <span>@(donation.Donor?.FullName ?? donation.DonorName ?? "N/A")</span>
+                                            <br /><small class="text-muted">@(donation.Donor?.Email ?? donation.DonorEmail)</small>
                                         }
                                     </td>
+                                    <td>@(donation.ReliefProject?.Title ?? "General Fund")</td>
+                                    <td>@Money.Format(donation.Amount, donation.Currency)</td>
+                                    <td class="fw-bold">@Money.Zar(donation.AmountZar)</td>
+                                    <td><partial name="_PaymentStatusBadge" model="donation.PaymentStatus" /></td>
+                                    <td><small class="font-monospace">@donation.TransactionReference</small></td>
                                     <td>
-                                        @if (donation.ReliefProject != null)
+                                        @if (donation.PaymentStatus == PaymentStatus.Verified)
                                         {
-                                            <span>@donation.ReliefProject.Title</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">General</span>
-                                        }
-                                    </td>
-                                    <td class="fw-bold text-success">@donation.Amount.ToString("C")</td>
-                                    <td>@donation.PaymentMethod</td>
-                                    <td>
-                                        <small class="font-monospace">@donation.TransactionReference</small>
-                                    </td>
-                                    <td>
-                                        @if (donation.TaxCertificateIssued)
-                                        {
-                                            <span class="badge bg-success">Yes</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">No</span>
+                                            <a asp-controller="Donor" asp-action="TaxCertificate" asp-route-id="@donation.Id" class="btn btn-sm btn-outline-success">Certificate</a>
                                         }
                                     </td>
                                 </tr>
                             }
                         </tbody>
-                        <tfoot class="table-light">
-                            <tr>
-                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                                <td colspan="4"><strong>@DonationCalculations.TotalAmount(Model.Select(d => d.Amount)).ToString("C")</strong></td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
+                <partial name="_Pager" model="(Model.Donations.Page, Model.Donations.TotalPages, Model.Donations.TotalCount, (IDictionary<string, string?>)route)" />
             </div>
         </div>
     }
     else
     {
         <div class="alert alert-info">
-            <h4 class="alert-heading">No Donations Yet</h4>
-            <p>No donations have been received yet.</p>
+            <h2 class="h4 alert-heading">No donations</h2>
+            <p class="mb-0">No donations match this filter.</p>
         </div>
     }
 

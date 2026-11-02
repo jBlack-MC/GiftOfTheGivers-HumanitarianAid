@@ -1,21 +1,16 @@
+@model GiftOfTheGivers.Models.ViewModels.DonationReceiptViewModel
 @{
-    ViewData["Title"] = "Donation Confirmation";
-    var amount = ViewBag.Amount;
-    var currency = ViewBag.Currency ?? "ZAR";
-    var donationType = ViewBag.DonationType;
-    var transactionRef = ViewBag.TransactionRef;
-    var donationId = ViewBag.DonationId;
-
-    // Currency symbol mapping
-    var symbol = currency switch
+    ViewData["Title"] = "Donation Receipt";
+    var donation = Model.Donation;
+    var donationTypeDisplay = donation.DonationType == "Recurring" ? "Monthly pledge" : "One-time";
+    var (icon, iconCss, heading, message) = donation.PaymentStatus switch
     {
-        "USD" => "$",
-        "EUR" => "€",
-        _ => "R"
+        PaymentStatus.Verified => ("bi-check-circle-fill", "text-success", "THANK YOU", "Your payment has been confirmed."),
+        PaymentStatus.Failed => ("bi-x-circle-fill", "text-danger", "PAYMENT NOT COMPLETED", "PayFast reported that this payment did not go through. You have not been charged."),
+        _ => ("bi-hourglass-split", "text-warning", "THANK YOU", Model.PaymentsEnabled
+            ? "Your donation is recorded. We are waiting for PayFast to confirm the payment — this usually takes less than a minute. Refresh this page to check."
+            : "Your donation is recorded as awaiting payment. Online payments are switched off on this site, so nothing has been charged.")
     };
-
-    // Format donation type display
-    var donationTypeDisplay = donationType == "Recurring" ? "Recurring" : "One-time";
 }
 
 <div class="container my-5">
@@ -23,92 +18,79 @@
         <div class="col-lg-6 col-md-8 mx-auto">
             <div class="card shadow-lg border-0">
                 <div class="card-body p-5">
-                    <!-- Success Icon and Header -->
                     <div class="text-center mb-4">
-                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                        <h1 class="display-5 fw-bold mt-3 mb-2">THANK YOU</h1>
-                        <p class="text-muted">Your donation has been recorded.</p>
+                        <i class="bi @icon @iconCss" style="font-size: 4rem;" aria-hidden="true"></i>
+                        <h1 class="display-5 fw-bold mt-3 mb-2">@heading</h1>
+                        <p class="text-muted" role="status">@message</p>
                     </div>
 
                     <hr class="my-4">
 
-                    <!-- Donation Details -->
-                    <div class="mb-4">
+                    <dl class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                            <span class="text-muted">Amount:</span>
-                            <span class="fs-4 fw-bold text-success">@symbol@amount</span>
+                            <dt class="text-muted fw-normal">Amount</dt>
+                            <dd class="fs-4 fw-bold text-success mb-0">@Money.Format(donation.Amount, donation.Currency)</dd>
                         </div>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                            <span class="text-muted">Type:</span>
-                            <span class="fw-bold">@donationTypeDisplay</span>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                            <span class="text-muted">Currency:</span>
-                            <span class="fw-bold">@currency</span>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted">Reference:</span>
-                            <span class="fw-bold">
-                                <code class="bg-light px-2 py-1 rounded">DON-@transactionRef</code>
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Tax Certificate Notice -->
-                    <div class="alert alert-info">
-                        <small>
-                            <i class="bi bi-info-circle-fill me-1"></i>
-                            A tax certificate will be available for download and sent to your email.
-                        </small>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="d-grid gap-2 mt-4">
-                        @if (donationId != null && User.Identity?.IsAuthenticated == true && (User.IsInRole("Donor") || User.IsInRole("Employee")))
+                        @if (donation.Currency != "ZAR")
                         {
-                            <a asp-controller="Home" asp-action="TaxCertificate" asp-route-id="@donationId" 
-                               class="btn btn-success btn-lg">
-                                <i class="bi bi-file-earmark-check-fill me-2"></i>View Tax Certificate
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                <dt class="text-muted fw-normal">Charged in rand</dt>
+                                <dd class="fw-bold mb-0">@Money.Zar(donation.AmountZar)</dd>
+                            </div>
+                        }
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <dt class="text-muted fw-normal">Type</dt>
+                            <dd class="fw-bold mb-0">@donationTypeDisplay</dd>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <dt class="text-muted fw-normal">Project</dt>
+                            <dd class="fw-bold mb-0">@(donation.ReliefProject?.Title ?? "General Fund")</dd>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <dt class="text-muted fw-normal">Status</dt>
+                            <dd class="mb-0"><partial name="_PaymentStatusBadge" model="donation.PaymentStatus" /></dd>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <dt class="text-muted fw-normal">Reference</dt>
+                            <dd class="mb-0"><code class="bg-light px-2 py-1 rounded">@donation.TransactionReference</code></dd>
+                        </div>
+                    </dl>
+
+                    <div class="d-grid gap-2 mt-4">
+                        @if (Model.CanViewCertificate)
+                        {
+                            <a asp-controller="Donor" asp-action="TaxCertificate" asp-route-id="@donation.Id" class="btn btn-success btn-lg">
+                                <i class="bi bi-file-earmark-check-fill me-2" aria-hidden="true"></i>View Tax Certificate
                             </a>
                         }
-                        else if (donationId != null)
+                        else if (donation.PaymentStatus == PaymentStatus.Verified && User.Identity?.IsAuthenticated != true && donation.DonorId != null)
                         {
                             <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-success btn-lg">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign in to view tax certificate
+                                <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Sign in to view your tax certificate
                             </a>
                         }
-                        else
+                        else if (donation.PaymentStatus == PaymentStatus.Failed)
                         {
-                            <button class="btn btn-success btn-lg" disabled>
-                                <i class="bi bi-file-earmark-check-fill me-2"></i>View Tax Certificate
-                            </button>
+                            <a asp-action="Donate" asp-route-projectId="@donation.ReliefProjectId" class="btn btn-primary btn-lg">Try again</a>
                         }
 
                         <a asp-action="Index" class="btn btn-outline-primary btn-lg">
-                            <i class="bi bi-house-fill me-2"></i>Return Home
+                            <i class="bi bi-house-fill me-2" aria-hidden="true"></i>Return Home
                         </a>
                     </div>
 
-                    @if (donationId == null)
-                    {
-                        <div class="text-center mt-3">
-                            <small class="text-muted">
-                                Tax certificate will be available after processing
-                            </small>
-                        </div>
-                    }
+                    <p class="small text-muted mt-3 mb-0 text-center">
+                        Keep your reference for your records. Tax certificates are issued only for confirmed payments
+                        made while signed in to a donor account.
+                    </p>
                 </div>
             </div>
 
-            <!-- Additional Info -->
-            @if (donationType == "Recurring")
+            @if (donation.DonationType == "Recurring")
             {
-                <div class="alert alert-warning mt-3">
-                    <strong><i class="bi bi-repeat me-2"></i>Recurring Donation</strong>
-                    <p class="mb-0 small">This amount will be processed monthly. Manage your recurring donations from your dashboard.</p>
+                <div class="alert alert-info mt-3">
+                    <strong><i class="bi bi-repeat me-2" aria-hidden="true"></i>Monthly pledge recorded</strong>
+                    <p class="mb-0 small">Automatic monthly billing is not yet available. Use the Donate page to make each month's payment.</p>
                 </div>
             }
         </div>

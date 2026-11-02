@@ -21,7 +21,7 @@
                                 <th>Amount</th>
                                 <th>Payment Method</th>
                                 <th>Reference</th>
-                                <th>Tax Certificate</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -40,31 +40,27 @@
                                             <span class="text-muted">General Donation</span>
                                         }
                                     </td>
-                                    <td class="fw-bold">@donation.Amount.ToString("C")</td>
+                                    <td class="fw-bold">@Money.Format(donation.Amount, donation.Currency)</td>
                                     <td>@donation.PaymentMethod</td>
                                     <td>
                                         <small class="font-monospace">@donation.TransactionReference</small>
                                     </td>
                                     <td>
-                                        @if (donation.TaxCertificateIssued)
-                                        {
-                                            <span class="badge bg-success">Issued</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">Not Issued</span>
-                                        }
+                                        <partial name="_PaymentStatusBadge" model="donation.PaymentStatus" />
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a asp-action="DonationDetails" asp-route-id="@donation.Id" 
                                                class="btn btn-sm btn-primary" title="View Details">
-                                                <i class="bi bi-eye"></i>
+                                                <i class="bi bi-eye" aria-hidden="true"></i><span class="visually-hidden">View details</span>
                                             </a>
-                                            <a asp-action="TaxCertificate" asp-route-id="@donation.Id" 
-                                               class="btn btn-sm btn-success" title="Tax Certificate">
-                                                <i class="bi bi-file-earmark-text"></i>
-                                            </a>
+                                            @if (donation.PaymentStatus == PaymentStatus.Verified)
+                                            {
+                                                <a asp-action="TaxCertificate" asp-route-id="@donation.Id"
+                                                   class="btn btn-sm btn-success" title="Tax Certificate" aria-label="Tax certificate">
+                                                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                                                </a>
+                                            }
                                         </div>
                                     </td>
                                 </tr>
@@ -73,7 +69,7 @@
                         <tfoot>
                             <tr class="table-info">
                                 <td colspan="2" class="text-end"><strong>Total:</strong></td>
-                                <td colspan="5"><strong>@DonationCalculations.TotalAmount(Model.Select(d => d.Amount)).ToString("C")</strong></td>
+                                <td colspan="5"><strong>@Money.Zar(Model.Where(d => d.PaymentStatus == PaymentStatus.Verified).Sum(d => d.AmountZar))</strong> <small class="text-muted">confirmed, in rand</small></td>
                             </tr>
                         </tfoot>
                     </table>

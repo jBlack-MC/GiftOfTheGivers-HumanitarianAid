@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 420" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12">
+  <title>CI/CD pipelines</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3C4655"/></marker>
+    <style>
+      .s{fill:#fff;stroke:#155E9E;stroke-width:1.4}
+      .g{fill:#E8F5EE;stroke:#2E8B57;stroke-width:1.4}
+      .x{fill:#FDF1E7;stroke:#E8833A;stroke-width:1.4}
+      .t{fill:#1B2430;font-weight:600}.d{fill:#3C4655;font-size:11px}
+      .l{stroke:#3C4655;stroke-width:1.4;fill:none;marker-end:url(#a)}
+      .lane{fill:#F6F8FB;stroke:#BBD6EA;stroke-dasharray:5 4}
+    </style>
+  </defs>
+  <rect x="10" y="10" width="960" height="190" rx="10" class="lane"/>
+  <text x="24" y="32" class="t">GitHub Actions</text>
+  <rect x="24" y="48" width="110" height="58" rx="8" class="x"/><text x="79" y="72" text-anchor="middle" class="t">git push / PR</text><text x="79" y="90" text-anchor="middle" class="d">main · feature/** · fix/**</text>
+
+  <rect x="170" y="44" width="250" height="140" rx="8" class="s"/>
+  <text x="295" y="64" text-anchor="middle" class="t">CI · Build, test, audit</text>
+  <text x="182" y="84" class="d">1. restore --locked-mode</text>
+  <text x="182" y="100" class="d">2. build Release</text>
+  <text x="182" y="116" class="d">3. 98 tests + coverage artifact</text>
+  <text x="182" y="132" class="d">4. vulnerable packages → fail</text>
+  <text x="182" y="148" class="d">5. EF has-pending-model-changes → fail</text>
+  <text x="182" y="168" class="d">permissions: contents: read</text>
+
+  <rect x="440" y="44" width="250" height="140" rx="8" class="s"/>
+  <text x="565" y="64" text-anchor="middle" class="t">CI · Migrations on SQL Server</text>
+  <text x="452" y="84" class="d">service: mssql/server:2022</text>
+  <text x="452" y="100" class="d">1. apply every migration (empty DB)</text>
+  <text x="452" y="116" class="d">2. roll back latest, re-apply</text>
+  <text x="452" y="132" class="d">3. idempotent migrate.sql artifact</text>
+
+  <rect x="720" y="44" width="236" height="64" rx="8" class="g"/>
+  <text x="838" y="66" text-anchor="middle" class="t">CD (after CI success, main)</text>
+  <text x="838" y="84" text-anchor="middle" class="d">docker build → ghcr.io</text>
+  <text x="838" y="98" text-anchor="middle" class="d">tags :sha and :main</text>
+
+  <rect x="720" y="120" width="236" height="64" rx="8" class="s"/>
+  <text x="838" y="142" text-anchor="middle" class="t">Publish Helpers (main / tag)</text>
+  <text x="838" y="160" text-anchor="middle" class="d">test → pack → Azure Artifacts</text>
+  <text x="838" y="174" text-anchor="middle" class="d">SemVer validated, PAT via env</text>
+
+  <path d="M134,77 L168,77" class="l"/>
+  <path d="M420,114 L438,114" class="l"/>
+  <path d="M690,76 L718,76" class="l"/>
+
+  <rect x="10" y="220" width="960" height="190" rx="10" class="lane"/>
+  <text x="24" y="242" class="t">Azure DevOps (mirror)</text>
+  <rect x="24" y="258" width="150" height="64" rx="8" class="x"/><text x="99" y="282" text-anchor="middle" class="t">Mirror workflow</text><text x="99" y="300" text-anchor="middle" class="d">git push --mirror</text>
+  <rect x="210" y="254" width="420" height="140" rx="8" class="s"/>
+  <text x="420" y="274" text-anchor="middle" class="t">azure-pipelines.yml · BuildAndTest</text>
+  <text x="222" y="294" class="d">locked restore · build · test (TRX published) · vulnerability gate</text>
+  <text x="222" y="310" class="d">EF drift check · idempotent migrate.sql → artifact "migrations"</text>
+  <text x="222" y="326" class="d">dotnet publish → webapp.zip → artifact "webapp"</text>
+  <text x="222" y="350" class="d">Release procedure: apply migrate.sql with Database:MigrateOnStartup=false,</text>
+  <text x="222" y="366" class="d">then deploy (see 07-ci-cd-and-release)</text>
+  <rect x="670" y="268" width="286" height="110" rx="8" class="g"/>
+  <text x="813" y="292" text-anchor="middle" class="t">DeployDev (main only)</text>
+  <text x="813" y="312" text-anchor="middle" class="d">environment: giftgivers-dev</text>
+  <text x="813" y="328" text-anchor="middle" class="d">AzureWebApp@1 → App Service</text>
+  <text x="813" y="344" text-anchor="middle" class="d">requires azureServiceConnection</text>
+  <text x="813" y="360" text-anchor="middle" class="d">and azureWebAppName variables</text>
+  <path d="M79,106 C79,180 99,200 99,256" class="l"/>
+  <path d="M174,290 L208,290" class="l"/>
+  <path d="M630,322 L668,322" class="l"/>
+</svg>

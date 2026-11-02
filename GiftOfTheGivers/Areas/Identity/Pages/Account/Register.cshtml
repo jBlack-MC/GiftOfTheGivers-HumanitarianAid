@@ -7,7 +7,7 @@
 <section class="bg-primary text-white text-center py-5">
     <div class="container">
         <h1 class="display-4 fw-bold mb-3">CREATE ACCOUNT</h1>
-        <p class="lead">Join Gift of the Givers as a donor or an employee.</p>
+        <p class="lead">Create a donor account to track your donations and download tax certificates.</p>
     </div>
 </section>
 
@@ -19,22 +19,6 @@
                     <h3 class="mb-4">Register</h3>
                     <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold d-block">Account type</label>
-                            <div class="btn-group w-100" role="group" aria-label="Account type">
-                                <input type="radio" class="btn-check" name="Input.Role" id="roleDonor" value="Donor" autocomplete="off" checked="@(Model.Input?.Role != "Employee")">
-                                <label class="btn btn-outline-primary" for="roleDonor">
-                                    <i class="bi bi-heart-fill me-1"></i>Donor
-                                </label>
-
-                                <input type="radio" class="btn-check" name="Input.Role" id="roleEmployee" value="Employee" autocomplete="off" checked="@(Model.Input?.Role == "Employee")">
-                                <label class="btn btn-outline-primary" for="roleEmployee">
-                                    <i class="bi bi-briefcase-fill me-1"></i>Employee
-                                </label>
-                            </div>
-                            <span asp-validation-for="Input.Role" class="text-danger"></span>
-                        </div>
 
                         <div class="mb-4">
                             <label asp-for="Input.FullName" class="form-label fw-bold"></label>
@@ -59,6 +43,11 @@
                             <input asp-for="Input.ConfirmPassword" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" placeholder="Confirm password" />
                             <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                         </div>
+
+                        <p class="small text-muted">
+                            Staff accounts are not created here. If you work for the organisation, register and ask an
+                            existing staff member to grant you access. See our <a asp-area="" asp-controller="Home" asp-action="Privacy">privacy notice</a>.
+                        </p>
 
                         <div class="d-grid gap-2">
                             <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg">Register</button>

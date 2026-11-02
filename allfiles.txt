@@ -1,3 +1,0 @@
-D:\Projects\DotNetApps\GiftOfTheGivers-HumanitarianAid\.git
-D:\Projects\DotNetApps\GiftOfTheGivers-HumanitarianAid\.vs\GiftOfTheGivers-HumanitarianAid.slnx\v18\.wsuo
-D:\Projects\DotNetApps\GiftOfTheGivers-HumanitarianAid\.vs\GiftOfTheGivers.slnx\v18\.suo

@@ -1,15 +1,16 @@
-using GiftOfTheGivers.Data;
-using GiftOfTheGivers.Models;
 using GiftOfTheGivers.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GiftOfTheGivers.Controllers;
 
+/// <summary>
+/// PayFast Instant Transaction Notification (ITN) webhook. PayFast posts here server-to-server
+/// after every payment attempt; it is the only place a donation becomes Verified.
+/// </summary>
 [Route("Payments")]
 public class PaymentsController(
-    ApplicationDbContext context,
     IPaymentGateway paymentGateway,
+    IDonationService donationService,
     IEmailService emailService,
     ILogger<PaymentsController> logger) : Controller
 {
@@ -17,58 +18,41 @@ public class PaymentsController(
     [HttpPost("Notify")]
     public async Task<IActionResult> Notify()
     {
-        if (!await paymentGateway.VerifyNotificationAsync(Request.Form))
+        var form = await Request.ReadFormAsync();
+        var reference = form["m_payment_id"].ToString();
+
+        if (!await paymentGateway.VerifyNotificationAsync(form))
         {
-            logger.LogWarning("PayFast notification failed signature/validate check for reference {Reference}",
-                Request.Form["m_payment_id"].ToString());
+            logger.LogWarning("PayFast notification failed signature/validate check for reference {Reference}", reference);
             return BadRequest();
         }
 
-        var reference = Request.Form["m_payment_id"].ToString();
-        var status = Request.Form["payment_status"].ToString();
+        var (outcome, donation) = await donationService.ApplyPaymentNotificationAsync(
+            new PaymentNotification(
+                reference,
+                form["payment_status"].ToString(),
+                form["amount_gross"].ToString(),
+                form["merchant_id"].ToString(),
+                form["pf_payment_id"].ToString()),
+            paymentGateway.MerchantId,
+            HttpContext.RequestAborted);
 
-        await using var transaction = await context.Database.BeginTransactionAsync();
-        try
+        logger.LogInformation("PayFast ITN for {Reference}: {Outcome}", reference, outcome);
+
+        switch (outcome)
         {
-            var donation = await context.Donations
-                .Include(d => d.ReliefProject)
-                .FirstOrDefaultAsync(d => d.TransactionReference == reference);
-
-            if (donation is null)
-            {
-                return NotFound();
-            }
-
-            if (donation.PaymentStatus == PaymentStatus.Verified)
-            {
+            case NotificationOutcome.Verified:
+                await emailService.SendDonationConfirmationAsync(donation!);
                 return Ok();
-            }
-
-            if (status == "COMPLETE")
-            {
-                donation.PaymentStatus = PaymentStatus.Verified;
-                if (donation.ReliefProject is not null)
-                {
-                    donation.ReliefProject.FundsRaised += donation.Amount;
-                }
-
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                await emailService.SendDonationConfirmationAsync(donation);
-            }
-            else
-            {
-                donation.PaymentStatus = PaymentStatus.Failed;
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-
-            return Ok();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
+            case NotificationOutcome.AlreadyVerified:
+            case NotificationOutcome.MarkedFailed:
+            case NotificationOutcome.Ignored:
+                return Ok();
+            case NotificationOutcome.UnknownReference:
+                return NotFound();
+            default:
+                // Merchant or amount mismatch: refuse, leave the donation Pending and alert via logs.
+                return BadRequest();
         }
     }
 }

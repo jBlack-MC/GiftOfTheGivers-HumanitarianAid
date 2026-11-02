@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 470" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5">
+  <title>Site map by role</title>
+  <defs>
+    <style>
+      .col{fill:#F6F8FB;stroke:#BBD6EA}
+      .h{fill:#155E9E}.hd{fill:#0A2138}.ha{fill:#E8833A}
+      .w{fill:#fff;font-weight:700;font-size:12.5px}
+      .p{fill:#fff;stroke:#BBD6EA}
+      .t{fill:#1B2430}.r{fill:#6B7684;font-size:10.5px}
+    </style>
+  </defs>
+  <!-- Public -->
+  <rect x="10" y="10" width="310" height="450" rx="10" class="col"/>
+  <rect x="10" y="10" width="310" height="30" rx="10" class="h"/><text x="165" y="30" text-anchor="middle" class="w">Public (anonymous)</text>
+  <g>
+    <rect x="22" y="52" width="286" height="30" rx="6" class="p"/><text x="32" y="71" class="t">Home</text><text x="300" y="71" text-anchor="end" class="r">/  → intro once per session</text>
+    <rect x="22" y="88" width="286" height="30" rx="6" class="p"/><text x="32" y="107" class="t">About · live impact figures</text><text x="300" y="107" text-anchor="end" class="r">/Home/About</text>
+    <rect x="22" y="124" width="286" height="30" rx="6" class="p"/><text x="32" y="143" class="t">Relief projects</text><text x="300" y="143" text-anchor="end" class="r">/Home/ReliefProjects</text>
+    <rect x="22" y="160" width="286" height="30" rx="6" class="p"/><text x="32" y="179" class="t">Donate → PayFast</text><text x="300" y="179" text-anchor="end" class="r">/Home/Donate</text>
+    <rect x="22" y="196" width="286" height="30" rx="6" class="p"/><text x="32" y="215" class="t">Receipt (by reference)</text><text x="300" y="215" text-anchor="end" class="r">/Donate/Confirmation</text>
+    <rect x="22" y="232" width="286" height="30" rx="6" class="p"/><text x="32" y="251" class="t">Volunteer application</text><text x="300" y="251" text-anchor="end" class="r">/Home/Volunteer</text>
+    <rect x="22" y="268" width="286" height="30" rx="6" class="p"/><text x="32" y="287" class="t">Contact</text><text x="300" y="287" text-anchor="end" class="r">/Home/Contact</text>
+    <rect x="22" y="304" width="286" height="30" rx="6" class="p"/><text x="32" y="323" class="t">Privacy notice (POPIA)</text><text x="300" y="323" text-anchor="end" class="r">/Home/Privacy</text>
+    <rect x="22" y="340" width="286" height="30" rx="6" class="p"/><text x="32" y="359" class="t">Register (always Donor) · Login</text><text x="300" y="359" text-anchor="end" class="r">/Identity/Account/*</text>
+    <rect x="22" y="376" width="286" height="30" rx="6" class="p"/><text x="32" y="395" class="t">PayFast ITN webhook (server)</text><text x="300" y="395" text-anchor="end" class="r">POST /Payments/Notify</text>
+    <rect x="22" y="412" width="286" height="30" rx="6" class="p"/><text x="32" y="431" class="t">Health probes</text><text x="300" y="431" text-anchor="end" class="r">/health · /health/live</text>
+  </g>
+  <!-- Donor -->
+  <rect x="335" y="10" width="300" height="450" rx="10" class="col"/>
+  <rect x="335" y="10" width="300" height="30" rx="10" class="hd"/><text x="485" y="30" text-anchor="middle" class="w">Donor role</text>
+  <rect x="347" y="52" width="276" height="30" rx="6" class="p"/><text x="357" y="71" class="t">Dashboard (confirmed totals)</text><text x="615" y="71" text-anchor="end" class="r">/Donor/Dashboard</text>
+  <rect x="347" y="88" width="276" height="30" rx="6" class="p"/><text x="357" y="107" class="t">My donations + status</text><text x="615" y="107" text-anchor="end" class="r">/Donor/MyDonations</text>
+  <rect x="347" y="124" width="276" height="30" rx="6" class="p"/><text x="357" y="143" class="t">Donation details</text><text x="615" y="143" text-anchor="end" class="r">/Donor/DonationDetails/{id}</text>
+  <rect x="347" y="160" width="276" height="30" rx="6" class="p"/><text x="357" y="179" class="t">Certificate (verified, owner)*</text><text x="615" y="179" text-anchor="end" class="r">/Donor/TaxCertificate/{id}</text>
+  <rect x="347" y="196" width="276" height="30" rx="6" class="p"/><text x="357" y="215" class="t">Certificate PDF*</text><text x="615" y="215" text-anchor="end" class="r">/Donor/DownloadTaxCertificate</text>
+  <rect x="347" y="232" width="276" height="30" rx="6" class="p"/><text x="357" y="251" class="t">Manage account · personal data</text><text x="615" y="251" text-anchor="end" class="r">/Identity/Account/Manage</text>
+  <text x="347" y="290" class="r">* also available to Employees for any verified donation</text>
+  <text x="347" y="306" class="r">Legacy /Donate/Tax-Certificate/{id} redirects here</text>
+  <!-- Employee -->
+  <rect x="650" y="10" width="320" height="450" rx="10" class="col"/>
+  <rect x="650" y="10" width="320" height="30" rx="10" class="ha"/><text x="810" y="30" text-anchor="middle" class="w">Employee role (granted by staff)</text>
+  <rect x="662" y="52" width="296" height="30" rx="6" class="p"/><text x="672" y="71" class="t">Dashboard + attention cards</text><text x="950" y="71" text-anchor="end" class="r">/Employee/Dashboard</text>
+  <rect x="662" y="88" width="296" height="30" rx="6" class="p"/><text x="672" y="107" class="t">Projects · create/edit · updates</text><text x="950" y="107" text-anchor="end" class="r">/Employee/ReliefProjects</text>
+  <rect x="662" y="124" width="296" height="30" rx="6" class="p"/><text x="672" y="143" class="t">Volunteers (filter, paged)</text><text x="950" y="143" text-anchor="end" class="r">/Employee/Volunteers</text>
+  <rect x="662" y="160" width="296" height="30" rx="6" class="p"/><text x="672" y="179" class="t">Volunteer · approve/reject/assign</text><text x="950" y="179" text-anchor="end" class="r">/Employee/VolunteerDetails</text>
+  <rect x="662" y="196" width="296" height="30" rx="6" class="p"/><text x="672" y="215" class="t">Donations (status filter) · CSV</text><text x="950" y="215" text-anchor="end" class="r">/Employee/Donations</text>
+  <rect x="662" y="232" width="296" height="30" rx="6" class="p"/><text x="672" y="251" class="t">Funding reconciliation</text><text x="950" y="251" text-anchor="end" class="r">/Employee/FundingReconciliation</text>
+  <rect x="662" y="268" width="296" height="30" rx="6" class="p"/><text x="672" y="287" class="t">Inquiries</text><text x="950" y="287" text-anchor="end" class="r">/Employee/Inquiries</text>
+  <rect x="662" y="304" width="296" height="30" rx="6" class="p"/><text x="672" y="323" class="t">Staff access (grant/revoke)</text><text x="950" y="323" text-anchor="end" class="r">/Employee/StaffAccess</text>
+  <rect x="662" y="340" width="296" height="30" rx="6" class="p"/><text x="672" y="359" class="t">Audit log</text><text x="950" y="359" text-anchor="end" class="r">/Employee/AuditLog</text>
+</svg>

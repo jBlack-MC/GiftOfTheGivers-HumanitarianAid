@@ -13,7 +13,7 @@
         <div class="col-md-3 mb-3">
             <div class="card bg-primary text-white h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Active Projects</h5>
+                    <h2 class="h5 card-title">Active Projects</h2>
                     <p class="display-4 mb-0">@Model.ActiveProjects</p>
                 </div>
                 <div class="card-footer">
@@ -24,7 +24,7 @@
         <div class="col-md-3 mb-3">
             <div class="card bg-warning text-dark h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Pending Volunteers</h5>
+                    <h2 class="h5 card-title">Pending Volunteers</h2>
                     <p class="display-4 mb-0">@Model.PendingVolunteers</p>
                 </div>
                 <div class="card-footer">
@@ -35,7 +35,7 @@
         <div class="col-md-3 mb-3">
             <div class="card bg-success text-white h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Donations This Month</h5>
+                    <h2 class="h5 card-title">Paid Donations This Month</h2>
                     <p class="display-4 mb-0">@Model.TotalDonationsThisMonth</p>
                 </div>
                 <div class="card-footer">
@@ -46,23 +46,43 @@
         <div class="col-md-3 mb-3">
             <div class="card bg-info text-white h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Amount Raised</h5>
-                    <p class="display-4 mb-0">@Model.TotalAmountRaisedThisMonth.ToString("C0")</p>
+                    <h2 class="h5 card-title">Raised Online (ZAR)</h2>
+                    <p class="display-4 mb-0">@Money.Zar(Model.TotalAmountRaisedThisMonth, 0)</p>
                 </div>
                 <div class="card-footer">
-                    <small>This Month</small>
+                    <small>This month (UTC), confirmed by PayFast</small>
                 </div>
             </div>
         </div>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- Attention items -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <a asp-action="Donations" asp-route-status="Pending" class="card text-decoration-none h-100 @(Model.PendingPayments > 0 ? "border-warning" : "")">
+                <div class="card-body">
+                    <div class="fw-bold fs-4 text-dark">@Model.PendingPayments</div>
+                    <div class="text-muted">Donations awaiting payment confirmation</div>
+                </div>
+            </a>
         </div>
-    }
+        <div class="col-md-4">
+            <a asp-action="Inquiries" class="card text-decoration-none h-100 @(Model.OpenInquiries > 0 ? "border-info" : "")">
+                <div class="card-body">
+                    <div class="fw-bold fs-4 text-dark">@Model.OpenInquiries</div>
+                    <div class="text-muted">Open contact inquiries</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="FundingReconciliation" class="card text-decoration-none h-100 @(Model.ProjectsOutOfBalance > 0 ? "border-danger" : "")">
+                <div class="card-body">
+                    <div class="fw-bold fs-4 @(Model.ProjectsOutOfBalance > 0 ? "text-danger" : "text-dark")">@Model.ProjectsOutOfBalance</div>
+                    <div class="text-muted">Projects whose funding total needs review</div>
+                </div>
+            </a>
+        </div>
+    </div>
 
     <!-- Recent Projects -->
     <div class="row">

@@ -167,16 +167,18 @@ a {
 /* Warm accent button — reserved for donation / primary conversion CTAs so
    they stand out from ordinary brand-blue actions */
 .btn-accent, .btn-donate {
-  --bs-btn-color: #fff;
+  /* Ink text on the accent: white on #E8833A measured 2.71:1 (fails WCAG AA); ink is 5.77:1.
+     Hover lightens instead of darkening so ink text stays at 7.07:1. */
+  --bs-btn-color: var(--brand-ink);
   --bs-btn-bg: var(--brand-accent);
   --bs-btn-border-color: var(--brand-accent);
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: var(--brand-accent-dark);
-  --bs-btn-hover-border-color: var(--brand-accent-dark);
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: var(--brand-accent-dark);
+  --bs-btn-hover-color: var(--brand-ink);
+  --bs-btn-hover-bg: #F09A5C;
+  --bs-btn-hover-border-color: #F09A5C;
+  --bs-btn-active-color: var(--brand-ink);
+  --bs-btn-active-bg: #F09A5C;
   --bs-btn-active-border-color: var(--brand-accent-dark);
-  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-color: var(--brand-ink);
   --bs-btn-disabled-bg: var(--brand-accent);
   --bs-btn-disabled-border-color: var(--brand-accent);
   --bs-btn-focus-shadow-rgb: var(--brand-accent-rgb);
@@ -355,4 +357,9 @@ a {
 
 .site-footer a:hover {
   color: #fff !important;
+}
+
+/* Validation summaries render an empty container when there are no errors; hide it. */
+.validation-summary-valid {
+  display: none;
 }

@@ -1,0 +1,57 @@
+@model GiftOfTheGivers.Models.ViewModels.StaffAccessViewModel
+@{
+    ViewData["Title"] = "Staff access";
+}
+
+<div class="container my-5">
+    <h1 class="mb-2">Staff access</h1>
+    <p class="text-muted">
+        Staff (Employee) access can only be granted here, by an existing employee. Public registration always creates
+        donor accounts. Every change is written to the audit log.
+    </p>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5">Grant staff access</h2>
+                    <form asp-action="GrantEmployee" method="post">
+                        <label for="email" class="form-label">Email of an existing account</label>
+                        <input id="email" name="email" type="email" class="form-control mb-3" required autocomplete="off" />
+                        <button type="submit" class="btn btn-primary">Grant access</button>
+                    </form>
+                    <p class="small text-muted mt-3 mb-0">The person must register first. Changes take effect at their next sign-in, or within 30 minutes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5">Current staff (@Model.Employees.Count)</h2>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var employee in Model.Employees)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <span>
+                                    <strong>@employee.FullName</strong><br />
+                                    <small class="text-muted">@employee.Email</small>
+                                </span>
+                                @if (employee.Id == Model.CurrentUserId)
+                                {
+                                    <span class="badge bg-light text-dark">You</span>
+                                }
+                                else
+                                {
+                                    <form asp-action="RevokeEmployee" method="post">
+                                        <input type="hidden" name="userId" value="@employee.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="Remove staff access from @employee.Email?">Remove</button>
+                                    </form>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

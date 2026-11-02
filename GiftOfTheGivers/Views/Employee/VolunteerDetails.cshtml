@@ -1,7 +1,8 @@
-@model GiftOfTheGivers.Models.Volunteer
+@model GiftOfTheGivers.Models.ViewModels.VolunteerDetailsViewModel
 
 @{
     ViewData["Title"] = "Volunteer Details";
+    var volunteer = Model.Volunteer;
 }
 
 <div class="container my-5">
@@ -9,113 +10,121 @@
         <div class="col-lg-10 mx-auto">
             <h1 class="display-4 mb-4">Volunteer Application</h1>
 
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Personal Information</h4>
-                    <span class="badge bg-@(Model.Status == VolunteerStatus.Pending ? "warning" : Model.Status == VolunteerStatus.Approved ? "success" : "secondary")">
-                        @Model.Status
+                    <span class="badge bg-@(volunteer.Status == VolunteerStatus.Pending ? "warning" : volunteer.Status == VolunteerStatus.Approved ? "success" : "secondary")">
+                        @volunteer.Status
                     </span>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong>Name:</strong><br>
-                            @Model.FirstName @Model.LastName
+                            @volunteer.FirstName @volunteer.LastName
                         </div>
                         <div class="col-md-6">
                             <strong>Date of Birth:</strong><br>
-                            @Model.DateOfBirth.ToString("yyyy-MM-dd") (Age: @((DateTime.Now - Model.DateOfBirth).Days / 365))
+                            @if (volunteer.DateOfBirth is DateTime dob)
+                            {
+                                var today = DateTime.UtcNow.Date;
+                                var age = today.Year - dob.Year - (dob.Date > today.AddYears(-(today.Year - dob.Year)) ? 1 : 0);
+                                <span>@dob.ToString("yyyy-MM-dd") (Age: @age)</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not provided</span>
+                            }
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong>Email:</strong><br>
-                            <a href="mailto:@Model.Email">@Model.Email</a>
+                            <a href="mailto:@volunteer.Email">@volunteer.Email</a>
                         </div>
                         <div class="col-md-6">
                             <strong>Phone:</strong><br>
-                            @Model.PhoneNumber
+                            @(string.IsNullOrWhiteSpace(volunteer.PhoneNumber) ? "Not provided" : volunteer.PhoneNumber)
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-12">
                             <strong>Address:</strong><br>
-                            @Model.Address<br>
-                            @Model.City, @Model.Province @Model.PostalCode
+                            @if (string.IsNullOrWhiteSpace(volunteer.Address) && string.IsNullOrWhiteSpace(volunteer.City))
+                            {
+                                <span class="text-muted">Not provided</span>
+                            }
+                            else
+                            {
+                                @volunteer.Address<br>
+                                @string.Join(", ", new[] { volunteer.City, volunteer.Province, volunteer.PostalCode }.Where(x => !string.IsNullOrWhiteSpace(x)))
+                            }
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-12">
                             <strong>Skills and Experience:</strong><br>
-                            <p class="mt-2">@Model.Skills</p>
+                            <p class="mt-2">@volunteer.Skills</p>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong>Availability:</strong><br>
-                            @Model.Availability
+                            @volunteer.Availability
                         </div>
                         <div class="col-md-6">
                             <strong>Application Date:</strong><br>
-                            @Model.ApplicationDate.ToString("yyyy-MM-dd")
+                            @volunteer.ApplicationDate.ToString("yyyy-MM-dd")
                         </div>
                     </div>
 
-                    @if (!string.IsNullOrEmpty(Model.EmergencyContactName))
+                    @if (!string.IsNullOrEmpty(volunteer.EmergencyContactName))
                     {
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <strong>Emergency Contact:</strong><br>
-                                @Model.EmergencyContactName
+                                @volunteer.EmergencyContactName
                             </div>
                             <div class="col-md-6">
                                 <strong>Emergency Phone:</strong><br>
-                                @Model.EmergencyContactPhone
+                                @volunteer.EmergencyContactPhone
                             </div>
                         </div>
                     }
 
-                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    @if (!string.IsNullOrEmpty(volunteer.Notes))
                     {
                         <div class="row mb-3">
                             <div class="col-12">
                                 <strong>Notes:</strong><br>
-                                <p class="mt-2">@Model.Notes</p>
+                                <p class="mt-2">@volunteer.Notes</p>
                             </div>
                         </div>
                     }
 
-                    @if (Model.Status == VolunteerStatus.Approved && Model.ApprovalDate.HasValue)
+                    @if (volunteer.Status == VolunteerStatus.Approved && volunteer.ApprovalDate.HasValue)
                     {
                         <div class="alert alert-success">
-                            <strong>Approved on:</strong> @Model.ApprovalDate.Value.ToString("yyyy-MM-dd")
+                            <strong>Approved on:</strong> @volunteer.ApprovalDate.Value.ToString("yyyy-MM-dd")
                         </div>
                     }
                 </div>
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
                         <a asp-action="Volunteers" class="btn btn-secondary">Back to List</a>
-                        @if (Model.Status == VolunteerStatus.Pending)
+                        @if (volunteer.Status == VolunteerStatus.Pending)
                         {
                             <div>
-                                <form asp-action="ApproveVolunteer" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                <form asp-action="ApproveVolunteer" asp-route-id="@volunteer.Id" method="post" class="d-inline">
                                     <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to approve this volunteer?')">
                                         <i class="bi bi-check-circle"></i> Approve
                                     </button>
                                 </form>
-                                <form asp-action="RejectVolunteer" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                <form asp-action="RejectVolunteer" asp-route-id="@volunteer.Id" method="post" class="d-inline">
                                     <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this application?')">
                                         <i class="bi bi-x-circle"></i> Reject
                                     </button>
@@ -123,6 +132,60 @@
                             </div>
                         }
                     </div>
+                </div>
+            </div>
+
+            <!-- Project assignments (VolunteerAssignment junction) -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h2 class="h5 mb-0">Project assignments</h2>
+                </div>
+                <div class="card-body">
+                    @if (Model.Assignments.Any())
+                    {
+                        <ul class="list-group mb-3">
+                            @foreach (var assignment in Model.Assignments)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <strong>@assignment.ReliefProject?.Title</strong>
+                                        <small class="text-muted ms-2">since @assignment.AssignedDate.ToString("yyyy-MM-dd")</small>
+                                    </span>
+                                    <form asp-action="UnassignVolunteer" method="post" class="d-inline">
+                                        <input type="hidden" name="assignmentId" value="@assignment.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                    </form>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Not assigned to any project.</p>
+                    }
+
+                    @if (volunteer.Status == VolunteerStatus.Approved && Model.AssignableProjects.Any())
+                    {
+                        <form asp-action="AssignVolunteer" method="post" class="row g-2 align-items-end">
+                            <input type="hidden" name="volunteerId" value="@volunteer.Id" />
+                            <div class="col-sm-8">
+                                <label for="reliefProjectId" class="form-label">Assign to an active project</label>
+                                <select id="reliefProjectId" name="reliefProjectId" class="form-select">
+                                    @foreach (var project in Model.AssignableProjects)
+                                    {
+                                        <option value="@project.Id">@project.Title — @project.Location</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-sm-4 d-grid">
+                                <button type="submit" class="btn btn-primary">Assign</button>
+                            </div>
+                        </form>
+                    }
+                    else if (volunteer.Status != VolunteerStatus.Approved)
+                    {
+                        <p class="small text-muted mb-0">Approve the application before assigning projects.</p>
+                    }
                 </div>
             </div>
         </div>

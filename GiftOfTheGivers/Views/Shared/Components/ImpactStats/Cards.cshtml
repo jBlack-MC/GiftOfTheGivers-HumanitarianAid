@@ -1,0 +1,23 @@
+@model GiftOfTheGivers.Models.ViewModels.ImpactStatsViewModel
+@{
+    var cards = new[]
+    {
+        ("bi-lightning-charge-fill", "text-primary", Model.ActiveProjects.ToString(), "Active Projects"),
+        ("bi-check2-circle", "text-success", Model.CompletedProjects.ToString(), "Completed Projects"),
+        ("bi-cash-coin", "text-danger", Money.Zar(Model.TotalRaisedZar, 0), "Raised Across Projects"),
+        ("bi-people-fill", "text-info", Model.ApprovedVolunteers.ToString(), "Approved Volunteers")
+    };
+}
+<div class="row g-4 mb-3">
+    @foreach (var (icon, colour, value, label) in cards)
+    {
+        <div class="col-md-3 text-center">
+            <div class="impact-card p-4 bg-white rounded shadow-sm h-100">
+                <i class="bi @icon @colour" style="font-size: 2.5rem;" aria-hidden="true"></i>
+                <p class="h2 fw-bold text-primary mt-3 mb-2">@value</p>
+                <p class="text-muted mb-0">@label</p>
+            </div>
+        </div>
+    }
+</div>
+<p class="small text-muted text-center mb-5">Live figures from this system.</p>

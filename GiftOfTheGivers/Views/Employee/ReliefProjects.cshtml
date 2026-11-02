@@ -12,14 +12,6 @@
         </a>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
     @if (Model.Any())
     {
         <div class="row">
@@ -51,7 +43,7 @@
                                 </div>
                             </div>
                             <small class="text-muted d-block mb-3">
-                                @project.FundsRaised.ToString("C") of @project.FundsRequired.ToString("C")
+                                @Money.Zar(project.FundsRaised) of @Money.Zar(project.FundsRequired)
                             </small>
                             <div class="d-grid gap-2">
                                 <a asp-action="EditReliefProject" asp-route-id="@project.Id" class="btn btn-outline-primary btn-sm">Edit Project</a>

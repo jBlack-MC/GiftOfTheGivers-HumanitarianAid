@@ -1,0 +1,22 @@
+@* Usage: <partial name="_Pager" model="(Page, TotalPages, TotalCount, routeValues)" /> *@
+@model (int Page, int TotalPages, int TotalCount, IDictionary<string, string?> Route)
+@if (Model.TotalPages > 1)
+{
+    var previous = new Dictionary<string, string?>(Model.Route) { ["page"] = (Model.Page - 1).ToString() };
+    var next = new Dictionary<string, string?>(Model.Route) { ["page"] = (Model.Page + 1).ToString() };
+    <nav aria-label="Pagination" class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted">Page @Model.Page of @Model.TotalPages · @Model.TotalCount records</small>
+        <ul class="pagination mb-0">
+            <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-all-route-data="previous" aria-label="Previous page">&laquo; Previous</a>
+            </li>
+            <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-all-route-data="next" aria-label="Next page">Next &raquo;</a>
+            </li>
+        </ul>
+    </nav>
+}
+else
+{
+    <p class="small text-muted mt-3 mb-0">@Model.TotalCount records</p>
+}
