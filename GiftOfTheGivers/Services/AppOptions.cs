@@ -46,3 +46,13 @@ public sealed class StaffAccessOptions
     /// </summary>
     public string[] BootstrapEmployeeEmails { get; set; } = [];
 }
+
+/// <summary>
+/// Short-lived caching of the public, read-mostly figures on the home page. Added after the
+/// Part 3 stress test showed the home page (six database queries per view) was the bottleneck.
+/// 0 turns caching off (used by the tests so figures update immediately).
+/// </summary>
+public sealed class CachingOptions
+{
+    public int PublicPageSeconds { get; set; } = 30;
+}

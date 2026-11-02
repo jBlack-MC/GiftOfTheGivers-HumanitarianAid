@@ -1,0 +1,36 @@
+# SQL schema deployment evidence — 2026-11-02 15:26
+
+$ dotnet ef migrations list
+20260828181123_InitialCreate
+20260924181920_SyncCurrentModel
+20260924191049_P1PaymentsEmailAndStatuses
+20260924195240_P0Phase0CriticalFixes
+20260924200101_FixPendingModelChanges
+20260925180656_SyncDonorCascade
+20261102112731_AuditRemediationNov2026
+20261102132424_Part3PerformanceIndexes
+
+$ dotnet ef database update AuditRemediationNov2026   # rollback Part 3 migration
+Done.
+
+$ dotnet ef database update   # re-apply
+Done.
+
+$ sqlcmd: SELECT * FROM __EFMigrationsHistory
+MigrationId ProductVersion
+----------- --------------
+20260828181123_InitialCreate 10.0.14
+20260924181920_SyncCurrentModel 10.0.14
+20260924191049_P1PaymentsEmailAndStatuses 10.0.14
+20260924195240_P0Phase0CriticalFixes 10.0.14
+20260924200101_FixPendingModelChanges 10.0.14
+20260925180656_SyncDonorCascade 10.0.14
+20261102112731_AuditRemediationNov2026 10.0.14
+20261102132424_Part3PerformanceIndexes 10.0.14
+
+$ sqlcmd: indexes on ReliefProjects
+name
+----
+PK_ReliefProjects
+IX_ReliefProjects_CreatedByUserId
+IX_ReliefProjects_Status_CreatedDate

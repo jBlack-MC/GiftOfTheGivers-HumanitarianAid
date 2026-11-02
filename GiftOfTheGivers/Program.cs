@@ -63,6 +63,8 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 builder.Services.Configure<OrganisationOptions>(builder.Configuration.GetSection("Organisation"));
 builder.Services.Configure<CurrencyOptions>(builder.Configuration.GetSection("Currency"));
 builder.Services.Configure<StaffAccessOptions>(builder.Configuration.GetSection("StaffAccess"));
+builder.Services.Configure<CachingOptions>(builder.Configuration.GetSection("Caching"));
+builder.Services.AddMemoryCache();
 
 // ---- Application services ----------------------------------------------
 builder.Services.AddScoped<IAuditService, AuditService>();

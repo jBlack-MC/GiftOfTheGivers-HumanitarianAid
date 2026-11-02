@@ -391,7 +391,8 @@ namespace GiftOfTheGivers.Data.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -401,6 +402,8 @@ namespace GiftOfTheGivers.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("Status", "CreatedDate");
 
                     b.ToTable("ReliefProjects", t =>
                         {

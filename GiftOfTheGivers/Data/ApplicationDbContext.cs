@@ -31,7 +31,7 @@ namespace GiftOfTheGivers.Data
             builder.Entity<Donation>().Property(d => d.Amount).HasPrecision(18, 2);
             builder.Entity<Donation>().Property(d => d.AmountZar).HasPrecision(18, 2);
             builder.Entity<Donation>().Property(d => d.ExchangeRateToZar).HasPrecision(18, 6);
-            builder.Entity<ReliefProject>().Property(p => p.Status).HasConversion<string>();
+            builder.Entity<ReliefProject>().Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
             builder.Entity<Volunteer>().Property(v => v.Status).HasConversion<string>();
 
             // ---- check constraints (data integrity, Section 2.1/2.3) -----
@@ -72,6 +72,8 @@ namespace GiftOfTheGivers.Data
             builder.Entity<ProjectUpdate>().HasIndex(p => p.ReliefProjectId);
             builder.Entity<ProjectUpdate>().HasIndex(p => p.PostedByUserId);
             builder.Entity<ReliefProject>().HasIndex(p => p.CreatedByUserId);
+            // Home page and public project list filter by status and sort by date (Part 3 load test).
+            builder.Entity<ReliefProject>().HasIndex(p => new { p.Status, p.CreatedDate });
             builder.Entity<AuditLog>().HasIndex(a => new { a.TargetEntity, a.TargetId });
             builder.Entity<AuditLog>().HasIndex(a => a.Timestamp);
             builder.Entity<VolunteerAssignment>().HasIndex(a => a.VolunteerId);

@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace GiftOfTheGivers.Controllers
 {
@@ -20,6 +22,8 @@ namespace GiftOfTheGivers.Controllers
         private readonly IEmailService _emailService;
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IMemoryCache _cache;
+        private readonly CachingOptions _caching;
 
         public HomeController(
             ApplicationDbContext context,
@@ -28,7 +32,9 @@ namespace GiftOfTheGivers.Controllers
             ICurrencyConverter currencyConverter,
             IEmailService emailService,
             UserManager<AppUser> userManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IMemoryCache cache,
+            IOptions<CachingOptions> caching)
         {
             _context = context;
             _donationService = donationService;
@@ -37,16 +43,27 @@ namespace GiftOfTheGivers.Controllers
             _emailService = emailService;
             _userManager = userManager;
             _configuration = configuration;
+            _cache = cache;
+            _caching = caching.Value;
         }
 
         public async Task<IActionResult> Index()
         {
-            var featuredProjects = await _context.ReliefProjects
+            Task<List<ReliefProject>> LoadFeaturedAsync() => _context.ReliefProjects
                 .AsNoTracking()
                 .Where(p => p.Status == ProjectStatus.Active)
                 .OrderByDescending(p => p.CreatedDate)
                 .Take(3)
                 .ToListAsync();
+
+            // Cached briefly: the home page is the busiest page and was the stress-test bottleneck.
+            var featuredProjects = _caching.PublicPageSeconds > 0
+                ? await _cache.GetOrCreateAsync("featured-projects", entry =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(_caching.PublicPageSeconds);
+                    return LoadFeaturedAsync();
+                })
+                : await LoadFeaturedAsync();
 
             return View(featuredProjects);
         }
