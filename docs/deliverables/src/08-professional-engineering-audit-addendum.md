@@ -3,7 +3,7 @@ number: 08-A
 title: Audit Addendum — Remediation Review
 subtitle: **AUD-2026-11-01-R1** — what was changed after the baseline audit, how each fix was verified, what was newly discovered, the re-scored scorecard, and the audit programme for future reviews.
 version: 1.0
-status: Remediation review — changes not yet committed
+status: Remediation review — code in commit 921e5d8
 date: 2026-11-02
 output: 08-professional-engineering-audit-addendum
 ---
@@ -16,7 +16,12 @@ make themselves staff, an anonymous function exposed donor certificates, and any
 totals without paying.
 
 This remediation review covers the changes made on 2026-11-02 on branch `feature/erd-schema-and-pdf`. The
-changes are **in the working tree and not yet committed**.
+application changes were committed and pushed as **`921e5d8` "audit fixes"**. Final documentation and diagram
+polish was made after that commit.
+
+> **Scope note.** An Android project (`app/`, Gradle/Kotlin) was staged in the working tree while this review was
+> in progress. It is **not covered** by this review. Section 13–16 of the baseline (mobile) still reflects the
+> repository at `efa2b02`. The next audit must include the mobile app.
 
 <div class="kpis">
 <div class="kpi"><div class="v">0</div><div class="k">Critical findings open (was 3)</div></div>
@@ -236,8 +241,9 @@ The smallest set of actions that moves the system to *production candidate* (det
 5. **T-1.5 / F-38:** monitoring and alerts.
 6. **T-1.6 / F-13:** migrations applied by the pipeline, not at startup.
 7. **T-1.7 / F-09:** legal sign-off of the privacy notice.
-8. **Commit** these changes in reviewed PRs and confirm the first green CI runs, including the SQL Server
-   migrations job.
+8. **Confirm CI** on commit `921e5d8` and later, including the first green run of the SQL Server migrations
+   job, and protect `main` with those checks.
+9. **Audit the new Android app** (`app/`) before it ships.
 
 All findings that are not yet fixed:
 

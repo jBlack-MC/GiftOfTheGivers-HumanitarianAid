@@ -57,12 +57,14 @@ body {
 .meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
 .meta div { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 8px; padding: 8px 10px; }
 .meta span { display: block; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; opacity: .75; }
-.meta strong { font-size: .88rem; font-weight: 600; }
+.meta strong { font-size: .88rem; font-weight: 600; color: #fff; }
+.cover strong { color: #fff; }
+.cover code { background: rgba(255,255,255,.14); color: #fff; }
 
 /* Table of contents */
 nav.toc { border: 1px solid var(--border-subtle); background: #F8FAFD; border-radius: 10px; padding: 14px 20px; margin: 0 0 28px; }
 nav.toc h2 { margin: 0 0 6px; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); border: 0; padding: 0; }
-nav.toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+nav.toc ol { margin: 0; padding-left: 0; list-style: none; columns: 2; column-gap: 32px; }
 nav.toc li { margin: 2px 0; break-inside: avoid; font-size: .92rem; }
 nav.toc a { color: var(--primary-dark); text-decoration: none; }
 

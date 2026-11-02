@@ -130,3 +130,6 @@ npm-debug.log*
 
 # Rider
 .idea/
+
+# Python bytecode from docs/tools
+__pycache__/

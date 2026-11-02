@@ -3,7 +3,7 @@ number: 05
 title: Backend Schema
 subtitle: Database design, constraints, relationships, derived values and migration history for SQL Server / Azure SQL.
 version: 2.0
-status: Current — matches migration 20261102112731_AuditRemediationNov2026
+status: Current — at migration AuditRemediationNov2026
 date: 2026-11-02
 ---
 

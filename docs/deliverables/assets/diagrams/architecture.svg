@@ -91,11 +91,12 @@
   <path d="M698,108 L622,118" class="ld"/>
   <text x="626" y="132" class="lbl">ITN POST</text>
   <path d="M620,230 L698,180" class="l"/>
-  <path d="M95,136 C95,230 640,40 698,70" class="ld"/>
-  <text x="120" y="190" class="lbl">redirect to pay (rand)</text>
-  <path d="M170,120 C400,10 650,230 698,270" class="ld" opacity="0.55"/>
-  <path d="M700,400 C650,430 640,470 612,480" class="l"/>
-  <text x="634" y="430" class="lbl">EF Core</text>
-  <path d="M620,330 C660,330 660,490 698,490" class="ld"/>
-  <text x="646" y="452" class="lbl" transform="rotate(0)">project ref</text>
+  <path d="M95,40 L95,14 L660,14 L660,60 L698,60" class="ld"/>
+  <text x="250" y="11" class="lbl">browser redirect to PayFast checkout (rand amount)</text>
+  <path d="M60,136 L60,540 L680,540 L680,262 L698,262" class="ld"/>
+  <text x="70" y="534" class="lbl">CSS / fonts / icons</text>
+  <path d="M700,380 L650,380 L650,470 L612,470" class="l"/>
+  <text x="654" y="430" class="lbl">EF Core</text>
+  <path d="M640,440 L640,495 L698,495" class="ld"/>
+  <text x="646" y="512" class="lbl">uses helpers</text>
 </svg>
