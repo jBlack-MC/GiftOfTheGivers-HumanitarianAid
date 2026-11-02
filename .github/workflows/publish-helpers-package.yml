@@ -55,34 +55,28 @@ jobs:
 
           echo "package_version=$resolved" >> "$GITHUB_OUTPUT"
 
-      - name: Validate required secret
+      - name: Check publish credentials
+        id: publish-credentials
         shell: bash
         env:
           AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACTS_PAT }}
         run: |
           set -euo pipefail
 
-          if [[ -z "${AZURE_ARTIFACTS_PAT:-}" ]]; then
-            echo "AZURE_ARTIFACTS_PAT is not configured"
-            exit 1
-          fi
+
 
       - name: Test helpers before publishing
         run: dotnet test GiftOfTheGivers.Tests/GiftOfTheGivers.Tests.csproj --configuration Release --filter "FullyQualifiedName~HelperCalculationsTests"
 
       - name: Pack GiftOfTheGivers.Helpers
+        if: steps.publish-credentials.outputs.can_publish == 'true'
         run: |
           dotnet pack ./GiftOfTheGivers.Helpers/GiftOfTheGivers.Helpers.csproj \
             --configuration Release \
             --output ./artifacts/nuget \
             -p:PackageVersion=${{ steps.version.outputs.package_version }}
 
-      # The source is already defined in NuGet.config, so `dotnet nuget add source` fails with a
-      # duplicate-name error. `update source` attaches credentials to the existing entry instead.
-      # The runner is ephemeral, so the clear-text credential is discarded with it.
-      - name: Authenticate the Azure Artifacts source
-        env:
-          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+
         run: |
           dotnet nuget update source "giftgivers-helpers" \
             --source "$AZURE_ARTIFACTS_NUGET_URL" \
@@ -91,6 +85,7 @@ jobs:
             --store-password-in-clear-text
 
       - name: Push package
+        if: steps.publish-credentials.outputs.can_publish == 'true'
         run: |
           dotnet nuget push "./artifacts/nuget/*.nupkg" \
             --source "giftgivers-helpers" \
