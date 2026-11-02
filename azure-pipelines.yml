@@ -46,8 +46,8 @@ stages:
           - task: NuGetAuthenticate@1
             displayName: Authenticate to Azure Artifacts feeds
 
-          - script: dotnet restore GiftOfTheGivers.slnx
-            displayName: Restore dependencies
+          - script: dotnet restore GiftOfTheGivers.slnx --locked-mode
+            displayName: Restore dependencies (lock files enforced)
             env:
               NUGET_PACKAGES: $(NUGET_PACKAGES)
 
@@ -86,6 +86,22 @@ stages:
             displayName: Check vulnerable packages
             env:
               NUGET_PACKAGES: $(NUGET_PACKAGES)
+
+          - script: |
+              set -e
+              dotnet tool restore
+              dotnet ef migrations has-pending-model-changes --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --no-build
+              dotnet ef migrations script --idempotent --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/migrations/migrate.sql
+            displayName: Check model drift and generate idempotent migration script
+            env:
+              NUGET_PACKAGES: $(NUGET_PACKAGES)
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish migration script
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/migrations'
+              ArtifactName: migrations
+              publishLocation: Container
 
           - script: dotnet publish GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/webapp
             displayName: Publish web app files

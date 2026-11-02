@@ -1,11 +1,12 @@
 using GiftOfTheGivers.Models;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GiftOfTheGivers.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : IdentityDbContext<AppUser>(options)
+        : IdentityDbContext<AppUser>(options), IDataProtectionKeyContext
     {
         public DbSet<ReliefProject> ReliefProjects { get; set; }
         public DbSet<Donation> Donations { get; set; }
@@ -15,6 +16,10 @@ namespace GiftOfTheGivers.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Inquiry> Inquiries { get; set; }
 
+        // ASP.NET Core Data Protection keys, shared by every instance so auth cookies and
+        // anti-forgery tokens survive restarts and scale-out.
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -22,8 +27,11 @@ namespace GiftOfTheGivers.Data
             // ---- decimal precision for currency fields -------------------
             builder.Entity<ReliefProject>().Property(p => p.FundsRequired).HasPrecision(18, 2);
             builder.Entity<ReliefProject>().Property(p => p.FundsRaised).HasPrecision(18, 2);
+            builder.Entity<ReliefProject>().Property(p => p.OfflineFundsZar).HasPrecision(18, 2);
             builder.Entity<Donation>().Property(d => d.Amount).HasPrecision(18, 2);
-            builder.Entity<ReliefProject>().Property(p => p.Status).HasConversion<string>();
+            builder.Entity<Donation>().Property(d => d.AmountZar).HasPrecision(18, 2);
+            builder.Entity<Donation>().Property(d => d.ExchangeRateToZar).HasPrecision(18, 6);
+            builder.Entity<ReliefProject>().Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
             builder.Entity<Volunteer>().Property(v => v.Status).HasConversion<string>();
 
             // ---- check constraints (data integrity, Section 2.1/2.3) -----
@@ -32,6 +40,9 @@ namespace GiftOfTheGivers.Data
                 t.HasCheckConstraint("CK_Donation_Currency", "[Currency] IN ('ZAR','USD','EUR')");
                 t.HasCheckConstraint("CK_Donation_Type", "[DonationType] IN ('OneTime','Recurring')");
                 t.HasCheckConstraint("CK_Donation_Amount", "[Amount] > 0");
+                t.HasCheckConstraint("CK_Donation_AmountZar", "[AmountZar] > 0");
+                t.HasCheckConstraint("CK_Donation_ExchangeRate", "[ExchangeRateToZar] > 0");
+                t.HasCheckConstraint("CK_Donation_PaymentMethod", "[PaymentMethod] IN ('Card','EFT','Cash')");
             });
             builder.Entity<ReliefProject>().ToTable(t =>
             {
@@ -41,6 +52,8 @@ namespace GiftOfTheGivers.Data
                     "[FundsRequired] >= 0");
                 t.HasCheckConstraint("CK_ReliefProject_Dates",
                     "[EndDate] IS NULL OR [EndDate] >= [StartDate]");
+                t.HasCheckConstraint("CK_ReliefProject_OfflineFunds_NonNegative",
+                    "[OfflineFundsZar] >= 0");
             });
             builder.Entity<Volunteer>().ToTable(t =>
                 t.HasCheckConstraint("CK_Volunteer_Status",
@@ -52,12 +65,15 @@ namespace GiftOfTheGivers.Data
             builder.Entity<Donation>().HasIndex(d => d.TransactionReference).IsUnique();
             builder.Entity<Donation>().HasIndex(d => d.IdempotencyKey).IsUnique();
             builder.Entity<Donation>().HasIndex(d => new { d.DonorId, d.DonationDate });
+            builder.Entity<Donation>().HasIndex(d => new { d.PaymentStatus, d.DonationDate });
             builder.Entity<Volunteer>().HasIndex(v => v.UserId);
             builder.Entity<Volunteer>().HasIndex(v => v.Email);
             builder.Entity<Volunteer>().HasIndex(v => new { v.Status, v.ApplicationDate });
             builder.Entity<ProjectUpdate>().HasIndex(p => p.ReliefProjectId);
             builder.Entity<ProjectUpdate>().HasIndex(p => p.PostedByUserId);
             builder.Entity<ReliefProject>().HasIndex(p => p.CreatedByUserId);
+            // Home page and public project list filter by status and sort by date (Part 3 load test).
+            builder.Entity<ReliefProject>().HasIndex(p => new { p.Status, p.CreatedDate });
             builder.Entity<AuditLog>().HasIndex(a => new { a.TargetEntity, a.TargetId });
             builder.Entity<AuditLog>().HasIndex(a => a.Timestamp);
             builder.Entity<VolunteerAssignment>().HasIndex(a => a.VolunteerId);

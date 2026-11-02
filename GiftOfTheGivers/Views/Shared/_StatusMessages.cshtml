@@ -1,0 +1,15 @@
+@* Flash messages set via TempData by POST-redirect-GET actions. *@
+@if (TempData["SuccessMessage"] is string success)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="status">
+        @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["InfoMessage"] is string info)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="status">
+        @info
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}

@@ -219,29 +219,8 @@
     </div>
 </section>
 
-<!-- Statistics/Impact Section -->
-<section class="py-5 bg-primary text-white">
-    <div class="container">
-        <div class="row text-center g-4">
-            <div class="col-md-3">
-                <div class="display-4 fw-bold mb-2">1000+</div>
-                <div class="fs-5">Projects Completed</div>
-            </div>
-            <div class="col-md-3">
-                <div class="display-4 fw-bold mb-2">50,000+</div>
-                <div class="fs-5">Lives Impacted</div>
-            </div>
-            <div class="col-md-3">
-                <div class="display-4 fw-bold mb-2">25+</div>
-                <div class="fs-5">Countries Served</div>
-            </div>
-            <div class="col-md-3">
-                <div class="display-4 fw-bold mb-2">5000+</div>
-                <div class="fs-5">Active Volunteers</div>
-            </div>
-        </div>
-    </div>
-</section>
+<!-- Statistics/Impact Section (live data) -->
+@await Component.InvokeAsync("ImpactStats")
 
 <style>
     @@keyframes bounce {

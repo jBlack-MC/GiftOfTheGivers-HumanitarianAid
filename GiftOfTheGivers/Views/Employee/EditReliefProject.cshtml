@@ -12,6 +12,7 @@
             <div class="card shadow">
                 <div class="card-body">
                     <form asp-action="EditReliefProject" method="post">
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
                         <input type="hidden" asp-for="Id" />
 
                         <div class="mb-3">
@@ -64,6 +65,15 @@
                                     <input asp-for="FundsRequired" class="form-control" type="number" step="0.01" />
                                 </div>
                                 <span asp-validation-for="FundsRequired" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="OfflineFundsZar" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R</span>
+                                    <input asp-for="OfflineFundsZar" class="form-control" type="number" step="0.01" min="0" />
+                                </div>
+                                <div class="form-text">Money raised outside this website (cash, grants, pledges). Included in the public total.</div>
+                                <span asp-validation-for="OfflineFundsZar" class="text-danger"></span>
                             </div>
                         </div>
 

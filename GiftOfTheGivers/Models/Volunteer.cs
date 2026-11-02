@@ -27,10 +27,9 @@ namespace GiftOfTheGivers.Models
         [StringLength(200)]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
         [Phone]
         [StringLength(20)]
-        public string PhoneNumber { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
 
         [StringLength(200)]
         public string? Address { get; set; }
@@ -44,8 +43,10 @@ namespace GiftOfTheGivers.Models
         [StringLength(10)]
         public string? PostalCode { get; set; }
 
+        // Optional: the public form does not require it, and a missing value must stay missing
+        // rather than being invented.
         [DataType(DataType.Date)]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         [Required]
         public string Skills { get; set; } = string.Empty;
@@ -53,18 +54,23 @@ namespace GiftOfTheGivers.Models
         [Required]
         public string Availability { get; set; } = string.Empty; // Weekdays, Weekends, Anytime
 
+        [StringLength(200)]
         public string? EmergencyContactName { get; set; }
 
         [Phone]
+        [StringLength(20)]
         public string? EmergencyContactPhone { get; set; }
 
         public VolunteerStatus Status { get; set; } = VolunteerStatus.Pending;
 
-        public DateTime ApplicationDate { get; set; } = DateTime.Now;
+        public DateTime ApplicationDate { get; set; } = DateTime.UtcNow;
 
         public DateTime? ApprovalDate { get; set; }
 
         public string? Notes { get; set; }
+
+        /// <summary>When the applicant accepted the privacy notice (UTC). Null for legacy rows.</summary>
+        public DateTime? PrivacyConsentAt { get; set; }
 
         // Projects this volunteer is assigned to (many-to-many via VolunteerAssignment).
         public ICollection<VolunteerAssignment> Assignments { get; set; } = new List<VolunteerAssignment>();

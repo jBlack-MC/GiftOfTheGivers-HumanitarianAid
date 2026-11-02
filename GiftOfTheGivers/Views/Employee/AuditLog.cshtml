@@ -1,17 +1,37 @@
-@model IEnumerable<GiftOfTheGivers.Models.AuditLog>
-@{ ViewData["Title"] = "Audit log"; }
+@model GiftOfTheGivers.Models.ViewModels.PagedList<GiftOfTheGivers.Models.ViewModels.AuditLogEntryViewModel>
+@{
+    ViewData["Title"] = "Audit log";
+    var route = new Dictionary<string, string?>();
+}
 
 <div class="container my-5">
-    <h1 class="mb-4">Audit log</h1>
+    <h1 class="mb-2">Audit log</h1>
+    <p class="text-muted">Staff changes, access-level changes, payment confirmations and certificate access, newest first.</p>
+
     <div class="table-responsive">
-        <table class="table table-striped">
-            <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Entity</th><th>Target ID</th></tr></thead>
+        <table class="table table-striped align-middle small">
+            <thead>
+                <tr>
+                    <th scope="col">Timestamp (UTC)</th>
+                    <th scope="col">Actor</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Entity</th>
+                    <th scope="col">Details</th>
+                </tr>
+            </thead>
             <tbody>
-            @foreach (var entry in Model)
-            {
-                <tr><td>@entry.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td><td>@entry.UserId</td><td>@entry.Action</td><td>@entry.TargetEntity</td><td>@entry.TargetId</td></tr>
-            }
+                @foreach (var row in Model.Items)
+                {
+                    <tr>
+                        <td class="text-nowrap">@row.Entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@(row.UserEmail ?? row.Entry.UserId)</td>
+                        <td><code>@row.Entry.Action</code></td>
+                        <td>@row.Entry.TargetEntity @(row.Entry.TargetId > 0 ? "#" + row.Entry.TargetId : "")</td>
+                        <td>@row.Entry.Details</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
+    <partial name="_Pager" model="(Model.Page, Model.TotalPages, Model.TotalCount, (IDictionary<string, string?>)route)" />
 </div>

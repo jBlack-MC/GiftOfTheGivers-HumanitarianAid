@@ -1,0 +1,89 @@
+{
+  "Mode": "load",
+  "BaseUrl": "http://localhost:5080",
+  "ThinkTimeMs": 1000,
+  "RunAt": "2026-11-02T13:32:32.1769762Z",
+  "Overall": {
+    "Users": 100,
+    "Requests": 4769,
+    "Errors": 0,
+    "ErrorRate": 0,
+    "Throughput": 79.43376811831325,
+    "Average": 4.465483413713566,
+    "P50": 2.8775,
+    "P90": 6.8379,
+    "P95": 11.4347,
+    "P99": 47.8101,
+    "Max": 227.1713
+  },
+  "Stages": [
+    {
+      "Users": 100,
+      "Requests": 4761,
+      "Errors": 0,
+      "ErrorRate": 0,
+      "Throughput": 79.27208954071729,
+      "Average": 4.199173745011551,
+      "P50": 2.8741,
+      "P90": 6.7816,
+      "P95": 11.0702,
+      "P99": 44.3749,
+      "Max": 131.7326
+    }
+  ],
+  "Endpoints": {
+    "/": {
+      "Users": 0,
+      "Requests": 1213,
+      "Errors": 0,
+      "ErrorRate": 0,
+      "Throughput": 20.204059703819244,
+      "Average": 2.516004863973618,
+      "P50": 1.5249,
+      "P90": 3.4811,
+      "P95": 5.0528,
+      "P99": 16.1129,
+      "Max": 223.7431
+    },
+    "/Home/ReliefProjects": {
+      "Users": 0,
+      "Requests": 1203,
+      "Errors": 0,
+      "ErrorRate": 0,
+      "Throughput": 20.037496969245304,
+      "Average": 5.022813715710721,
+      "P50": 3.2278,
+      "P90": 7.3367,
+      "P95": 11.3649,
+      "P99": 30.1145,
+      "Max": 227.1713
+    },
+    "/Home/Donate": {
+      "Users": 0,
+      "Requests": 1193,
+      "Errors": 0,
+      "ErrorRate": 0,
+      "Throughput": 19.87093423467136,
+      "Average": 7.688328918692368,
+      "P50": 4.3678,
+      "P90": 11.7669,
+      "P95": 24.5776,
+      "P99": 72.3095,
+      "Max": 131.7326
+    },
+    "/health/live": {
+      "Users": 0,
+      "Requests": 1160,
+      "Errors": 0,
+      "ErrorRate": 0,
+      "Throughput": 19.32127721057735,
+      "Average": 2.611513103448276,
+      "P50": 0.5627,
+      "P90": 3.163,
+      "P95": 6.9102,
+      "P99": 48.3075,
+      "Max": 223.6798
+    }
+  },
+  "Errors": {}
+}

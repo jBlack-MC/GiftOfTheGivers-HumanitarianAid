@@ -1,44 +1,69 @@
+using System.Diagnostics;
 using GiftOfTheGivers.Data;
+using GiftOfTheGivers.Infrastructure;
 using GiftOfTheGivers.Models;
 using GiftOfTheGivers.Models.ViewModels;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using GiftOfTheGivers.Services;
 using Microsoft.AspNetCore.Authorization;
-using System.Diagnostics;
-using System.Globalization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace GiftOfTheGivers.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IAuditService _auditService;
+        private readonly IDonationService _donationService;
         private readonly IPaymentGateway _paymentGateway;
+        private readonly ICurrencyConverter _currencyConverter;
         private readonly IEmailService _emailService;
-        private readonly ILogger<HomeController> _logger;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IConfiguration _configuration;
+        private readonly IMemoryCache _cache;
+        private readonly CachingOptions _caching;
 
         public HomeController(
             ApplicationDbContext context,
-            IAuditService auditService,
+            IDonationService donationService,
             IPaymentGateway paymentGateway,
+            ICurrencyConverter currencyConverter,
             IEmailService emailService,
-            ILogger<HomeController> logger)
+            UserManager<AppUser> userManager,
+            IConfiguration configuration,
+            IMemoryCache cache,
+            IOptions<CachingOptions> caching)
         {
             _context = context;
-            _auditService = auditService;
+            _donationService = donationService;
             _paymentGateway = paymentGateway;
+            _currencyConverter = currencyConverter;
             _emailService = emailService;
-            _logger = logger;
+            _userManager = userManager;
+            _configuration = configuration;
+            _cache = cache;
+            _caching = caching.Value;
         }
 
         public async Task<IActionResult> Index()
         {
-            var featuredProjects = await _context.ReliefProjects
+            Task<List<ReliefProject>> LoadFeaturedAsync() => _context.ReliefProjects
+                .AsNoTracking()
                 .Where(p => p.Status == ProjectStatus.Active)
                 .OrderByDescending(p => p.CreatedDate)
                 .Take(3)
                 .ToListAsync();
+
+            // Cached briefly: the home page is the busiest page and was the stress-test bottleneck.
+            var featuredProjects = _caching.PublicPageSeconds > 0
+                ? await _cache.GetOrCreateAsync("featured-projects", entry =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(_caching.PublicPageSeconds);
+                    return LoadFeaturedAsync();
+                })
+                : await LoadFeaturedAsync();
 
             return View(featuredProjects);
         }
@@ -51,215 +76,142 @@ namespace GiftOfTheGivers.Controllers
         public async Task<IActionResult> ReliefProjects()
         {
             var projects = await _context.ReliefProjects
-                .OrderByDescending(p => p.CreatedDate)
+                .AsNoTracking()
+                .OrderBy(p => p.Status)
+                .ThenByDescending(p => p.CreatedDate)
                 .ToListAsync();
             return View(projects);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Donate(int? projectId)
+        public async Task<IActionResult> Donate(int? projectId, string? cancelled)
         {
-            var model = new DonateViewModel();
+            var model = new DonateViewModel { ReliefProjectId = projectId };
+            ViewData["PaymentCancelled"] = !string.IsNullOrEmpty(cancelled);
 
-            if (projectId.HasValue)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var project = await _context.ReliefProjects.FindAsync(projectId.Value);
-                if (project != null)
+                var user = await _userManager.GetUserAsync(User);
+                if (user is not null)
                 {
-                    model.ReliefProjectId = project.Id;
-                    model.ProjectTitle = project.Title;
+                    model.DonorName = user.FullName;
+                    model.DonorEmail = user.Email ?? string.Empty;
                 }
             }
 
-            model.AvailableProjects = await _context.ReliefProjects
-                .Where(p => p.Status == ProjectStatus.Active)
-                .OrderBy(p => p.Title)
-                .ToListAsync();
-
+            await PopulateDonateModelAsync(model);
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Donate(DonateViewModel model, int? projectId)
+        public async Task<IActionResult> Donate(DonateViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                await PopulateProjectsAsync(model);
+                await PopulateDonateModelAsync(model);
                 return View(model);
             }
 
-            var existingDonation = await _context.Donations
-                .FirstOrDefaultAsync(d => d.IdempotencyKey == model.IdempotencyToken);
-            if (existingDonation is not null)
+            var result = await _donationService.CaptureAsync(model, User.UserId(), HttpContext.RequestAborted);
+            if (result.Outcome == CaptureOutcome.ProjectUnavailable)
             {
-                TempData["Amount"] = existingDonation.Amount.ToString(CultureInfo.InvariantCulture);
-                TempData["Currency"] = existingDonation.Currency;
-                TempData["DonationType"] = existingDonation.DonationType;
-                TempData["TransactionRef"] = existingDonation.TransactionReference;
-                TempData["DonationId"] = existingDonation.Id;
-
-                return RedirectToAction(nameof(Confirmation));
-            }
-
-            var selectedProjectId = model.ReliefProjectId ?? projectId;
-
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                var donation = new Donation
-                {
-                    Amount = model.Amount,
-                    DonationDate = DateTime.UtcNow,
-                    PaymentMethod = model.PaymentMethod,
-                    Notes = model.Notes,
-                    IsAnonymous = model.IsAnonymous,
-                    DonorEmail = model.DonorEmail,
-                    DonationType = model.DonationType,
-                    Currency = model.Currency,
-                    ReliefProjectId = selectedProjectId,
-                    TransactionReference = Guid.NewGuid().ToString("N"),
-                    IdempotencyKey = model.IdempotencyToken,
-                    PaymentStatus = PaymentStatus.Pending,
-                    DonorId = User.Identity?.IsAuthenticated == true
-                        ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                        : null
-                };
-
-                _context.Donations.Add(donation);
-                await _context.SaveChangesAsync();
-
-                if (selectedProjectId.HasValue)
-                {
-                    var project = await _context.ReliefProjects.FindAsync(selectedProjectId.Value);
-                    if (project is null)
-                    {
-                        ModelState.AddModelError(nameof(model.ReliefProjectId), "The selected project no longer exists.");
-                        await transaction.RollbackAsync();
-                        await PopulateProjectsAsync(model);
-                        return View(model);
-                    }
-
-                    project.FundsRaised += model.Amount;
-                    await _context.SaveChangesAsync();
-                }
-
-                await transaction.CommitAsync();
-
-                TempData["Amount"] = donation.Amount.ToString(CultureInfo.InvariantCulture);
-                TempData["Currency"] = donation.Currency;
-                TempData["DonationType"] = donation.DonationType;
-                TempData["TransactionRef"] = donation.TransactionReference;
-                TempData["DonationId"] = donation.Id;
-
-                return RedirectToAction(nameof(Confirmation));
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                await transaction.RollbackAsync();
-                ModelState.AddModelError(string.Empty,
-                    "This project's funding total just changed — please try again.");
-                await PopulateProjectsAsync(model);
+                ModelState.AddModelError(nameof(model.ReliefProjectId),
+                    "The selected project is not accepting donations. Please choose another project.");
+                await PopulateDonateModelAsync(model);
                 return View(model);
             }
-            catch
+
+            var donation = result.Donation!;
+            if (_paymentGateway.IsEnabled && donation.PaymentStatus == PaymentStatus.Pending)
             {
-                await transaction.RollbackAsync();
-                throw;
+                return Redirect(_paymentGateway.BuildCheckoutRedirectUrl(donation, BuildCheckoutUrls(donation)));
             }
+
+            return RedirectToAction(nameof(Confirmation), new { reference = donation.TransactionReference });
         }
 
-        private async Task PopulateProjectsAsync(DonateViewModel model)
+        private CheckoutUrls BuildCheckoutUrls(Donation donation)
+        {
+            string Absolute(string configured, string? fallback) =>
+                !string.IsNullOrWhiteSpace(configured) ? configured : fallback!;
+
+            var reference = donation.TransactionReference!;
+            var returnUrl = Absolute(_configuration["PayFast:ReturnUrl"] ?? string.Empty,
+                Url.Action(nameof(Confirmation), "Home", null, Request.Scheme));
+            var cancelUrl = Absolute(_configuration["PayFast:CancelUrl"] ?? string.Empty,
+                Url.Action(nameof(Donate), "Home", null, Request.Scheme));
+            var notifyUrl = Absolute(_configuration["PayFast:NotifyUrl"] ?? string.Empty,
+                Url.Action("Notify", "Payments", null, Request.Scheme));
+
+            return new CheckoutUrls(
+                QueryString(returnUrl, "reference", reference),
+                QueryString(cancelUrl, "cancelled", reference),
+                notifyUrl);
+        }
+
+        private static string QueryString(string url, string key, string value) =>
+            Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(url, key, value);
+
+        private async Task PopulateDonateModelAsync(DonateViewModel model)
         {
             model.AvailableProjects = await _context.ReliefProjects
+                .AsNoTracking()
                 .Where(p => p.Status == ProjectStatus.Active)
                 .OrderBy(p => p.Title)
                 .ToListAsync();
+            model.ProjectTitle = model.AvailableProjects.FirstOrDefault(p => p.Id == model.ReliefProjectId)?.Title;
+            model.RatesToZar = _currencyConverter.RatesToZar;
+            model.PaymentsEnabled = _paymentGateway.IsEnabled;
+            model.PaymentsSandbox = _paymentGateway.IsSandbox;
         }
 
+        /// <summary>
+        /// Receipt page. Looked up by the unguessable transaction reference (not the sequential id),
+        /// so it works both after a direct submit and when PayFast returns the donor.
+        /// </summary>
         [AllowAnonymous]
         [HttpGet]
         [Route("Donate/Confirmation")]
-        public IActionResult Confirmation()
+        public async Task<IActionResult> Confirmation(string? reference)
         {
-            // Retrieve donation details from TempData
-            ViewBag.DonorName = TempData["DonorName"];
-            ViewBag.DonorEmail = TempData["DonorEmail"];
-            ViewBag.Amount = TempData["Amount"];
-            ViewBag.Currency = TempData["Currency"];
-            ViewBag.DonationType = TempData["DonationType"];
-            ViewBag.TransactionRef = TempData["TransactionRef"];
-            ViewBag.DonationId = TempData["DonationId"];
-
-            return View("DonationSuccess");
-        }
-
-        [Authorize(Roles = "Donor,Employee")]
-        [HttpGet]
-        [Route("Donate/Tax-Certificate/{id}")]
-        public async Task<IActionResult> TaxCertificate(int? id)
-        {
-            if (id == null)
+            if (string.IsNullOrWhiteSpace(reference))
             {
-                return NotFound();
+                return RedirectToAction(nameof(Donate));
             }
 
             var donation = await _context.Donations
+                .AsNoTracking()
                 .Include(d => d.ReliefProject)
-                .Include(d => d.Donor)
-                .FirstOrDefaultAsync(d => d.Id == id);
-
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (donation == null)
+                .FirstOrDefaultAsync(d => d.TransactionReference == reference);
+            if (donation is null)
             {
                 return NotFound();
             }
 
-            if (donation.DonorId != userId && !User.IsInRole("Employee"))
+            var userId = User.UserId();
+            return View("DonationSuccess", new DonationReceiptViewModel
             {
-                return StatusCode(403);
-            }
-
-            await _auditService.LogAsync(userId!, "CertificateViewed", nameof(Donation), donation.Id);
-
-            // Mark tax certificate as issued (if not already)
-            if (!donation.TaxCertificateIssued)
-            {
-                donation.TaxCertificateIssued = true;
-                await _context.SaveChangesAsync();
-            }
-
-            // Use the same view as DonorController
-            return View("~/Views/Donor/TaxCertificate.cshtml", donation);
+                Donation = donation,
+                PaymentsEnabled = _paymentGateway.IsEnabled,
+                CanViewCertificate = donation.PaymentStatus == PaymentStatus.Verified &&
+                    userId is not null &&
+                    (donation.DonorId == userId || User.IsInRole(ClaimsPrincipalExtensions.EmployeeRole))
+            });
         }
+
+        // Legacy certificate URLs; the Donor controller is now the single implementation.
+        [Authorize(Roles = "Donor,Employee")]
+        [HttpGet]
+        [Route("Donate/Tax-Certificate/{id:int}")]
+        public IActionResult TaxCertificate(int id) =>
+            RedirectToAction("TaxCertificate", "Donor", new { id });
 
         [Authorize(Roles = "Donor,Employee")]
         [HttpGet]
-        [Route("Donate/Tax-Certificate/{id}/download")]
-        public async Task<IActionResult> DownloadTaxCertificate(int id)
-        {
-            var donation = await _context.Donations
-                .Include(d => d.ReliefProject)
-                .Include(d => d.Donor)
-                .FirstOrDefaultAsync(d => d.Id == id);
-
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (donation == null)
-            {
-                return NotFound();
-            }
-
-            if (donation.DonorId != userId && !User.IsInRole("Employee"))
-            {
-                return StatusCode(403);
-            }
-
-            await _auditService.LogAsync(userId!, "CertificateDownloaded", nameof(Donation), donation.Id);
-
-            var pdf = Services.TaxCertificatePdf.Generate(donation);
-            return File(pdf, "application/pdf",
-                $"TaxCertificate_{GiftOfTheGivers.Helpers.TaxCertificateNumber.Format(donation.TransactionReference, donation.Id)}.pdf");
-        }
+        [Route("Donate/Tax-Certificate/{id:int}/download")]
+        public IActionResult DownloadTaxCertificate(int id) =>
+            RedirectToAction("DownloadTaxCertificate", "Donor", new { id });
 
         [HttpGet]
         public IActionResult Volunteer()
@@ -271,42 +223,43 @@ namespace GiftOfTheGivers.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Volunteer(VolunteerApplicationViewModel model)
         {
-            if (ModelState.IsValid)
+            if (model.DateOfBirth.HasValue &&
+                (model.DateOfBirth.Value > DateTime.UtcNow.AddYears(-16) || model.DateOfBirth.Value < DateTime.UtcNow.AddYears(-110)))
             {
-                // Split FullName into FirstName and LastName
-                var nameParts = model.FullName.Trim().Split(' ', 2);
-                var firstName = nameParts[0];
-                var lastName = nameParts.Length > 1 ? nameParts[1] : string.Empty;
-
-                var volunteer = new Volunteer
-                {
-                    UserId = User.Identity?.IsAuthenticated == true
-                        ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                        : null,
-                    FirstName = firstName,
-                    LastName = lastName,
-                    Email = model.Email,
-                    PhoneNumber = model.PhoneNumber ?? string.Empty,
-                    Address = model.Address,
-                    City = model.City,
-                    Province = model.Province,
-                    PostalCode = model.PostalCode,
-                    DateOfBirth = model.DateOfBirth ?? DateTime.Now.AddYears(-18),
-                    Skills = model.Skills,
-                    Availability = model.Availability,
-                    EmergencyContactName = model.EmergencyContactName,
-                    EmergencyContactPhone = model.EmergencyContactPhone,
-                    Status = VolunteerStatus.Pending,
-                    ApplicationDate = DateTime.Now
-                };
-
-                _context.Volunteers.Add(volunteer);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction("VolunteerConfirmation");
+                ModelState.AddModelError(nameof(model.DateOfBirth), "Volunteers must be at least 16 years old.");
             }
 
-            return View(model);
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var nameParts = model.FullName.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            var volunteer = new Volunteer
+            {
+                UserId = User.UserId(),
+                FirstName = nameParts[0],
+                LastName = nameParts.Length > 1 ? nameParts[1] : string.Empty,
+                Email = model.Email.Trim(),
+                PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber) ? null : model.PhoneNumber.Trim(),
+                Address = model.Address,
+                City = model.City,
+                Province = model.Province,
+                PostalCode = model.PostalCode,
+                DateOfBirth = model.DateOfBirth?.Date,
+                Skills = model.Skills,
+                Availability = model.Availability,
+                EmergencyContactName = model.EmergencyContactName,
+                EmergencyContactPhone = model.EmergencyContactPhone,
+                Status = VolunteerStatus.Pending,
+                ApplicationDate = DateTime.UtcNow,
+                PrivacyConsentAt = DateTime.UtcNow
+            };
+
+            _context.Volunteers.Add(volunteer);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(VolunteerConfirmation));
         }
 
         [HttpGet]
@@ -326,24 +279,25 @@ namespace GiftOfTheGivers.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Contact(ContactViewModel model)
         {
-                if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                    var inquiry = new Inquiry
-                    {
-                        Name = model.Name,
-                        Email = model.Email,
-                        Subject = model.Subject,
-                        Message = model.Message,
-                        SubmittedDate = DateTime.UtcNow
-                    };
-
-                    _context.Inquiries.Add(inquiry);
-                    await _context.SaveChangesAsync();
-                    await _emailService.SendContactAcknowledgementAsync(inquiry);
-                    return RedirectToAction(nameof(ContactConfirmation));
+                return View(model);
             }
 
-            return View(model);
+            var inquiry = new Inquiry
+            {
+                Name = model.Name.Trim(),
+                Email = model.Email.Trim(),
+                Subject = model.Subject.Trim(),
+                Message = model.Message,
+                SubmittedDate = DateTime.UtcNow,
+                PrivacyConsentAt = DateTime.UtcNow
+            };
+
+            _context.Inquiries.Add(inquiry);
+            await _context.SaveChangesAsync();
+            await _emailService.SendContactAcknowledgementAsync(inquiry);
+            return RedirectToAction(nameof(ContactConfirmation));
         }
 
         [HttpGet]

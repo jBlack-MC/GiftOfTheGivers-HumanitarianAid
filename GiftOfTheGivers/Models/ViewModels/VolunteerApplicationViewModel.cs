@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using GiftOfTheGivers.Models.ValidationAttributes;
 
 namespace GiftOfTheGivers.Models.ViewModels
 {
@@ -9,14 +10,6 @@ namespace GiftOfTheGivers.Models.ViewModels
         [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
 
-        [StringLength(100)]
-        [Display(Name = "First Name")]
-        public string FirstName { get; set; } = string.Empty;
-
-        [StringLength(100)]
-        [Display(Name = "Last Name")]
-        public string LastName { get; set; } = string.Empty;
-
         [Required]
         [EmailAddress]
         [StringLength(200)]
@@ -25,7 +18,7 @@ namespace GiftOfTheGivers.Models.ViewModels
 
         [Phone]
         [StringLength(20)]
-        [Display(Name = "Phone Number")]
+        [Display(Name = "Phone Number (optional)")]
         public string? PhoneNumber { get; set; }
 
         [StringLength(200)]
@@ -42,22 +35,30 @@ namespace GiftOfTheGivers.Models.ViewModels
         public string? PostalCode { get; set; }
 
         [DataType(DataType.Date)]
-        [Display(Name = "Date of Birth")]
+        [Display(Name = "Date of Birth (optional)")]
         public DateTime? DateOfBirth { get; set; }
 
         [Required]
+        [StringLength(2000)]
         [Display(Name = "Skills")]
         public string Skills { get; set; } = string.Empty;
 
         [Required]
+        [StringLength(200)]
         [Display(Name = "Availability")]
         public string Availability { get; set; } = string.Empty;
 
+        [StringLength(200)]
         [Display(Name = "Emergency Contact Name")]
         public string? EmergencyContactName { get; set; }
 
         [Phone]
+        [StringLength(20)]
         [Display(Name = "Emergency Contact Phone")]
         public string? EmergencyContactPhone { get; set; }
+
+        [MustBeTrue]
+        [Display(Name = "I have read the privacy notice")]
+        public bool PrivacyConsent { get; set; }
     }
 }

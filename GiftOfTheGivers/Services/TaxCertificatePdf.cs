@@ -5,23 +5,45 @@ using QuestPDF.Infrastructure;
 
 namespace GiftOfTheGivers.Services
 {
+    /// <summary>Who issues a certificate. Comes from the <c>Organisation</c> configuration section.</summary>
+    public sealed record CertificateIssuer(string OrganisationName, string PboReference, bool IsOfficial)
+    {
+        public static CertificateIssuer Demo { get; } = new("Gift of the Givers Foundation", string.Empty, false);
+
+        public static CertificateIssuer From(OrganisationOptions options) =>
+            new(options.Name, options.PboReference, options.CertificatesAreOfficial);
+    }
+
     /// <summary>
-    /// Builds the placeholder Section 18A tax certificate as a PDF.
-    /// Part 1 prototype: the figures are symbolic and this is not a valid
-    /// tax document.
+    /// Builds the Section 18A donation certificate as a PDF. Callers must only pass
+    /// <see cref="PaymentStatus.Verified"/> donations. Until the organisation's PBO reference is
+    /// configured and demo mode is off, the certificate is clearly marked as a demonstration.
     /// </summary>
     public static class TaxCertificatePdf
     {
         private static readonly string Navy = "#16294D";
         private static readonly string Accent = "#E8384F";
 
-        public static byte[] Generate(Donation donation)
+        public static byte[] Generate(Donation donation) => Generate(donation, CertificateIssuer.Demo);
+
+        public static string DonorDisplayName(Donation donation)
         {
-            var donorName = donation.IsAnonymous || donation.Donor is null
-                ? "Anonymous Donor"
-                : (string.IsNullOrWhiteSpace(donation.Donor.FullName)
-                    ? donation.Donor.UserName ?? "Donor"
-                    : donation.Donor.FullName);
+            if (donation.IsAnonymous)
+            {
+                return "Anonymous Donor";
+            }
+
+            if (!string.IsNullOrWhiteSpace(donation.Donor?.FullName))
+            {
+                return donation.Donor.FullName;
+            }
+
+            return string.IsNullOrWhiteSpace(donation.DonorName) ? "Donor" : donation.DonorName;
+        }
+
+        public static byte[] Generate(Donation donation, CertificateIssuer issuer)
+        {
+            var donorName = DonorDisplayName(donation);
 
             var reference = GiftOfTheGivers.Helpers.TaxCertificateNumber.Format(
                 donation.TransactionReference,
@@ -53,7 +75,7 @@ namespace GiftOfTheGivers.Services
                         {
                             text.Span("This certifies that ");
                             text.Span(donorName).SemiBold();
-                            text.Span(" made the following donation to the Gift of the Givers Foundation, a registered Public Benefit Organisation.");
+                            text.Span($" made the following donation to {issuer.OrganisationName}.");
                         });
 
                         body.Item().Table(table =>
@@ -71,17 +93,21 @@ namespace GiftOfTheGivers.Services
                             }
 
                             Row("Certificate number", reference);
-                            Row("Date issued", DateTime.Now.ToString("yyyy-MM-dd"));
+                            Row("Date issued", DateTime.UtcNow.ToString("yyyy-MM-dd"));
+                            Row("PBO reference", string.IsNullOrWhiteSpace(issuer.PboReference) ? "Not configured" : issuer.PboReference);
                             Row("Donation date", donation.DonationDate.ToString("yyyy-MM-dd"));
-                            Row("Amount", $"{donation.Currency} {donation.Amount:N2}");
+                            Row("Amount", donation.Currency == "ZAR"
+                                ? $"ZAR {donation.Amount:N2}"
+                                : $"{donation.Currency} {donation.Amount:N2} (ZAR {donation.AmountZar:N2})");
                             Row("Donation type", donation.DonationType);
                             Row("Payment method", donation.PaymentMethod);
                             Row("Allocated to", project);
-                            Row("Received with thanks by", "Gift of the Givers Foundation");
+                            Row("Received with thanks by", issuer.OrganisationName);
                         });
 
-                        body.Item().PaddingTop(6).Text(
-                            "Issued in terms of section 18A of the Income Tax Act. Retain this certificate for your tax records.")
+                        body.Item().PaddingTop(6).Text(issuer.IsOfficial
+                                ? "Issued in terms of section 18A of the Income Tax Act. Retain this certificate for your tax records."
+                                : "DEMONSTRATION ONLY: this document has the layout of a section 18A certificate but is not valid for tax purposes.")
                             .FontColor(Colors.Grey.Darken1);
 
                         body.Item().PaddingTop(30).Row(row =>
@@ -103,8 +129,9 @@ namespace GiftOfTheGivers.Services
                     page.Footer().Column(footer =>
                     {
                         footer.Item().LineHorizontal(0.5f).LineColor(Colors.Grey.Lighten1);
-                        footer.Item().PaddingTop(6).Text(
-                            "Portfolio of Evidence Part 1 prototype — symbolic values, not a valid tax document.")
+                        footer.Item().PaddingTop(6).Text(issuer.IsOfficial
+                                ? $"{issuer.OrganisationName} · PBO {issuer.PboReference}"
+                                : "Demonstration certificate — not valid for tax purposes until the organisation's PBO details are configured.")
                             .FontSize(8).FontColor(Colors.Grey.Medium);
                     });
                 });

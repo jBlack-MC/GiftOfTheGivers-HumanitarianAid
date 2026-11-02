@@ -5,7 +5,9 @@ namespace GiftOfTheGivers.Services;
 
 public class AuditService(ApplicationDbContext context) : IAuditService
 {
-    public async Task LogAsync(string userId, string action, string targetEntity, int targetId)
+    private const int MaxDetailsLength = 1000;
+
+    public void Record(string userId, string action, string targetEntity, int targetId, string? details = null)
     {
         context.AuditLogs.Add(new AuditLog
         {
@@ -13,8 +15,14 @@ public class AuditService(ApplicationDbContext context) : IAuditService
             Action = action,
             TargetEntity = targetEntity,
             TargetId = targetId,
+            Details = details is { Length: > MaxDetailsLength } ? details[..MaxDetailsLength] : details,
             Timestamp = DateTime.UtcNow
         });
+    }
+
+    public async Task LogAsync(string userId, string action, string targetEntity, int targetId, string? details = null)
+    {
+        Record(userId, action, targetEntity, targetId, details);
         await context.SaveChangesAsync();
     }
 }

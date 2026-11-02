@@ -87,6 +87,15 @@ ScaffoldingReadMe.txt
 appsettings.Development.json
 appsettings.Local.json
 
+# Azure Functions local settings (copy local.settings.example.json)
+local.settings.json
+
+# Scratch output that should never be committed
+allfiles.txt
+helpers.txt
+testlog.txt
+*.trx
+
 # Compiled Source
 *.dll
 *.exe
@@ -121,3 +130,6 @@ npm-debug.log*
 
 # Rider
 .idea/
+
+# Python bytecode from docs/tools
+__pycache__/

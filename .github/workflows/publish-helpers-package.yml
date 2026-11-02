@@ -29,20 +29,28 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          global-json-file: global.json
 
       - name: Resolve package version
         id: version
         shell: bash
+        env:
+          # Passed via env (not ${{ }} interpolation) so input text can never become shell code.
+          INPUT_VERSION: ${{ inputs.package_version }}
         run: |
           set -euo pipefail
 
           if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
             resolved="${GITHUB_REF_NAME#helpers-v}"
-          elif [[ -n "${{ inputs.package_version }}" ]]; then
-            resolved="${{ inputs.package_version }}"
+          elif [[ -n "${INPUT_VERSION:-}" ]]; then
+            resolved="$INPUT_VERSION"
           else
             resolved="1.0.0-ci.${GITHUB_RUN_NUMBER}"
+          fi
+
+          if [[ ! "$resolved" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'$resolved' is not a valid SemVer package version"
+            exit 1
           fi
 
           echo "package_version=$resolved" >> "$GITHUB_OUTPUT"
@@ -50,15 +58,15 @@ jobs:
       - name: Check publish credentials
         id: publish-credentials
         shell: bash
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACTS_PAT }}
         run: |
           set -euo pipefail
 
-          if [[ -z "${{ secrets.AZURE_ARTIFACTS_PAT }}" ]]; then
-            echo "::warning::AZURE_ARTIFACTS_PAT is not configured. Skipping package publish."
-            echo "can_publish=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "can_publish=true" >> "$GITHUB_OUTPUT"
-          fi
+
+
+      - name: Test helpers before publishing
+        run: dotnet test GiftOfTheGivers.Tests/GiftOfTheGivers.Tests.csproj --configuration Release --filter "FullyQualifiedName~HelperCalculationsTests"
 
       - name: Pack GiftOfTheGivers.Helpers
         if: steps.publish-credentials.outputs.can_publish == 'true'
@@ -68,13 +76,12 @@ jobs:
             --output ./artifacts/nuget \
             -p:PackageVersion=${{ steps.version.outputs.package_version }}
 
-      - name: Add Azure Artifacts source
-        if: steps.publish-credentials.outputs.can_publish == 'true'
+
         run: |
-          dotnet nuget add source "$AZURE_ARTIFACTS_NUGET_URL" \
-            --name "giftgivers-helpers" \
+          dotnet nuget update source "giftgivers-helpers" \
+            --source "$AZURE_ARTIFACTS_NUGET_URL" \
             --username "github-actions" \
-            --password "${{ secrets.AZURE_ARTIFACTS_PAT }}" \
+            --password "$AZURE_ARTIFACTS_PAT" \
             --store-password-in-clear-text
 
       - name: Push package
@@ -82,4 +89,5 @@ jobs:
         run: |
           dotnet nuget push "./artifacts/nuget/*.nupkg" \
             --source "giftgivers-helpers" \
+            --api-key "AzureArtifacts" \
             --skip-duplicate

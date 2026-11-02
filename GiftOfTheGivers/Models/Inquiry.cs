@@ -21,4 +21,7 @@ public class Inquiry
     public DateTime SubmittedDate { get; set; } = DateTime.UtcNow;
 
     public bool Handled { get; set; }
+
+    /// <summary>When the sender accepted the privacy notice (UTC). Null for legacy rows.</summary>
+    public DateTime? PrivacyConsentAt { get; set; }
 }

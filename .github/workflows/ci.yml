@@ -2,24 +2,110 @@ name: CI
 
 "on":
   push:
-    branches: [main, 'feature/**']
+    branches: [main, 'feature/**', 'fix/**']
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
 jobs:
   build-and-test:
+    name: Build, test, audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup .NET
+
+      - name: Setup .NET (version from global.json)
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-      - name: Restore
-        run: dotnet restore
+          global-json-file: global.json
+
+      - name: Restore (lock files enforced)
+        run: dotnet restore GiftOfTheGivers.slnx --locked-mode
+
       - name: Build
-        run: dotnet build --no-restore --configuration Release
-      - name: Test
-        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"
-      - name: Check for vulnerable packages
-        run: dotnet list package --vulnerable --include-transitive
+        run: dotnet build GiftOfTheGivers.slnx --no-restore --configuration Release
+
+      - name: Test with coverage
+        run: >
+          dotnet test GiftOfTheGivers.slnx --no-build --configuration Release
+          --logger "trx;LogFileName=test-results.trx"
+          --collect "XPlat Code Coverage"
+          --results-directory ./TestResults
+
+      - name: Upload test results and coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
+
+      - name: Fail on vulnerable packages
+        run: |
+          dotnet list GiftOfTheGivers.slnx package --vulnerable --include-transitive | tee vulnerable.log
+          if grep -q "has the following vulnerable packages" vulnerable.log; then
+            echo "::error::Vulnerable NuGet packages detected"
+            exit 1
+          fi
+
+      - name: Fail on EF model drift (model changed without a migration)
+        run: |
+          dotnet tool restore
+          dotnet ef migrations has-pending-model-changes \
+            --project GiftOfTheGivers/GiftOfTheGivers.csproj \
+            --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj \
+            --configuration Release --no-build
+
+  migrations:
+    name: Apply migrations to SQL Server
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Ci_Only_Passw0rd!"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Ci_Only_Passw0rd!' -Q 'SELECT 1' -C"
+          --health-interval 10s --health-timeout 5s --health-retries 20
+    env:
+      # Throwaway CI-only container credentials, not a secret.
+      CI_CONNECTION: "Server=localhost,1433;Database=GotgCi;User Id=sa;Password=Ci_Only_Passw0rd!;Encrypt=False;TrustServerCertificate=True"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet tool restore
+      - run: dotnet build GiftOfTheGivers/GiftOfTheGivers.csproj --configuration Release
+
+      - name: Apply every migration to an empty database
+        run: >
+          dotnet ef database update --no-build --configuration Release
+          --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj
+          --connection "$CI_CONNECTION"
+
+      - name: Roll back the latest migration and re-apply it
+        run: |
+          EF="dotnet ef --no-build --configuration Release --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj"
+          previous=$($EF migrations list --no-connect | tail -n 2 | head -n 1 | awk '{print $1}')
+          $EF database update "$previous" --connection "$CI_CONNECTION"
+          $EF database update --connection "$CI_CONNECTION"
+
+      - name: Generate idempotent migration script
+        run: >
+          dotnet ef migrations script --idempotent --no-build --configuration Release
+          --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj
+          --output migrations/migrate.sql
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: migration-script
+          path: migrations/migrate.sql

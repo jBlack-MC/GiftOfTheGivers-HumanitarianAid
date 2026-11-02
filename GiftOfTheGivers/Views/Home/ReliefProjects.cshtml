@@ -76,7 +76,7 @@
                                         </div>
                                     </div>
                                     <small class="text-muted">
-                                        @project.FundsRaised.ToString("C0") raised of @project.FundsRequired.ToString("C0") goal
+                                        @Money.Zar(project.FundsRaised, 0) raised of @Money.Zar(project.FundsRequired, 0) goal
                                     </small>
                                 </div>
                             </div>

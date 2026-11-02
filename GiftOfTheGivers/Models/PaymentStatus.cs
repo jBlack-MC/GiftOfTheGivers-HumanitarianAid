@@ -3,10 +3,10 @@ namespace GiftOfTheGivers.Models
     /// <summary>
     /// Settlement state of a <see cref="Donation"/>.
     ///
-    /// A donation is recorded as <see cref="Pending"/> and stays that way until a
-    /// payment provider confirms the money actually arrived. Nothing in this prototype
-    /// marks a donation <see cref="Verified"/> (no gateway is wired up yet), so the
-    /// system no longer implies that every captured donation is settled.
+    /// A donation is recorded as <see cref="Pending"/> when the donor submits the form and stays
+    /// that way until PayFast's Instant Transaction Notification (ITN) confirms the payment, at
+    /// which point <c>DonationService.ApplyPaymentNotificationAsync</c> marks it
+    /// <see cref="Verified"/>.
     /// </summary>
     public enum PaymentStatus
     {

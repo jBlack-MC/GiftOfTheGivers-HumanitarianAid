@@ -1,6 +1,96 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+﻿@inject Microsoft.Extensions.Options.IOptions<GiftOfTheGivers.Services.OrganisationOptions> OrganisationOptions
+@{
+    ViewData["Title"] = "Privacy Notice";
+    var organisation = OrganisationOptions.Value;
+    var privacyContact = string.IsNullOrWhiteSpace(organisation.InformationOfficerEmail)
+        ? organisation.ContactEmail
+        : organisation.InformationOfficerEmail;
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-9 mx-auto">
+            <h1 class="display-5 mb-3">Privacy Notice</h1>
+            <p class="lead">How @organisation.Name collects, uses and protects your personal information under the
+                Protection of Personal Information Act, 2013 (POPIA).</p>
+
+            <div class="alert alert-warning" role="note">
+                <strong>Draft for legal review.</strong> This notice describes what the software actually does. The
+                organisation must confirm the retention periods, Information Officer and lawful bases with its legal
+                advisers before the site handles real personal information.
+            </div>
+
+            <h2 class="h4 mt-5">1. Who is responsible</h2>
+            <p>@organisation.Name is the responsible party for the personal information processed on this site.
+                Privacy requests can be sent to <a href="mailto:@privacyContact">@privacyContact</a>.</p>
+
+            <h2 class="h4 mt-5">2. What we collect and why</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle small">
+                    <thead class="table-light">
+                        <tr><th scope="col">When you…</th><th scope="col">We collect</th><th scope="col">Why</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Donate</td>
+                            <td>Name, email, amount, currency, project, optional message, payment reference</td>
+                            <td>To process and confirm your payment, issue receipts and donation certificates, and keep financial records</td>
+                        </tr>
+                        <tr>
+                            <td>Apply to volunteer</td>
+                            <td>Name, email, optional phone, city, skills, availability; optionally date of birth and an emergency contact</td>
+                            <td>To assess your application, contact you and coordinate deployments safely</td>
+                        </tr>
+                        <tr>
+                            <td>Contact us</td>
+                            <td>Name, email, subject and message</td>
+                            <td>To reply to you</td>
+                        </tr>
+                        <tr>
+                            <td>Register an account</td>
+                            <td>Name, email, password (stored only as a salted hash)</td>
+                            <td>To let you sign in and see your donation history</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>We ask for your consent on each form. You can withdraw consent at any time by contacting us; this does not
+                affect records we must keep by law (for example donation records for tax purposes).</p>
+
+            <h2 class="h4 mt-5">3. Who we share it with</h2>
+            <ul>
+                <li><strong>PayFast</strong> processes card and EFT payments. We never receive or store your card details.</li>
+                <li><strong>SendGrid</strong> (when enabled) delivers confirmation emails.</li>
+                <li><strong>Microsoft Azure</strong> hosts the application and database.</li>
+                <li><strong>Google Fonts and jsDelivr</strong> serve fonts and icons, which means your browser contacts them when pages load.</li>
+            </ul>
+            <p>Authorised staff of the organisation can see donation, volunteer and inquiry records. Staff access is
+                granted individually and every access-level change is recorded in an audit log.</p>
+
+            <h2 class="h4 mt-5">4. How long we keep it</h2>
+            <ul>
+                <li>Donation records: as long as tax law requires (proposed: 5 years after the end of the tax year).</li>
+                <li>Volunteer applications: while you volunteer with us, and up to 2 years after your last activity (proposed).</li>
+                <li>Contact inquiries: up to 1 year after the inquiry is handled (proposed).</li>
+            </ul>
+
+            <h2 class="h4 mt-5">5. Your rights</h2>
+            <p>Under POPIA you may ask to access, correct or delete your personal information, object to processing, and
+                lodge a complaint with the Information Regulator (South Africa). Account holders can download or delete
+                their account data from <a asp-area="Identity" asp-page="/Account/Manage/PersonalData">Manage account → Personal data</a>.</p>
+
+            <h2 class="h4 mt-5">6. Cookies and browser storage</h2>
+            <ul>
+                <li><strong>Sign-in cookie</strong> — keeps you signed in (essential).</li>
+                <li><strong>Anti-forgery cookie</strong> — protects forms against cross-site request forgery (essential).</li>
+                <li><strong>Temporary message cookie</strong> — shows one-off confirmation messages (essential).</li>
+                <li><strong>Session storage</strong> — remembers that you have seen the intro animation for this browser session.</li>
+            </ul>
+            <p>We do not use advertising or analytics cookies.</p>
+
+            <h2 class="h4 mt-5">7. Security</h2>
+            <p>Data is sent over HTTPS, passwords are hashed, staff pages require the Employee role, and payment
+                confirmations are verified with PayFast before they are recorded.</p>
+        </div>
+    </div>
+</div>

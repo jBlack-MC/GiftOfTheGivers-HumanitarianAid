@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+@inject Microsoft.Extensions.Options.IOptions<GiftOfTheGivers.Services.OrganisationOptions> OrganisationOptions
+@{
+    var organisation = OrganisationOptions.Value;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -19,12 +23,12 @@
         } catch (e) {}
       })();
     </script>
-    <script type="importmap"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/GiftOfTheGivers.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
@@ -87,7 +91,12 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" asp-controller="Employee" asp-action="ReliefProjects">Manage Projects</a></li>
                                     <li><a class="dropdown-item" asp-controller="Employee" asp-action="Volunteers">Manage Volunteers</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Employee" asp-action="Donations">View Donations</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Employee" asp-action="Donations">Donations</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Employee" asp-action="FundingReconciliation">Funding Reconciliation</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Employee" asp-action="Inquiries">Inquiries</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Employee" asp-action="StaffAccess">Staff Access</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Employee" asp-action="AuditLog">Audit Log</a></li>
                                 </ul>
                             </li>
                         }
@@ -106,6 +115,7 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            <partial name="_StatusMessages" />
             @RenderBody()
         </main>
     </div>
@@ -129,10 +139,20 @@
                 <div class="col-md-4">
                     <h6 class="text-uppercase small mb-3" style="letter-spacing:.05em;">Contact Information</h6>
                     <p class="small mb-0">
-                        <i class="bi bi-envelope-fill me-2"></i>info@giftofthegivers.org<br>
-                        <i class="bi bi-telephone-fill me-2"></i>+27 (0) 12 345 6789<br>
-                        <i class="bi bi-geo-alt-fill me-2"></i>123 Main Street, Cape Town
+                        <i class="bi bi-envelope-fill me-2" aria-hidden="true"></i><a href="mailto:@organisation.ContactEmail" class="text-muted">@organisation.ContactEmail</a><br>
+                        @if (!string.IsNullOrWhiteSpace(organisation.ContactPhone))
+                        {
+                            <i class="bi bi-telephone-fill me-2" aria-hidden="true"></i>@organisation.ContactPhone<br>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(organisation.Address))
+                        {
+                            <i class="bi bi-geo-alt-fill me-2" aria-hidden="true"></i>@organisation.Address
+                        }
                     </p>
+                    @if (organisation.IsDemo)
+                    {
+                        <p class="small mt-2 mb-0"><span class="badge bg-warning text-dark">Demonstration site</span> No real payments or tax certificates.</p>
+                    }
                 </div>
             </div>
             <hr>

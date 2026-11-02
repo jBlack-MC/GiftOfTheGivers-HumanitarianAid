@@ -1,6 +1,6 @@
 # Gift of the Givers - Humanitarian Aid Management System
 
-A comprehensive web application for managing humanitarian aid operations, built with ASP.NET Core MVC (.NET 10).
+A web application for managing humanitarian aid operations — relief projects, online donations, volunteers and donor tax certificates — built with ASP.NET Core MVC (.NET 10).
 
 ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)
 ![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet&logoColor=white)
@@ -9,324 +9,253 @@ A comprehensive web application for managing humanitarian aid operations, built 
 ![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
 ![License](https://img.shields.io/badge/license-Educational-lightgrey)
 
+> **Status: demonstration system (beta-quality code, not yet production).** It is an academic project that
+> uses the name of a real NGO for illustration. Payments run against the PayFast **sandbox** by default and
+> tax certificates are marked *demonstration* until real organisation details are configured. See
+> [docs/deliverables](docs/deliverables/) for the full product, technical and audit documentation.
+
 🔗 **Live demo**: [giftgivers-app-bvefdybyc7baguaq.southafricanorth-01.azurewebsites.net](https://giftgivers-app-bvefdybyc7baguaq.southafricanorth-01.azurewebsites.net/)
-> Hosted on Azure App Service's Free (F1) tier — no "Always On", so the first request after a period of inactivity may take 10-20s to cold-start.
->
-> **🔑 Demo login** (works on the live site and locally)
->
-> | Role | Email | Password |
-> | --- | --- | --- |
-> | **Employee** | `employee@giftofthegivers.org` | `Employee#123` |
-> | **Donor** | `donor@example.com` | `Donor#123` |
->
-> Seeded automatically on first run by `Data/DbSeeder.cs` — see [Demo / seeded accounts](#demo--seeded-accounts) below for details.
+(Azure App Service Free tier — the first request after idle can take 10–20 s.)
 
 ## 📑 Contents
 
-- [Project Overview](#-project-overview)
 - [Features](#-features)
 - [Technology Stack](#️-technology-stack)
 - [Getting Started](#-getting-started)
+- [Configuration](#️-configuration)
+- [Accounts, Roles and Staff Access](#-accounts-roles-and-staff-access)
+- [Payments and Donations](#-payments-and-donations)
+- [Testing](#-testing)
+- [Database and Migrations](#️-database-and-migrations)
+- [CI/CD and Deployment](#-cicd-and-deployment)
 - [Project Structure](#️-project-structure)
-- [Key Models](#-key-models)
-- [Authentication & Authorization](#-authentication--authorization)
-- [UI Features](#-ui-features)
-- [License](#-license)
-- [Contributing](#-contributing)
-- [Acknowledgments](#-acknowledgments)
-
-## 📋 Project Overview
-
-This application supports the Gift of the Givers Foundation's mission to provide humanitarian aid by offering a complete platform for:
-
-- **Public Portal**: Information about relief projects, donation processing, and volunteer registration
-- **Donor Area**: Donation tracking, tax certificate management, and donor dashboard
-- **Employee Area**: Relief project management, volunteer coordination, and donation oversight
+- [Documentation and Audits](#-documentation-and-audits)
+- [Known Limitations](#️-known-limitations)
+- [Security](#-security)
 
 ## 🚀 Features
 
-### Public Pages
+### Public site
 
-- **Home** - Landing page with mission statement and project highlights
-- **About** - Organization information and impact statistics
-- **Relief Projects** - Browse active humanitarian projects
-- **Donate** - Multi-currency donation system (ZAR, USD, EUR) with one-time and recurring options
-- **Volunteer** - Simplified volunteer registration form
-- **Contact** - Contact form for inquiries
+- Home, About (live impact figures from the database), Relief Projects with funding progress
+- **Donate** in ZAR, USD or EUR → redirected to **PayFast** to pay; foreign currency is converted to rand at a configured rate
+- Donation receipt by unguessable reference, showing live payment status
+- Volunteer application and Contact form, both with privacy consent
+- Privacy notice (POPIA) — draft pending legal review
 
-### Donor Portal (Authenticated)
+### Donor portal (Donor role)
 
-- Donor dashboard with donation history
-- Tax-deductible certificate generation
-- Donation details and tracking
-- Recurring donation management
+- Dashboard of confirmed donations and totals (in rand), full donation history with payment status
+- Section 18A-style donation certificate (HTML + PDF) — **only for donations confirmed by PayFast**
 
-### Employee Portal (Authenticated)
+### Employee portal (Employee role)
 
-- Relief project creation and management
-- Project update system
-- Volunteer application review and approval
-- Donation oversight and reporting
+- Relief projects: create/edit, offline funds, project updates
+- Volunteers: filter by status, approve/reject, assign approved volunteers to projects
+- Donations: filter by status, CSV export (formula-injection safe)
+- **Funding reconciliation**: compares each project's total with offline funds + paid donations
+- Inquiries, **Staff Access** (grant/revoke the Employee role), **Audit Log** of every staff action
 
 ## 🛠️ Technology Stack
 
-- **Framework**: ASP.NET Core MVC (.NET 10)
-- **Database**: Azure SQL Database via Entity Framework Core
-- **Authentication**: ASP.NET Core Identity
-- **UI**: Bootstrap 5 + Bootstrap Icons
-- **PDF generation**: QuestPDF (donor tax certificates)
-- **Development Environment**: Visual Studio 2026
+| Area | Technology |
+| --- | --- |
+| Web | ASP.NET Core MVC + Razor Pages (Identity UI), .NET 10 |
+| Data | Entity Framework Core 10 on SQL Server / Azure SQL (LocalDB for development) |
+| Identity | ASP.NET Core Identity (cookies, roles: Donor, Employee) |
+| Payments | PayFast (redirect checkout + ITN webhook) |
+| Email | SendGrid (optional; no-op when unconfigured) |
+| PDF | QuestPDF (Community licence) |
+| Logging | Serilog (console, request logging) |
+| UI | Bootstrap 5, Bootstrap Icons |
+| Serverless | Azure Functions (isolated worker) — key-protected certificate endpoint |
+| Tests | xUnit, `WebApplicationFactory` integration tests, EF InMemory |
+| CI/CD | GitHub Actions (CI, CD to GHCR, Azure DevOps mirror, NuGet publish), Azure Pipelines |
 
 ## 📦 Getting Started
 
-### Mirror GitHub pushes to Azure DevOps
-
-The repository includes a GitHub Actions workflow that mirrors every branch
-and tag push to Azure DevOps.
-
-1. Create the destination Git repository in Azure DevOps.
-2. Create an Azure DevOps PAT with **Code: Read & write** permission.
-3. Add these GitHub repository secrets under **Settings → Secrets and variables → Actions**:
-   - `AZURE_DEVOPS_REPO_URL`: for example, `https://dev.azure.com/ORG/PROJECT/_git/REPO`
-   - `AZURE_DEVOPS_PAT`: the Azure DevOps PAT
-4. Push to GitHub. The `Mirror to Azure DevOps` workflow will synchronize all branches and tags.
-
-The workflow uses `git push --mirror`, so deleted GitHub branches and tags are
-also deleted from the Azure DevOps mirror. Do not make independent changes in
-the Azure DevOps repository.
-
-### Publish NuGet package to Azure Artifacts
-
-The repository includes a GitHub Actions workflow (`Publish Helpers Package to Azure Artifacts`) that packs and publishes `GiftOfTheGivers.Helpers` to this feed:
-
-- `https://pkgs.dev.azure.com/ST10438928/663d5a52-1332-4463-92cb-b12591f7fde0/_packaging/giftgivers-helpers/nuget/v3/index.json`
-
-1. Create an Azure DevOps PAT with **Packaging: Read & write** permission.
-2. Add this GitHub repository secret under **Settings → Secrets and variables → Actions**:
-   - `AZURE_ARTIFACTS_PAT`: the Azure DevOps PAT
-3. Push `main` to publish an automatic CI package (`1.0.0-ci.<runNumber>`), or push a version tag to publish a fixed version:
-
-   ```bash
-   git tag helpers-v1.0.1
-   git push origin helpers-v1.0.1
-   ```
-
-If you do not see packages in Azure DevOps Artifacts, open GitHub **Actions** and check the latest `Publish Helpers Package to Azure Artifacts` run first.
-
-### Azure Pipelines + Azure Environment deployment
-
-The repository contains `azure-pipelines.yml` so the mirrored Azure DevOps repo can build/test automatically, publish an artifact, and deploy from `main` to an Azure DevOps environment.
-
-1. In Azure DevOps, open the mirrored repo and create a pipeline from existing YAML: `azure-pipelines.yml`.
-2. Create or confirm an Azure Resource Manager service connection that can deploy to your App Service.
-3. In the pipeline variables, set:
-   - `azureServiceConnection` = your service connection name
-   - `azureWebAppName` = your Azure App Service name
-4. In Azure DevOps, create an environment named `giftgivers-dev` (Pipelines → Environments).
-5. Push to GitHub `main`.
-
-Flow after setup:
-- GitHub push triggers `Mirror to Azure DevOps`
-- Azure DevOps receives the mirrored commit
-- `azure-pipelines.yml` runs CI
-- If branch is `main` and deployment variables are set, it deploys to `giftgivers-dev`
-
 ### Prerequisites
 
-- **.NET 10 SDK** — version is pinned in [global.json](global.json) (currently `10.0.401`); `dotnet build` will fail fast with a clear error if it's missing instead of silently using a different SDK.
-- **SQL Server** — either **LocalDB** (ships with Visual Studio, Windows-only) or access to the team's **Azure SQL Database** (see [DATABASE_SETUP.md](DATABASE_SETUP.md)). Mac/Linux contributors should use the [Docker Compose](#docker-app--sql-server) setup instead of LocalDB.
-- **EF Core tools** — `dotnet-ef` is pinned as a local tool in [.config/dotnet-tools.json](.config/dotnet-tools.json); `dotnet tool restore` installs the exact version the team uses (no need to `dotnet tool install --global`).
-- Visual Studio 2026 (or compatible IDE) — optional, any editor works.
+- **.NET 10 SDK** — pinned in [global.json](global.json) (`10.0.401`, newer feature bands allowed).
+- **SQL Server** — LocalDB (Windows, ships with Visual Studio) or Docker (any OS, see below).
+- `dotnet-ef` is a **local tool** ([.config/dotnet-tools.json](.config/dotnet-tools.json)); `dotnet tool restore` installs it.
 
-### Installation
-
-**Option A — one-time setup script (recommended)**
+### Option A — setup script
 
 ```powershell
-# Windows
-.\setup.ps1
+.\setup.ps1          # Windows (LocalDB)
 ```
 
 ```bash
-# Mac/Linux
-chmod +x setup.sh
-./setup.sh
+chmod +x setup.sh && ./setup.sh   # macOS/Linux — start Docker SQL first (see Option C)
 ```
 
-This restores NuGet packages (using the committed `packages.lock.json` files, so everyone gets identical package versions), restores the `dotnet-ef` local tool, and applies EF Core migrations to LocalDB. It prints the run command and demo login at the end.
+The script restores packages (lock files), restores `dotnet-ef` and applies migrations.
 
-**Option B — manual steps**
+### Option B — manual
 
-1. **Clone the repository**
+```bash
+dotnet restore GiftOfTheGivers.slnx
+dotnet tool restore
+dotnet ef database update --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj
+dotnet run --project GiftOfTheGivers/GiftOfTheGivers.csproj
+```
 
-   ```bash
-   git clone <your-repo-url>
-   cd GiftOfTheGivers-HumanitarianAid
-   ```
+Browse to the URL printed in the console (e.g. `http://localhost:5106`). In **Development**, demo data and two
+demo accounts are seeded automatically:
 
-2. **Restore dependencies**
+| Role | Email | Password |
+| --- | --- | --- |
+| Employee | `employee@giftofthegivers.org` | `Employee#123` |
+| Donor | `donor@example.com` | `Donor#123` |
 
-   ```bash
-   dotnet restore
-   ```
+> Demo accounts are created **only** in Development (or when `Seed:DemoData=true`). Never enable demo data on a
+> public site.
 
-3. **Restore local dotnet tools**
+### Option C — Docker (app + SQL Server)
 
-   ```bash
-   dotnet tool restore
-   ```
+```powershell
+Copy-Item .env.example .env      # then set a strong SA_PASSWORD
+docker compose up --build -d     # app on http://localhost:8080, SQL on 127.0.0.1:1433
+docker compose down
+```
 
-4. **Set up the database connection**
-   - The default connection string in `appsettings.json` points at LocalDB, which works out of the box on Windows.
-   - To use Azure SQL instead, see [DATABASE_SETUP.md](DATABASE_SETUP.md) for how to get the connection string (never edit `appsettings.json` directly — this repo is public; use `dotnet user-secrets` instead, see below).
+The compose stack runs in Development (demo data, detailed errors) and is for local use only.
 
-5. **Apply EF Core migrations**
+## ⚙️ Configuration
 
-   ```bash
-   dotnet ef database update --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj
-   ```
-
-   (Pending migrations are also applied automatically on startup, so this step is optional if you're fine letting `dotnet run` do it.)
-
-6. **Run the application**
-
-   ```bash
-   dotnet run --project GiftOfTheGivers/GiftOfTheGivers.csproj
-   ```
-
-7. **Access the application**
-   - Browse to the URL shown in the console (e.g. `http://localhost:5106`)
-   - Sign in with one of the [demo accounts](#demo--seeded-accounts) above, or [register](#how-registration-works) your own
-
-### Managing local secrets
-
-Never commit real connection strings or API keys — `appsettings.json` is public. Use [.NET user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) to store your own PayFast/SendGrid keys (or an Azure SQL connection string) locally; they're stored outside the repo and never get pushed.
+Never commit secrets — `appsettings.json` is public. Use user-secrets locally and App Service settings in Azure.
 
 ```bash
 cd GiftOfTheGivers
-dotnet user-secrets init
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<your-azure-sql-connection-string>"
-dotnet user-secrets set "PayFast:MerchantId" "<your-merchant-id>"
-dotnet user-secrets set "SendGrid:ApiKey" "<your-sendgrid-key>"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<connection string>"
+dotnet user-secrets set "PayFast:Passphrase" "<your sandbox passphrase>"
+dotnet user-secrets set "SendGrid:ApiKey" "<key>"
 ```
 
-See [DATABASE_SETUP.md](DATABASE_SETUP.md) for the exact keys the app reads.
+| Key | Default | Purpose |
+| --- | --- | --- |
+| `ConnectionStrings:DefaultConnection` | LocalDB | Database |
+| `Database:MigrateOnStartup` | `true` | Apply migrations at startup. Set `false` in production and run the pipeline's idempotent script instead |
+| `Seed:DemoData` | `false` | Seed demo accounts/data outside Development |
+| `StaffAccess:BootstrapEmployeeEmails` | `[]` | Existing accounts granted Employee at startup (how the first staff member is created) |
+| `PayFast:Enabled` / `Sandbox` | `true` / `true` | Turn checkout on/off; sandbox vs live |
+| `PayFast:MerchantId` / `MerchantKey` / `Passphrase` | sandbox values / empty | Merchant credentials. **Live mode refuses to start without a passphrase** |
+| `PayFast:ReturnUrl` / `CancelUrl` / `NotifyUrl` | empty | Leave empty to derive from the request host |
+| `Currency:RatesToZar:USD` / `EUR` | `18.50` / `20.00` | **Indicative** conversion rates — maintain before accepting real foreign donations |
+| `Organisation:*` | demo values | Name, contact details, `PboReference`, `InformationOfficerEmail`, `IsDemo` |
+| `Identity:RequireConfirmedAccount` | `false` | Require email confirmation (needs SendGrid) |
+| `RateLimiting:PostPermitLimit` / `PostWindowSeconds` | `20` / `60` | Per-IP limit for POST requests |
+| `ForwardedHeaders:Enabled` | `false` | Enable behind a reverse proxy (Azure App Service on Linux, containers) |
 
-### Docker (app + SQL Server)
+## 🔐 Accounts, Roles and Staff Access
 
-Use Docker Compose to run the web app and SQL Server together.
+- **Public registration always creates a Donor account.** There is no way to self-register as staff.
+- **Employee (staff) access** is granted by an existing employee at *Employee → Staff Access*, or at startup
+  for emails listed in `StaffAccess:BootstrapEmployeeEmails` (use this once to create the first employee).
+- Role changes, project edits, volunteer decisions, reconciliations, exports and certificate access are written
+  to the **Audit Log**.
+- Passwords: 8+ characters with upper, lower, digit and symbol. Lockout settings are configured; note the default
+  Identity login page does not enable lockout-on-failure (see Known Limitations).
 
-Run these commands from the **repository root** (`GiftOfTheGivers-HumanitarianAid`), not the `GiftOfTheGivers` subfolder.
+## 💳 Payments and Donations
 
-1. Create an env file from the example:
+1. The donor submits the form → a **Pending** donation is stored (amount, currency, rand equivalent, consent time).
+2. The donor is redirected to PayFast (sandbox by default) to pay the **rand** amount.
+3. PayFast calls `POST /Payments/Notify` (ITN). The app verifies the signature with PayFast, checks the
+   **merchant id and amount**, then marks the donation **Verified** and adds it to the project total — exactly once.
+4. Only verified donations count toward totals, dashboards and certificates. Failed/cancelled payments never do.
 
-   ```powershell
-   Copy-Item .env.example .env
-   ```
+To test end to end you need **your own PayFast sandbox account** (free) and its passphrase, and a public
+`NotifyUrl` (e.g. a tunnel) so PayFast can reach your machine. The shared public sandbox merchant `10000100`
+currently rejects signed requests (see the audit addendum).
 
-2. Start both containers:
+Projects also have **offline funds** (cash, grants) maintained by staff; the public "raised" figure is
+offline funds + verified online donations. *Employee → Funding Reconciliation* finds and fixes differences.
 
-   ```powershell
-   docker compose up --build -d
-   ```
+## 🧪 Testing
 
-3. Open `http://localhost:8080`
+```bash
+dotnet test GiftOfTheGivers.slnx
+```
 
-4. Stop containers when done:
+98 tests: unit tests plus `WebApplicationFactory` integration tests that exercise the real pipeline (routing,
+anti-forgery, authorization, views) against an in-memory database — role matrix, registration, donation capture,
+payment notifications, certificates, reconciliation, consent, security headers and rate limiting.
+CI additionally applies every migration to a real SQL Server container and fails on model drift.
 
-   ```powershell
-   docker compose down
-   ```
+## 🗄️ Database and Migrations
 
-If you see `SA_PASSWORD variable is not set`, create `.env` first and set a strong password.
+- Migrations live in `GiftOfTheGivers/Data/Migrations`. `dotnet ef` builds the model from the app host, so it uses
+  the same configuration (appsettings, user-secrets, environment variables) as the app.
+- Add a migration: `dotnet ef migrations add <Name> --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj`
+- Check for drift: `dotnet ef migrations has-pending-model-changes ...` (CI runs this).
+- Production: generate `dotnet ef migrations script --idempotent` (published by CI/Azure Pipelines) and apply it as
+  a deployment step with `Database:MigrateOnStartup=false`.
 
-> `appsettings.json` uses LocalDB for local Visual Studio runs. LocalDB is Windows-only and does not work inside Linux containers, so the compose file overrides `ConnectionStrings__DefaultConnection` for container runtime.
+See [DATABASE_SETUP.md](DATABASE_SETUP.md) and the [backend schema document](docs/deliverables/05-backend-schema.html).
+
+## 🔁 CI/CD and Deployment
+
+| Pipeline | Trigger | What it does |
+| --- | --- | --- |
+| `.github/workflows/ci.yml` | push/PR | Locked restore, build, tests + coverage, **blocking** vulnerability gate, EF drift check, migrations applied to SQL Server 2022 (+ rollback/re-apply), idempotent script artifact |
+| `.github/workflows/cd.yml` | CI succeeded on `main` | Build and push container image to GHCR (`:sha`, `:main`) |
+| `.github/workflows/mirror-to-azure-devops.yml` | any push | Mirror to Azure DevOps (needs `AZURE_DEVOPS_REPO_URL`, `AZURE_DEVOPS_PAT`) |
+| `.github/workflows/publish-helpers-package.yml` | `main`, `helpers-v*` tags | Test, pack and push `GiftOfTheGivers.Helpers` to Azure Artifacts (needs `AZURE_ARTIFACTS_PAT`) |
+| `azure-pipelines.yml` | mirrored commits | Build/test/vulnerability gate/drift check, publish web + migration script, deploy `main` to App Service (needs `azureServiceConnection`, `azureWebAppName`) |
+
+Full details: [CI/CD and release document](docs/deliverables/07-ci-cd-and-release.html).
 
 ## 🗂️ Project Structure
 
 ```text
-GiftOfTheGivers/
-├── Controllers/          # MVC Controllers (Home, Donor, Employee)
-├── Models/                # Domain models and ViewModels
-├── Views/                 # Razor views
-├── Data/                  # DbContext, migrations, and DbSeeder
-├── Services/               # PDF generation and other app services
-├── wwwroot/                # Static files (CSS, JS, images, intro animation)
-└── Areas/                  # Identity area for authentication
+GiftOfTheGivers/                 # Web app
+├── Controllers/                 # Home, Donor, Employee, Payments (PayFast ITN)
+├── Services/                    # DonationService, PayFast, currency, email, audit, PDF certificates
+├── Infrastructure/              # Money formatting, security headers, CSV, claims helpers
+├── ViewComponents/              # Live impact statistics
+├── Data/                        # DbContext, DbSeeder, Migrations
+├── Models/ (+ ViewModels/)      # Entities and input/view models
+├── Views/, Areas/Identity/      # Razor views, customised Register page
+└── wwwroot/                     # CSS, JS, images, intro animation
+GiftOfTheGivers.Functions/       # Azure Function: key-protected certificate generation
+GiftOfTheGivers.Helpers/         # Calculation helpers (NuGet package)
+GiftOfTheGivers.Tests/           # Unit + integration tests
+docs/deliverables/               # Product, technical, flow, design, schema, plan, CI/CD, audit (HTML + PDF)
+docs/audits/                     # Audit programme, findings register (machine readable), audit history
 ```
 
-## 📝 Key Models
+## 📚 Documentation and Audits
 
-- **Donation** - Donation records with currency, amount, and tax certificate tracking
-- **Volunteer** - Volunteer applications with skills and availability
-- **VolunteerAssignment** - Links approved volunteers to the relief projects they're assigned to
-- **ReliefProject** - Humanitarian projects with location, goals, and progress
-- **ProjectUpdate** - Status updates for active projects
-- **AppUser** - Application user (extends ASP.NET Identity) with `FullName` and `DateRegistered`
-
-## 🔐 Authentication & Authorization
-
-The application uses **ASP.NET Core Identity** (scaffolded UI, under the `Identity` area) with role-based authorization:
-
-- **Public** - Access to home, about, projects, donate, volunteer, contact (no account needed)
-- **Donor** - `[Authorize(Roles = "Donor")]` on `DonorController` - donation history and tax certificates
-- **Employee** - `[Authorize(Roles = "Employee")]` on `EmployeeController` - full relief-project/volunteer/donation management
-
-### Login / Register pages
-
-| Action | URL |
+| # | Document |
 | --- | --- |
-| Register | `/Identity/Account/Register` |
-| Login | `/Identity/Account/Login` |
-| Logout | `/Identity/Account/Logout` (POST, via the navbar) |
-| Manage account | `/Identity/Account/Manage` |
+| 01 | [Product requirements](docs/deliverables/01-product-requirements.html) |
+| 02 | [Technical requirements](docs/deliverables/02-technical-requirements.html) |
+| 03 | [Application flow](docs/deliverables/03-app-flow.html) |
+| 04 | [Design brief](docs/deliverables/04-design-brief.html) |
+| 05 | [Backend schema](docs/deliverables/05-backend-schema.html) |
+| 06 | [Implementation plan](docs/deliverables/06-implementation-plan.html) |
+| 07 | [CI/CD and release](docs/deliverables/07-ci-cd-and-release.html) |
+| 08 | [Professional engineering audit](docs/deliverables/08-professional-engineering-audit.html) and [remediation addendum](docs/deliverables/08-professional-engineering-audit-addendum.html) |
 
-Both links live in the navbar (top right) when signed out; a "Hello, `<name>`" menu + Logout replace them once signed in.
+Each has a PDF beside it. Audits are versioned in [docs/audits](docs/audits/README.md); the next audit starts
+from the findings register there.
 
-### How registration works
+## ⚠️ Known Limitations
 
-Anyone can self-register at `/Identity/Account/Register` and **picks their own account type** ("Donor" or "Employee") from a dropdown on the form. This is a Part-1 prototype simplification — a real deployment would not let the public grant themselves the Employee (staff) role; that would move behind an admin-invite or approval step in a later phase.
+- Recurring donations are recorded as monthly **pledges**; automatic recurring billing is not implemented.
+- Exchange rates are configured manually (indicative); there is no live rates provider.
+- Certificates are demonstration documents until `Organisation:PboReference` is set and `IsDemo=false`.
+- The privacy notice is a draft that requires legal review; retention periods are not yet enforced automatically.
+- The default Identity login page does not apply lockout-on-failure; rate limiting is the current brute-force control.
+- No MFA for staff, no backups/DR runbook, no infrastructure-as-code yet (see the implementation plan).
 
-- Email confirmation is **switched off** (`RequireConfirmedAccount = false` in `Program.cs`) and no real email sender is wired up, so new accounts are usable immediately after registering — no inbox check required.
-- Password rules are ASP.NET Identity's defaults: **at least 6 characters**, with at least one uppercase letter, one lowercase letter, one digit, and one non-alphanumeric character (e.g. `Donor#123`).
-- Roles (`Donor`, `Employee`) are created automatically the first time they're needed — no manual setup required.
+## 🛡️ Security
 
-### Demo / seeded accounts
-
-On first run, `Data/DbSeeder.cs` seeds two ready-to-use accounts (Part 1 prototype only — **do not reuse these passwords for anything real**):
-
-| Role | Email | Password | Sees |
-| --- | --- | --- | --- |
-| Employee | `employee@giftofthegivers.org` | `Employee#123` | Employee dashboard - manage relief projects, review volunteers, oversee donations |
-| Donor | `donor@example.com` | `Donor#123` | Donor dashboard - donation history, tax certificates |
-
-These are safe to commit because they're seed-only, non-production credentials for a public student prototype — not real Azure/database secrets (see [DATABASE_SETUP.md](DATABASE_SETUP.md) for those).
-
-## 🎨 UI Features
-
-- Responsive design with Bootstrap 5
-- Clean, accessible forms with validation
-- Success/confirmation pages for all submissions
-- Print-friendly tax certificates
-- Mobile-optimized layouts
-- Cinematic intro animation on first visit each browser session
+Please report vulnerabilities privately — see [SECURITY.md](SECURITY.md).
 
 ## 📄 License
 
-This is a student project created for educational purposes.
-
-## 👥 Contributing
-
-This is an academic project. For questions or suggestions, please contact the development team. See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming and workflow conventions.
-
-## 🙏 Acknowledgments
-
-- Gift of the Givers Foundation for inspiration
-- Bootstrap for UI components
-- ASP.NET Core community for documentation and resources
-
----
-
-**Note**: This is an educational project. Payment processing, email delivery,
-and production hardening depend on environment-specific configuration and
-must be verified before production use.
+This is a student project created for educational purposes. Gift of the Givers Foundation is referenced for
+inspiration only; this application is not affiliated with or endorsed by the organisation.

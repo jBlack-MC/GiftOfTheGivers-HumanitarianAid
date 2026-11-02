@@ -3,6 +3,7 @@ using Xunit;
 
 namespace GiftOfTheGivers.Tests;
 
+[Trait("Category", "Unit")]
 public class HelperCalculationsTests
 {
     [Theory]

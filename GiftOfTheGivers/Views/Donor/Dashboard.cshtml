@@ -12,16 +12,20 @@
         <div class="col-md-6 mb-3">
             <div class="card bg-primary text-white h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Total Donations</h5>
+                    <h2 class="h5 card-title">Confirmed Donations</h2>
                     <p class="display-4 mb-0">@Model.TotalDonations</p>
+                    @if (Model.PendingDonations > 0)
+                    {
+                        <small>@Model.PendingDonations awaiting payment confirmation</small>
+                    }
                 </div>
             </div>
         </div>
         <div class="col-md-6 mb-3">
             <div class="card bg-success text-white h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Total Amount Donated</h5>
-                    <p class="display-4 mb-0">@Model.TotalAmountDonated.ToString("C")</p>
+                    <h2 class="h5 card-title">Total Donated (ZAR)</h2>
+                    <p class="display-4 mb-0">@Money.Zar(Model.TotalAmountDonated)</p>
                 </div>
             </div>
         </div>
@@ -43,6 +47,7 @@
                                         <th>Date</th>
                                         <th>Project</th>
                                         <th>Amount</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -52,7 +57,8 @@
                                         <tr>
                                             <td>@donation.DonationDate.ToString("yyyy-MM-dd")</td>
                                             <td>@(donation.ReliefProject?.Title ?? "General Donation")</td>
-                                            <td>@donation.Amount.ToString("C")</td>
+                                            <td>@Money.Format(donation.Amount, donation.Currency)</td>
+                                            <td><partial name="_PaymentStatusBadge" model="donation.PaymentStatus" /></td>
                                             <td>
                                                 <a asp-action="DonationDetails" asp-route-id="@donation.Id" class="btn btn-sm btn-primary">View</a>
                                             </td>
@@ -93,7 +99,7 @@
                                         @percentage%
                                     </div>
                                 </div>
-                                <small class="text-muted">@project.FundsRaised.ToString("C") of @project.FundsRequired.ToString("C")</small>
+                                <small class="text-muted">@Money.Zar(project.FundsRaised, 0) of @Money.Zar(project.FundsRequired, 0)</small>
                                 <a asp-controller="Home" asp-action="Donate" asp-route-projectId="@project.Id" class="btn btn-sm btn-success mt-2">Donate</a>
                             </div>
                         }

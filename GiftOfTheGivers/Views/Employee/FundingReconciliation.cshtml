@@ -1,0 +1,67 @@
+@model IReadOnlyList<GiftOfTheGivers.Models.ViewModels.FundingReconciliationRow>
+@{
+    ViewData["Title"] = "Funding reconciliation";
+}
+
+<div class="container my-5">
+    <h1 class="mb-2">Funding reconciliation</h1>
+    <p class="text-muted">
+        Each project's public "raised" figure must equal <strong>offline funds</strong> (recorded by staff) plus
+        <strong>paid online donations</strong>. Donations awaiting payment are shown for information and are not counted.
+        Differences usually come from data captured before payment verification was introduced.
+    </p>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Project</th>
+                    <th scope="col" class="text-end">Offline funds</th>
+                    <th scope="col" class="text-end">Paid online</th>
+                    <th scope="col" class="text-end">Expected total</th>
+                    <th scope="col" class="text-end">Recorded total</th>
+                    <th scope="col" class="text-end">Difference</th>
+                    <th scope="col" class="text-end">Awaiting payment</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model)
+                {
+                    <tr class="@(row.InBalance ? "" : "table-warning")">
+                        <td>@row.Project.Title</td>
+                        <td class="text-end">@Money.Zar(row.Project.OfflineFundsZar)</td>
+                        <td class="text-end">@Money.Zar(row.VerifiedOnlineZar)</td>
+                        <td class="text-end">@Money.Zar(row.ExpectedFundsRaised)</td>
+                        <td class="text-end">@Money.Zar(row.Project.FundsRaised)</td>
+                        <td class="text-end fw-bold @(row.InBalance ? "text-success" : "text-danger")">
+                            @(row.InBalance ? "Balanced" : Money.Zar(row.Difference))
+                        </td>
+                        <td class="text-end text-muted">@Money.Zar(row.PendingOnlineZar)</td>
+                        <td class="text-nowrap">
+                            @if (!row.InBalance)
+                            {
+                                <form asp-action="RecalculateFunding" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@row.Project.Id" />
+                                    <button type="submit" class="btn btn-sm btn-primary"
+                                            title="Set the recorded total to offline funds + paid donations"
+                                            data-confirm="Set the recorded total for @row.Project.Title to @Money.Zar(row.ExpectedFundsRaised)?">Recalculate</button>
+                                </form>
+                                @if (row.Difference > 0)
+                                {
+                                    <form asp-action="AcceptFundingAsOffline" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@row.Project.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                                title="Keep the recorded total and record the difference as offline funds"
+                                                data-confirm="Keep @Money.Zar(row.Project.FundsRaised) for @row.Project.Title and record the difference as offline funds?">Accept as offline</button>
+                                    </form>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="small text-muted">Both actions are recorded in the audit log. Use <em>Accept as offline</em> only when the difference is known to be genuine money raised outside the platform.</p>
+</div>

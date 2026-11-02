@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using GiftOfTheGivers.Infrastructure;
 using GiftOfTheGivers.Models;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -106,14 +107,6 @@ namespace GiftOfTheGivers.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [Display(Name = "Account type")]
-            public string Role { get; set; } = "Donor";
         }
 
 
@@ -127,11 +120,6 @@ namespace GiftOfTheGivers.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
-            if (Input?.Role is not ("Donor" or "Employee"))
-            {
-                ModelState.AddModelError(string.Empty, "Please select a valid account type.");
-            }
 
             if (ModelState.IsValid)
             {
@@ -147,11 +135,14 @@ namespace GiftOfTheGivers.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    if (!await _roleManager.RoleExistsAsync(Input.Role))
+                    // Self-registration always creates a Donor. Staff (Employee) access is granted
+                    // only by an existing employee from Employee > Staff Access, or at startup via
+                    // StaffAccess:BootstrapEmployeeEmails, so the public can never make themselves staff.
+                    if (!await _roleManager.RoleExistsAsync(ClaimsPrincipalExtensions.DonorRole))
                     {
-                        await _roleManager.CreateAsync(new IdentityRole(Input.Role));
+                        await _roleManager.CreateAsync(new IdentityRole(ClaimsPrincipalExtensions.DonorRole));
                     }
-                    await _userManager.AddToRoleAsync(user, Input.Role);
+                    await _userManager.AddToRoleAsync(user, ClaimsPrincipalExtensions.DonorRole);
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

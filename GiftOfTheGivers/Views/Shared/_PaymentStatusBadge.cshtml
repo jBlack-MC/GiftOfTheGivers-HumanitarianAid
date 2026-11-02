@@ -1,0 +1,10 @@
+@model GiftOfTheGivers.Models.PaymentStatus
+@{
+    var (css, label) = Model switch
+    {
+        PaymentStatus.Verified => ("bg-success", "Paid"),
+        PaymentStatus.Failed => ("bg-danger", "Failed"),
+        _ => ("bg-warning text-dark", "Awaiting payment")
+    };
+}
+<span class="badge @css">@label</span>
