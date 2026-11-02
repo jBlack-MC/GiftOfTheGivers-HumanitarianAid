@@ -8,6 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace GiftOfTheGivers.Tests;
 
+[Trait("Category", "Unit")]
 public class PayFastPaymentServiceTests
 {
     [Fact]

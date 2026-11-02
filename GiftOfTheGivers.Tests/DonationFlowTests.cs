@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GiftOfTheGivers.Tests;
 
 /// <summary>Audit findings R3–R7 and R16: donation capture, payment verification and certificates.</summary>
+[Trait("Category", "Integration")]
 public class DonationFlowTests : IClassFixture<TestApplicationFactory>
 {
     private readonly TestApplicationFactory _factory;

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace GiftOfTheGivers.Tests;
 
+[Trait("Category", "Unit")]
 public class CurrencyConverterTests
 {
     private static CurrencyConverter Create(Dictionary<string, decimal> rates) =>
@@ -36,6 +37,7 @@ public class CurrencyConverterTests
     }
 }
 
+[Trait("Category", "Unit")]
 public class CsvTests
 {
     [Theory]
@@ -51,6 +53,7 @@ public class CsvTests
     }
 }
 
+[Trait("Category", "Unit")]
 public class MoneyTests
 {
     [Theory]
@@ -63,6 +66,7 @@ public class MoneyTests
     }
 }
 
+[Trait("Category", "Unit")]
 public class PayFastOptionsValidatorTests
 {
     private static readonly PayFastOptionsValidator Validator = new();
@@ -102,6 +106,7 @@ public class PayFastOptionsValidatorTests
     }
 }
 
+[Trait("Category", "Unit")]
 public class PayFastCheckoutTests
 {
     [Fact]
@@ -122,6 +127,7 @@ public class PayFastCheckoutTests
     }
 }
 
+[Trait("Category", "Unit")]
 public class TaxCertificateIssuerTests
 {
     [Fact]

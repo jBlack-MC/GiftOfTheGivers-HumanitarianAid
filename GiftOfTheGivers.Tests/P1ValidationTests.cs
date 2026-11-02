@@ -3,6 +3,7 @@ using GiftOfTheGivers.Models;
 using GiftOfTheGivers.Models.ValidationAttributes;
 using GiftOfTheGivers.Services;
 
+[Trait("Category", "Unit")]
 public class P1ValidationTests
 {
     [Fact]

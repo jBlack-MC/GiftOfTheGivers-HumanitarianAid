@@ -35,6 +35,7 @@ public class TestApplicationFactory : WebApplicationFactory<Program>
         ["Database:MigrateOnStartup"] = "false",
         ["Seed:DemoData"] = "false",
         ["RateLimiting:PostPermitLimit"] = "1000",
+        ["Caching:PublicPageSeconds"] = "0",
         ["PayFast:Enabled"] = "true",
         ["PayFast:Sandbox"] = "true"
     };

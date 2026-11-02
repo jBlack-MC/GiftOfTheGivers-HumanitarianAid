@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace GiftOfTheGivers.Tests;
 
 /// <summary>Audit findings R1 (self-service staff role) and the role/ownership matrix.</summary>
+[Trait("Category", "Integration")]
 public class AuthorizationTests : IClassFixture<TestApplicationFactory>
 {
     private readonly TestApplicationFactory _factory;

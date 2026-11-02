@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GiftOfTheGivers.Tests;
 
 /// <summary>Volunteer/contact forms (consent, no invented data), live stats and rate limiting.</summary>
+[Trait("Category", "Integration")]
 public class PublicFormsTests : IClassFixture<TestApplicationFactory>
 {
     private readonly TestApplicationFactory _factory;
@@ -92,6 +93,7 @@ public class PublicFormsTests : IClassFixture<TestApplicationFactory>
     }
 }
 
+[Trait("Category", "Integration")]
 public class RateLimitingTests
 {
     private sealed class StrictFactory : TestApplicationFactory
