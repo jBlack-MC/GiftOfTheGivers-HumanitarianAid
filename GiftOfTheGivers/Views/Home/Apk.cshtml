@@ -1,0 +1,223 @@
+@{
+    ViewData["Title"] = "Mobile App (APK)";
+    var apkExists = (bool)(ViewData["ApkExists"] ?? false);
+    var apkSize = (string)(ViewData["ApkSize"] ?? "12.4 MB");
+    var appVersion = (string)(ViewData["AppVersion"] ?? "1.0.0");
+    var minAndroid = (string)(ViewData["MinAndroid"] ?? "7.0 (API 24+)");
+}
+
+<!-- Hero Header Section -->
+<section class="bg-primary text-white text-center py-5 rounded-3 mb-4 shadow-sm">
+    <div class="container py-3">
+        <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-10 text-white rounded-circle p-3 mb-3" style="width: 80px; height: 80px;">
+            <i class="bi bi-android2" style="font-size: 2.75rem;"></i>
+        </div>
+        <h1 class="display-4 fw-bold mb-3">GIFT OF THE GIVERS MOBILE</h1>
+        <p class="lead mb-4 max-w-700 mx-auto opacity-90">
+            Humanitarian aid and emergency relief at your fingertips. Download the official Android app to follow projects, donate securely, and volunteer on the go.
+        </p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a asp-controller="Home" asp-action="DownloadApk" class="btn btn-warning btn-lg fw-bold px-4 py-3 text-dark shadow-sm d-inline-flex align-items-center gap-2">
+                <i class="bi bi-download fs-4"></i> Download Android APK (@apkSize)
+            </a>
+            <a href="#installation-guide" class="btn btn-outline-light btn-lg px-4 py-3 d-inline-flex align-items-center gap-2">
+                <i class="bi bi-question-circle"></i> Installation Guide
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- App Highlights Banner / Specs -->
+<div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+        <div class="card h-100 border-0 bg-light text-center py-3 px-2 shadow-sm">
+            <i class="bi bi-code-square text-primary fs-3 mb-2"></i>
+            <span class="text-muted small text-uppercase fw-semibold">Version</span>
+            <span class="fs-5 fw-bold text-dark">v@appVersion</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card h-100 border-0 bg-light text-center py-3 px-2 shadow-sm">
+            <i class="bi bi-file-earmark-zip text-primary fs-3 mb-2"></i>
+            <span class="text-muted small text-uppercase fw-semibold">File Size</span>
+            <span class="fs-5 fw-bold text-dark">@apkSize</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card h-100 border-0 bg-light text-center py-3 px-2 shadow-sm">
+            <i class="bi bi-phone text-primary fs-3 mb-2"></i>
+            <span class="text-muted small text-uppercase fw-semibold">Requires Android</span>
+            <span class="fs-5 fw-bold text-dark">@minAndroid</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card h-100 border-0 bg-light text-center py-3 px-2 shadow-sm">
+            <i class="bi bi-shield-check text-success fs-3 mb-2"></i>
+            <span class="text-muted small text-uppercase fw-semibold">Security</span>
+            <span class="fs-5 fw-bold text-success">Verified Safe</span>
+        </div>
+    </div>
+</div>
+
+<!-- Key Features Section -->
+<section class="mb-5 py-3">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold display-6">Key App Features</h2>
+        <p class="text-muted">Built with Jetpack Compose for fast, responsive, and seamless humanitarian engagement.</p>
+        <div class="section-divider mx-auto" style="width: 80px; height: 3px; background: var(--brand-primary);"></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-3 p-3 mb-3" style="width: 54px; height: 54px;">
+                    <i class="bi bi-activity fs-3"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Real-Time Relief Updates</h5>
+                <p class="text-muted small mb-0">
+                    Track live humanitarian missions, active disaster responses, and project funding milestones straight from the field.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-dark rounded-3 p-3 mb-3" style="width: 54px; height: 54px;">
+                    <i class="bi bi-credit-card-2-front fs-3 text-warning"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Multi-Currency Donations</h5>
+                <p class="text-muted small mb-0">
+                    Donate seamlessly in ZAR, USD, or EUR via integrated PayFast payment gateway with real-time currency conversion.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-3 p-3 mb-3" style="width: 54px; height: 54px;">
+                    <i class="bi bi-people-fill fs-3"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Volunteer Portal</h5>
+                <p class="text-muted small mb-0">
+                    Apply to volunteer for emergency missions, update skills and availability, and receive project assignments.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info rounded-3 p-3 mb-3" style="width: 54px; height: 54px;">
+                    <i class="bi bi-wifi-off fs-3"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Offline Resilience</h5>
+                <p class="text-muted small mb-0">
+                    Access emergency contacts, saved project updates, and application status even in low-connectivity disaster zones.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-3 p-3 mb-3" style="width: 54px; height: 54px;">
+                    <i class="bi bi-receipt-cutoff fs-3"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Tax Certificates & Receipts</h5>
+                <p class="text-muted small mb-0">
+                    Download official Section 18A tax certificates and donation receipts instantly directly to your mobile device.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-secondary bg-opacity-10 text-secondary rounded-3 p-3 mb-3" style="width: 54px; height: 54px;">
+                    <i class="bi bi-shield-lock-fill fs-3"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Privacy & POPIA Compliant</h5>
+                <p class="text-muted small mb-0">
+                    Your personal information and consent records are protected with industry-standard encryption and strict privacy practices.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Step-by-Step Installation Guide -->
+<section id="installation-guide" class="bg-light p-4 p-md-5 rounded-3 mb-5 border">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <h3 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-gear-fill text-primary"></i> How to Install the APK on Android
+            </h3>
+            <p class="text-muted mb-4">
+                Follow these simple steps to install the Gift of the Givers mobile app directly onto your Android device:
+            </p>
+
+            <div class="d-flex mb-4">
+                <div class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px; font-size: 1.1rem;">1</div>
+                <div>
+                    <h6 class="fw-bold mb-1">Download the APK Package</h6>
+                    <p class="text-muted small mb-0">
+                        Tap the <strong>Download Android APK</strong> button above to download <code>GiftOfTheGivers.apk</code> to your device.
+                    </p>
+                </div>
+            </div>
+
+            <div class="d-flex mb-4">
+                <div class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px; font-size: 1.1rem;">2</div>
+                <div>
+                    <h6 class="fw-bold mb-1">Enable "Install Unknown Apps" (If Prompted)</h6>
+                    <p class="text-muted small mb-0">
+                        When opening the download, your browser may ask for permission to install apps. Tap <em>Settings</em> and toggle <strong>Allow from this source</strong> to ON.
+                    </p>
+                </div>
+            </div>
+
+            <div class="d-flex mb-4">
+                <div class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px; font-size: 1.1rem;">3</div>
+                <div>
+                    <h6 class="fw-bold mb-1">Confirm Installation</h6>
+                    <p class="text-muted small mb-0">
+                        Tap <strong>Install</strong> when the system installer pop-up appears and wait a few seconds for completion.
+                    </p>
+                </div>
+            </div>
+
+            <div class="d-flex">
+                <div class="badge bg-success rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px; font-size: 1.1rem;"><i class="bi bi-check-lg"></i></div>
+                <div>
+                    <h6 class="fw-bold mb-1">Launch & Connect</h6>
+                    <p class="text-muted small mb-0">
+                        Open <strong>Gift of the Givers</strong> from your app drawer. Sign in or browse relief projects immediately!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 mt-4 mt-lg-0 text-center">
+            <div class="card border-0 shadow-lg p-4 bg-white rounded-4">
+                <div class="p-3 bg-primary bg-opacity-10 rounded-3 mb-3 d-inline-block mx-auto">
+                    <i class="bi bi-qr-code-scan text-primary" style="font-size: 5rem;"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Scan to Download</h5>
+                <p class="text-muted small mb-3">Scan this code with your mobile camera to open this page directly on your Android phone.</p>
+                <div class="alert alert-secondary py-2 px-3 small text-break mb-0">
+                    <i class="bi bi-link-45deg"></i> @(Context.Request.Scheme)://@(Context.Request.Host)/Apk
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Direct CTA Banner -->
+<div class="card bg-navy text-white text-center p-4 p-md-5 border-0 rounded-3 shadow">
+    <div class="card-body py-2">
+        <h3 class="fw-bold mb-3">Ready to Make an Impact?</h3>
+        <p class="lead opacity-90 max-w-600 mx-auto mb-4">
+            Download the official Gift of the Givers Android app today and stay connected with relief missions worldwide.
+        </p>
+        <a asp-controller="Home" asp-action="DownloadApk" class="btn btn-warning btn-lg fw-bold px-5 py-3 text-dark shadow-sm">
+            <i class="bi bi-download me-2"></i> Get the Android App Now
+        </a>
+    </div>
+</div>

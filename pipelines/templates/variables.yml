@@ -1,0 +1,35 @@
+# Non-secret pipeline settings, versioned with the code.
+# Secrets (SQL password, connection string, function key) live in the Azure DevOps variable
+# group `giftgivers-azure`, marked as secret — see docs/deliverables/11-azure-deployment-guide.
+
+variables:
+  buildConfiguration: Release
+  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  coverageMinimum: 70
+
+  # ---- Deployment switch -------------------------------------------------------------
+  # Set to 'true' after the Azure resources, service connection, variable group and
+  # environment exist (guide sections 2–6). While 'false' the pipeline only builds and tests.
+  deployEnabled: 'false'
+
+  # ---- Azure resource names (change to match what you created) --------------------
+  azureServiceConnection: giftgivers-azure-connection
+  resourceGroup: rg-giftofthegivers
+  # Name shown in the portal (App Service > Overview). The live site uses the newer
+  # "unique default hostname" format, so copy the exact URL from the portal as well.
+  webAppName: gift-relief-management
+  webAppUrl: https://gift-relief-managemen-gdbsf9bbena9epgw.southafricanorth-01.azurewebsites.net
+  webAppType: webApp                 # the existing App Service runs on Windows (IIS); webAppLinux for Linux
+  # Deployment slots need a Standard (S1) or higher plan. On Free/Basic set 'false':
+  # the pipeline then deploys straight to production and rollback is "re-run the last good run".
+  useStagingSlot: 'false'
+  webAppStagingUrl: https://gift-relief-management-staging.azurewebsites.net
+  functionAppName: gift-relief-functions
+  functionAppType: functionApp       # Windows Consumption plan; functionAppLinux for Linux
+  sqlServerName: gift-relief-sql
+  sqlDatabaseName: GiftOfTheGiversDb
+  # 'true' seeds the demo accounts used in the user manual. Switch off for real users.
+  seedDemoData: 'true'

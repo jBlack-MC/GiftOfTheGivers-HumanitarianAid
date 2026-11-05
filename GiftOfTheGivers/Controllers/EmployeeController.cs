@@ -106,6 +106,7 @@ namespace GiftOfTheGivers.Controllers
                 OfflineFundsZar = input.OfflineFundsZar,
                 FundsRaised = input.OfflineFundsZar,
                 ImageUrl = input.ImageUrl,
+                RowVersion = Array.Empty<byte>(),
                 CreatedDate = DateTime.UtcNow,
                 CreatedByUserId = CurrentUserId
             };

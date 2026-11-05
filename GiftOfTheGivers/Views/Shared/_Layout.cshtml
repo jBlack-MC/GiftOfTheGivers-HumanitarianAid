@@ -62,6 +62,11 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Contact">Contact</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Home" asp-action="Apk">
+                                <i class="bi bi-android2 text-success me-1"></i> Mobile App
+                            </a>
+                        </li>
 
                         @if (User.IsInRole("Donor"))
                         {
@@ -133,7 +138,8 @@
                         <li class="mb-2"><a asp-controller="Home" asp-action="About" class="text-muted">About Us</a></li>
                         <li class="mb-2"><a asp-controller="Home" asp-action="ReliefProjects" class="text-muted">Our Projects</a></li>
                         <li class="mb-2"><a asp-controller="Home" asp-action="Volunteer" class="text-muted">Volunteer</a></li>
-                        <li><a asp-controller="Home" asp-action="Contact" class="text-muted">Contact</a></li>
+                        <li class="mb-2"><a asp-controller="Home" asp-action="Contact" class="text-muted">Contact</a></li>
+                        <li><a asp-controller="Home" asp-action="Apk" class="text-muted"><i class="bi bi-android2 text-success me-1"></i> Mobile App (APK)</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">

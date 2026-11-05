@@ -1,7 +1,8 @@
+extern alias functions;
+
 using System.Net;
 using System.Security.Claims;
 using GiftOfTheGivers.Data;
-using GiftOfTheGivers.Functions;
 using GiftOfTheGivers.Models;
 using GiftOfTheGivers.Services;
 using GiftOfTheGivers.Tests.Infrastructure;
@@ -11,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using functions::GiftOfTheGivers.Functions;
 
 namespace GiftOfTheGivers.Tests;
 

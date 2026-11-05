@@ -1,0 +1,42 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 340' width='720' height='340' font-family='Inter, Segoe UI, Arial, sans-serif'>
+<rect width='720' height='340' fill='#fcfcfb'/>
+<text x='16' y='26' font-size='15' font-weight='600' fill='#0b0b0b'>Stress test — error rate per stage</text>
+<text x='16' y='46' font-size='12' fill='#52514e'>Requests that timed out (10 s) or returned an HTTP error, as a percentage of all requests in the stage.</text>
+<rect x='70' y='59' width='10' height='10' rx='2' fill='#2a78d6'/>
+<text x='85' y='68' font-size='12' fill='#52514e'>Before mitigation</text>
+<rect x='219' y='59' width='10' height='10' rx='2' fill='#eb6834'/>
+<text x='234' y='68' font-size='12' fill='#52514e'>After mitigation</text>
+<line x1='70' x2='700' y1='290.0' y2='290.0' stroke='#c3c2b7' stroke-width='1'/>
+<text x='64' y='294.0' font-size='11' fill='#898781' text-anchor='end'>0%</text>
+<line x1='70' x2='700' y1='237.5' y2='237.5' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='241.5' font-size='11' fill='#898781' text-anchor='end'>1%</text>
+<line x1='70' x2='700' y1='185.0' y2='185.0' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='189.0' font-size='11' fill='#898781' text-anchor='end'>2%</text>
+<line x1='70' x2='700' y1='132.5' y2='132.5' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='136.5' font-size='11' fill='#898781' text-anchor='end'>4%</text>
+<line x1='70' x2='700' y1='80.0' y2='80.0' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='84.0' font-size='11' fill='#898781' text-anchor='end'>5%</text>
+<polyline points='70.0,290.0 101.9,290.0 141.8,290.0 221.5,268.1 381.0,290.0 700.0,290.0' fill='none' stroke='#2a78d6' stroke-width='2' stroke-linejoin='round'/>
+<circle cx='70.0' cy='290.0' r='4' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'><title>Before mitigation: 0% at 10</title></circle>
+<circle cx='101.9' cy='290.0' r='4' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'><title>Before mitigation: 0% at 50</title></circle>
+<circle cx='141.8' cy='290.0' r='4' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'><title>Before mitigation: 0% at 100</title></circle>
+<circle cx='221.5' cy='268.1' r='4' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'><title>Before mitigation: 1% at 200</title></circle>
+<circle cx='381.0' cy='290.0' r='4' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'><title>Before mitigation: 0% at 400</title></circle>
+<circle cx='700.0' cy='290.0' r='4' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'><title>Before mitigation: 0% at 800</title></circle>
+<text x='696.0' y='282.0' font-size='11' fill='#52514e' text-anchor='end'>0%</text>
+<polyline points='70.0,290.0 101.9,290.0 141.8,290.0 221.5,265.4 381.0,238.2 700.0,135.1' fill='none' stroke='#eb6834' stroke-width='2' stroke-linejoin='round'/>
+<circle cx='70.0' cy='290.0' r='4' fill='#eb6834' stroke='#fcfcfb' stroke-width='2'><title>After mitigation: 0% at 10</title></circle>
+<circle cx='101.9' cy='290.0' r='4' fill='#eb6834' stroke='#fcfcfb' stroke-width='2'><title>After mitigation: 0% at 50</title></circle>
+<circle cx='141.8' cy='290.0' r='4' fill='#eb6834' stroke='#fcfcfb' stroke-width='2'><title>After mitigation: 0% at 100</title></circle>
+<circle cx='221.5' cy='265.4' r='4' fill='#eb6834' stroke='#fcfcfb' stroke-width='2'><title>After mitigation: 1% at 200</title></circle>
+<circle cx='381.0' cy='238.2' r='4' fill='#eb6834' stroke='#fcfcfb' stroke-width='2'><title>After mitigation: 1% at 400</title></circle>
+<circle cx='700.0' cy='135.1' r='4' fill='#eb6834' stroke='#fcfcfb' stroke-width='2'><title>After mitigation: 4% at 800</title></circle>
+<text x='696.0' y='127.1' font-size='11' fill='#52514e' text-anchor='end'>4%</text>
+<text x='70.0' y='308' font-size='11' fill='#898781' text-anchor='middle'>10</text>
+<text x='101.9' y='308' font-size='11' fill='#898781' text-anchor='middle'>50</text>
+<text x='141.8' y='308' font-size='11' fill='#898781' text-anchor='middle'>100</text>
+<text x='221.5' y='308' font-size='11' fill='#898781' text-anchor='middle'>200</text>
+<text x='381.0' y='308' font-size='11' fill='#898781' text-anchor='middle'>400</text>
+<text x='700.0' y='308' font-size='11' fill='#898781' text-anchor='middle'>800</text>
+<text x='385' y='328' font-size='11' fill='#898781' text-anchor='middle'>Concurrent virtual users</text>
+</svg>

@@ -1,0 +1,22 @@
+# Shared by every job that compiles code: SDK from global.json, NuGet cache, private feed
+# authentication and a locked-mode restore (fails if packages.lock.json is out of date).
+steps:
+  - task: UseDotNet@2
+    displayName: Install .NET SDK (global.json)
+    inputs:
+      packageType: sdk
+      useGlobalJson: true
+
+  - task: Cache@2
+    displayName: Cache NuGet packages
+    inputs:
+      key: 'nuget | "$(Agent.OS)" | **/packages.lock.json'
+      restoreKeys: |
+        nuget | "$(Agent.OS)"
+      path: $(NUGET_PACKAGES)
+
+  - task: NuGetAuthenticate@1
+    displayName: Authenticate to Azure Artifacts feed
+
+  - script: dotnet restore GiftOfTheGivers.slnx --locked-mode
+    displayName: Restore (lock files enforced)

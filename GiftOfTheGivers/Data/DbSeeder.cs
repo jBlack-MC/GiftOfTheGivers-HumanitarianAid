@@ -131,6 +131,7 @@ namespace GiftOfTheGivers.Data
                 FundsRequired = required,
                 OfflineFundsZar = offline,
                 FundsRaised = offline,
+                RowVersion = Array.Empty<byte>(),
                 CreatedByUserId = employeeId,
                 CreatedDate = DateTime.UtcNow.AddMonths(-monthsAgo)
             };

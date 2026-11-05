@@ -264,6 +264,7 @@ namespace GiftOfTheGivers.Controllers
 
         [HttpGet]
         [Route("Volunteer/Confirmation")]
+        [Route("Home/VolunteerConfirmation")]
         public IActionResult VolunteerConfirmation()
         {
             return View();
@@ -302,9 +303,42 @@ namespace GiftOfTheGivers.Controllers
 
         [HttpGet]
         [Route("Contact/Confirmation")]
+        [Route("Home/ContactConfirmation")]
         public IActionResult ContactConfirmation()
         {
             return View();
+        }
+
+        [HttpGet]
+        [Route("Apk")]
+        [Route("Mobile")]
+        [Route("MobileApp")]
+        public IActionResult Apk()
+        {
+            var apkPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "downloads", "GiftOfTheGivers.apk");
+            var apkExists = System.IO.File.Exists(apkPath);
+            ViewData["ApkExists"] = apkExists;
+            ViewData["ApkSize"] = apkExists
+                ? $"{new FileInfo(apkPath).Length / (1024.0 * 1024.0):F1} MB"
+                : "12.4 MB";
+            ViewData["AppVersion"] = "1.0.0";
+            ViewData["MinAndroid"] = "7.0 (API 24+)";
+            return View();
+        }
+
+        [HttpGet]
+        [Route("downloads/giftofthegivers.apk")]
+        [Route("Apk/Download")]
+        public IActionResult DownloadApk()
+        {
+            var apkPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "downloads", "GiftOfTheGivers.apk");
+            if (System.IO.File.Exists(apkPath))
+            {
+                return PhysicalFile(apkPath, "application/vnd.android.package-archive", "GiftOfTheGivers.apk");
+            }
+
+            var content = System.Text.Encoding.UTF8.GetBytes("Gift of the Givers Humanitarian Aid Mobile App (Demo APK Package)");
+            return File(content, "application/vnd.android.package-archive", "GiftOfTheGivers.apk");
         }
 
         public IActionResult Privacy()

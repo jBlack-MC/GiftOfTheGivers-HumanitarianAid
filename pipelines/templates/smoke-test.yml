@@ -1,0 +1,31 @@
+# Waits for a freshly deployed site to answer, then checks the health endpoints and the key
+# public pages. Fails the job (which triggers the rollback hook) if any check fails.
+parameters:
+  - name: name
+    type: string
+  - name: url
+    type: string
+
+steps:
+  - script: |
+      set -u
+      base="${{ parameters.url }}"
+      echo "Smoke testing ${{ parameters.name }}: $base"
+      # App Service can take a minute to start the new build.
+      for attempt in $(seq 1 18); do
+        code=$(curl -s -o /dev/null -w "%{http_code}" "$base/health/live")
+        [ "$code" = "200" ] && break
+        echo "  attempt $attempt: /health/live → $code, retrying in 10s"
+        sleep 10
+      done
+      failed=0
+      for path in /health/live /health / /Home/ReliefProjects /Home/Donate /Home/Volunteer /Identity/Account/Login; do
+        result=$(curl -s -o /dev/null -w "%{http_code} %{time_total}" "$base$path")
+        echo "  $path → HTTP ${result% *} in ${result#* }s"
+        [ "${result% *}" = "200" ] || failed=1
+      done
+      if [ $failed -ne 0 ]; then
+        echo "##vso[task.logissue type=error]Smoke test failed on ${{ parameters.name }}"
+        exit 1
+      fi
+    displayName: Smoke test (${{ parameters.name }})

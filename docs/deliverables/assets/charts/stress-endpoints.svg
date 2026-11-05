@@ -1,0 +1,40 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 340' width='720' height='340' font-family='Inter, Segoe UI, Arial, sans-serif'>
+<rect width='720' height='340' fill='#fcfcfb'/>
+<text x='16' y='26' font-size='15' font-weight='600' fill='#0b0b0b'>Stress test — average response time by page</text>
+<text x='16' y='46' font-size='12' fill='#52514e'>Whole stress run. The home page was the bottleneck before caching; afterwards the load moves to the next database-bound pages.</text>
+<rect x='70' y='59' width='10' height='10' rx='2' fill='#2a78d6'/>
+<text x='85' y='68' font-size='12' fill='#52514e'>Before mitigation</text>
+<rect x='219' y='59' width='10' height='10' rx='2' fill='#eb6834'/>
+<text x='234' y='68' font-size='12' fill='#52514e'>After mitigation</text>
+<line x1='70' x2='700' y1='290.0' y2='290.0' stroke='#c3c2b7' stroke-width='1'/>
+<text x='64' y='294.0' font-size='11' fill='#898781' text-anchor='end'>0 ms</text>
+<line x1='70' x2='700' y1='237.5' y2='237.5' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='241.5' font-size='11' fill='#898781' text-anchor='end'>250 ms</text>
+<line x1='70' x2='700' y1='185.0' y2='185.0' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='189.0' font-size='11' fill='#898781' text-anchor='end'>500 ms</text>
+<line x1='70' x2='700' y1='132.5' y2='132.5' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='136.5' font-size='11' fill='#898781' text-anchor='end'>750 ms</text>
+<line x1='70' x2='700' y1='80.0' y2='80.0' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='84.0' font-size='11' fill='#898781' text-anchor='end'>1,000 ms</text>
+<path d='M119.8,290 v-161.2 q0,-4 4,-4 h20.0 q4,0 4,4 v161.2 z' fill='#2a78d6'><title>/: 787 ms</title></path>
+<text x='133.8' y='119.8' font-size='10' fill='#52514e' text-anchor='middle'>787</text>
+<path d='M149.8,290 v-2.3 q0,-4 4,-4 h20.0 q4,0 4,4 v2.3 z' fill='#eb6834'><title>/: 30 ms</title></path>
+<text x='163.8' y='278.7' font-size='10' fill='#52514e' text-anchor='middle'>30</text>
+<text x='148.8' y='308' font-size='11' fill='#898781' text-anchor='middle'>/</text>
+<path d='M277.2,290 v-28.9 q0,-4 4,-4 h20.0 q4,0 4,4 v28.9 z' fill='#2a78d6'><title>/Home/ReliefProjects: 157 ms</title></path>
+<text x='291.2' y='252.1' font-size='10' fill='#52514e' text-anchor='middle'>157</text>
+<path d='M307.2,290 v-121.6 q0,-4 4,-4 h20.0 q4,0 4,4 v121.6 z' fill='#eb6834'><title>/Home/ReliefProjects: 598 ms</title></path>
+<text x='321.2' y='159.4' font-size='10' fill='#52514e' text-anchor='middle'>598</text>
+<text x='306.2' y='308' font-size='11' fill='#898781' text-anchor='middle'>/Home/ReliefProjects</text>
+<path d='M434.8,290 v-29.8 q0,-4 4,-4 h20.0 q4,0 4,4 v29.8 z' fill='#2a78d6'><title>/Home/Donate: 161 ms</title></path>
+<text x='448.8' y='251.2' font-size='10' fill='#52514e' text-anchor='middle'>161</text>
+<path d='M464.8,290 v-106.2 q0,-4 4,-4 h20.0 q4,0 4,4 v106.2 z' fill='#eb6834'><title>/Home/Donate: 525 ms</title></path>
+<text x='478.8' y='174.8' font-size='10' fill='#52514e' text-anchor='middle'>525</text>
+<text x='463.8' y='308' font-size='11' fill='#898781' text-anchor='middle'>/Home/Donate</text>
+<path d='M592.2,290 v0.0 q0,-4 4,-4 h20.0 q4,0 4,4 v0.0 z' fill='#2a78d6'><title>/health/live: 3 ms</title></path>
+<text x='606.2' y='284.4' font-size='10' fill='#52514e' text-anchor='middle'>3</text>
+<path d='M622.2,290 v0.0 q0,-4 4,-4 h20.0 q4,0 4,4 v0.0 z' fill='#eb6834'><title>/health/live: 17 ms</title></path>
+<text x='636.2' y='281.5' font-size='10' fill='#52514e' text-anchor='middle'>17</text>
+<text x='621.2' y='308' font-size='11' fill='#898781' text-anchor='middle'>/health/live</text>
+<text x='385' y='328' font-size='11' fill='#898781' text-anchor='middle'>Endpoint</text>
+</svg>

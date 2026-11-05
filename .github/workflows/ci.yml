@@ -31,12 +31,38 @@ jobs:
       - name: Build
         run: dotnet build GiftOfTheGivers.slnx --no-restore --configuration Release
 
-      - name: Test with coverage
+      - name: Unit and integration tests with coverage
         run: >
-          dotnet test GiftOfTheGivers.slnx --no-build --configuration Release
+          dotnet test GiftOfTheGivers.Tests/GiftOfTheGivers.Tests.csproj --no-build --configuration Release
+          --settings coverage.runsettings --collect "XPlat Code Coverage"
           --logger "trx;LogFileName=test-results.trx"
-          --collect "XPlat Code Coverage"
           --results-directory ./TestResults
+
+      - name: Selenium UI tests (headless Chrome)
+        env:
+          UI_BROWSER: chrome
+          UI_SCREENSHOT_DIR: ${{ github.workspace }}/TestResults/ui-screenshots
+        run: >
+          dotnet test GiftOfTheGivers.UiTests/GiftOfTheGivers.UiTests.csproj --no-build --configuration Release
+          --logger "trx;LogFileName=ui-results.trx"
+          --results-directory ./TestResults
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import glob, xml.etree.ElementTree as ET
+          for f in glob.glob("TestResults/**/coverage.cobertura.xml", recursive=True):
+              root = ET.parse(f).getroot()
+              print("### Code coverage")
+              print()
+              print(f"Lines **{float(root.get('line-rate')):.1%}**, branches **{float(root.get('branch-rate')):.1%}**")
+              print()
+              print("| Assembly | Lines | Branches |")
+              print("| --- | ---: | ---: |")
+              for p in root.iter("package"):
+                  print(f"| {p.get('name')} | {float(p.get('line-rate')):.1%} | {float(p.get('branch-rate')):.1%} |")
+          PY
 
       - name: Upload test results and coverage
         if: always()

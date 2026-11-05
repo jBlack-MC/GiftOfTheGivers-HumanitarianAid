@@ -1,0 +1,50 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 340' width='720' height='340' font-family='Inter, Segoe UI, Arial, sans-serif'>
+<rect width='720' height='340' fill='#fcfcfb'/>
+<text x='16' y='26' font-size='15' font-weight='600' fill='#0b0b0b'>Stress test — 95th percentile response time per stage</text>
+<text x='16' y='46' font-size='12' fill='#52514e'>Lower is better. Each stage held for 20 s with no think time (local Release build, SQL Server LocalDB).</text>
+<rect x='70' y='59' width='10' height='10' rx='2' fill='#2a78d6'/>
+<text x='85' y='68' font-size='12' fill='#52514e'>Before mitigation</text>
+<rect x='219' y='59' width='10' height='10' rx='2' fill='#eb6834'/>
+<text x='234' y='68' font-size='12' fill='#52514e'>After mitigation</text>
+<line x1='70' x2='700' y1='290.0' y2='290.0' stroke='#c3c2b7' stroke-width='1'/>
+<text x='64' y='294.0' font-size='11' fill='#898781' text-anchor='end'>0 ms</text>
+<line x1='70' x2='700' y1='237.5' y2='237.5' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='241.5' font-size='11' fill='#898781' text-anchor='end'>1,250 ms</text>
+<line x1='70' x2='700' y1='185.0' y2='185.0' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='189.0' font-size='11' fill='#898781' text-anchor='end'>2,500 ms</text>
+<line x1='70' x2='700' y1='132.5' y2='132.5' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='136.5' font-size='11' fill='#898781' text-anchor='end'>3,750 ms</text>
+<line x1='70' x2='700' y1='80.0' y2='80.0' stroke='#e1e0d9' stroke-width='1'/>
+<text x='64' y='84.0' font-size='11' fill='#898781' text-anchor='end'>5,000 ms</text>
+<path d='M93.5,290 v0.0 q0,-4 4,-4 h20.0 q4,0 4,4 v0.0 z' fill='#2a78d6'><title>10: 34 ms</title></path>
+<text x='107.5' y='283.6' font-size='10' fill='#52514e' text-anchor='middle'>34</text>
+<path d='M123.5,290 v0.0 q0,-4 4,-4 h20.0 q4,0 4,4 v0.0 z' fill='#eb6834'><title>10: 65 ms</title></path>
+<text x='137.5' y='282.3' font-size='10' fill='#52514e' text-anchor='middle'>65</text>
+<text x='122.5' y='308' font-size='11' fill='#898781' text-anchor='middle'>10</text>
+<path d='M198.5,290 v-2.9 q0,-4 4,-4 h20.0 q4,0 4,4 v2.9 z' fill='#2a78d6'><title>50: 164 ms</title></path>
+<text x='212.5' y='278.1' font-size='10' fill='#52514e' text-anchor='middle'>164</text>
+<path d='M228.5,290 v-3.7 q0,-4 4,-4 h20.0 q4,0 4,4 v3.7 z' fill='#eb6834'><title>50: 184 ms</title></path>
+<text x='242.5' y='277.3' font-size='10' fill='#52514e' text-anchor='middle'>184</text>
+<text x='227.5' y='308' font-size='11' fill='#898781' text-anchor='middle'>50</text>
+<path d='M303.5,290 v-6.5 q0,-4 4,-4 h20.0 q4,0 4,4 v6.5 z' fill='#2a78d6'><title>100: 249 ms</title></path>
+<text x='317.5' y='274.5' font-size='10' fill='#52514e' text-anchor='middle'>249</text>
+<path d='M333.5,290 v-11.5 q0,-4 4,-4 h20.0 q4,0 4,4 v11.5 z' fill='#eb6834'><title>100: 370 ms</title></path>
+<text x='347.5' y='269.5' font-size='10' fill='#52514e' text-anchor='middle'>370</text>
+<text x='332.5' y='308' font-size='11' fill='#898781' text-anchor='middle'>100</text>
+<path d='M408.5,290 v-13.5 q0,-4 4,-4 h20.0 q4,0 4,4 v13.5 z' fill='#2a78d6'><title>200: 416 ms</title></path>
+<text x='422.5' y='267.5' font-size='10' fill='#52514e' text-anchor='middle'>416</text>
+<path d='M438.5,290 v-11.2 q0,-4 4,-4 h20.0 q4,0 4,4 v11.2 z' fill='#eb6834'><title>200: 363 ms</title></path>
+<text x='452.5' y='269.8' font-size='10' fill='#52514e' text-anchor='middle'>363</text>
+<text x='437.5' y='308' font-size='11' fill='#898781' text-anchor='middle'>200</text>
+<path d='M513.5,290 v-62.2 q0,-4 4,-4 h20.0 q4,0 4,4 v62.2 z' fill='#2a78d6'><title>400: 1,576 ms</title></path>
+<text x='527.5' y='218.8' font-size='10' fill='#52514e' text-anchor='middle'>1,576</text>
+<path d='M543.5,290 v-10.3 q0,-4 4,-4 h20.0 q4,0 4,4 v10.3 z' fill='#eb6834'><title>400: 341 ms</title></path>
+<text x='557.5' y='270.7' font-size='10' fill='#52514e' text-anchor='middle'>341</text>
+<text x='542.5' y='308' font-size='11' fill='#898781' text-anchor='middle'>400</text>
+<path d='M618.5,290 v-118.9 q0,-4 4,-4 h20.0 q4,0 4,4 v118.9 z' fill='#2a78d6'><title>800: 2,926 ms</title></path>
+<text x='632.5' y='162.1' font-size='10' fill='#52514e' text-anchor='middle'>2,926</text>
+<path d='M648.5,290 v-147.5 q0,-4 4,-4 h20.0 q4,0 4,4 v147.5 z' fill='#eb6834'><title>800: 3,606 ms</title></path>
+<text x='662.5' y='133.5' font-size='10' fill='#52514e' text-anchor='middle'>3,606</text>
+<text x='647.5' y='308' font-size='11' fill='#898781' text-anchor='middle'>800</text>
+<text x='385' y='328' font-size='11' fill='#898781' text-anchor='middle'>Concurrent virtual users</text>
+</svg>

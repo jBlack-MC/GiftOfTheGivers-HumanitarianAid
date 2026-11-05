@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Contribution Report — Gift of the Givers Relief Management System</title>
+<link rel="stylesheet" href="assets/deliverables.css">
+</head>
+<body>
+<main class="doc">
+<header class="cover">
+  <div class="brand"><img src="assets/logo.svg" alt=""> Gift of the Givers · Relief Management System</div>
+  <div class="docno">Deliverable 12</div>
+  <h1>Team Contribution Report</h1>
+  <p class="subtitle">Roles, responsibilities and evidence of each member's contribution, Parts 1–3.</p>
+  <div class="meta"><div><span>Document</span><strong>D-12</strong></div><div><span>Version</span><strong>0.9</strong></div><div><span>Date</span><strong>2026-11-02</strong></div><div><span>Status</span><strong>DRAFT — names, student numbers and roles to be completed and agreed by every member before submission</strong></div></div>
+</header>
+
+<h2 id="members-and-roles">Members and roles</h2>
+<p>Each member confirms their own row. The git identities are taken from the repository history (section <em>Evidence</em>).</p>
+<table><thead><tr><th>Member (name, student number)</th><th>Git identity</th><th>Role(s)</th><th>Main responsibilities and deliverables</th></tr></thead><tbody><tr><td><em>[Full name, ST number]</em></td><td><code>jBlack-MC</code></td><td><em>[e.g. Lead developer]</em></td><td><em>[e.g. web app features (donation flow, tax-certificate PDF, ERD alignment), most pull requests]</em></td></tr><tr><td>Clarity Masuku, ST10438928</td><td><code>MPCwGamer</code>, <code>ST10438928@rcconnect.edu.za</code></td><td><em>[e.g. DevOps / deployment lead]</em></td><td><em>[e.g. initial Azure Pipelines set-up (commit 2277bdf), Azure DevOps organisation and Artifacts feed]</em></td></tr><tr><td><em>[Full name, ST number]</em></td><td><code>Katlego-lab001</code></td><td><em>[e.g. Tester / documentation]</em></td><td><em>[e.g. co-authored 15 commits; testing, user manual]</em></td></tr><tr><td><em>[Full name, ST number]</em></td><td><em>[identity]</em></td><td><em>[role]</em></td><td><em>[responsibilities]</em></td></tr><tr><td><em>[Full name, ST number]</em></td><td><em>[identity]</em></td><td><em>[role]</em></td><td><em>[responsibilities]</em></td></tr></tbody></table>
+<p>Delete unused rows. The brief allows at most 5 members.</p>
+<h2 id="evidence-from-git-log---all-2026-08-16-2026-11-02">Evidence (from <code>git log --all</code>, 2026-08-16 → 2026-11-02)</h2>
+<table><thead><tr><th>Measure</th><th>Value</th></tr></thead><tbody><tr><td>Commits (all branches)</td><td>102, of which 36 are merge commits</td></tr><tr><td>Pull requests</td><td>15 merged into <code>main</code> (#1–#18)</td></tr><tr><td>Commits authored by <code>jBlack-MC</code></td><td>86 (plus 3 from a second account, <code>MPCwGamer</code>)</td></tr><tr><td>Commits authored by Clarity Masuku</td><td>1 (2277bdf, <em>Set up CI with Azure Pipelines</em>)</td></tr><tr><td><code>Co-Authored-By</code> trailers</td><td>Katlego-lab001 × 15, Clarity Masuku (MPCwGamer) × 13, jBlack-MC × 16</td></tr><tr><td>Automated agent commits</td><td><code>copilot-swe-agent[bot]</code> × 11 (PRs #8, #10, #17); see the AI declaration in deliverable 09</td></tr><tr><td>Other</td><td>1 commit as <code>Student &lt;student@example.com&gt;</code> (5724267): the author must be identified</td></tr></tbody></table>
+<p>Reproduce these numbers with:</p>
+<pre><code class="language-bash">git shortlog -sne --all
+git log --all --format=&#x27;%(trailers:key=Co-Authored-By,valueonly)&#x27; | sort | uniq -c
+gh pr list --state all</code></pre>
+<h2 id="contribution-by-part-3-task">Contribution by Part 3 task</h2>
+<p>Tick who did each task, so the marker can link work to people.</p>
+<table><thead><tr><th>Part 3 task</th><th>Member(s)</th></tr></thead><tbody><tr><td>A.1 Unit tests (<code>DonationServiceTests</code>, existing unit suites)</td><td><em>[ ]</em></td></tr><tr><td>A.2 Integration tests (<code>EmployeeWorkflowTests</code>, <code>DonorPortalTests</code>, <code>TaxCertificateFunctionTests</code>)</td><td><em>[ ]</em></td></tr><tr><td>A.3 Load and stress tests (<code>GiftOfTheGivers.LoadTests</code>, caching mitigation)</td><td><em>[ ]</em></td></tr><tr><td>A.4 Selenium UI tests (<code>GiftOfTheGivers.UiTests</code>)</td><td><em>[ ]</em></td></tr><tr><td>B Pipeline with tests and coverage (<code>azure-pipelines.yml</code>, <code>pipelines/templates</code>)</td><td><em>[ ]</em></td></tr><tr><td>C.1–C.3 Continuous deployment (web app, function, SQL) and Azure set-up</td><td><em>[ ]</em></td></tr><tr><td>D User manual (deliverable 10)</td><td><em>[ ]</em></td></tr><tr><td>Azure deployment guide (deliverable 11) and this report</td><td><em>[ ]</em></td></tr></tbody></table>
+<h2 id="observations-for-the-next-iteration">Observations for the next iteration</h2>
+<ul><li>Most commit messages are short (<em>good</em>, <em>test</em>, <em>updates</em>). Use descriptive messages such as <em>Add Selenium test for anonymous USD donation</em> so each member's work can be read from the history.</li><li>Work done in pairs should be committed by the person who typed it, with a <code>Co-Authored-By:</code> line for the partner.</li></ul>
+<p><strong>Signed (each member):</strong> ____________________ ____________________ ____________________ ____________________ ____________________</p>
+<footer class="docfoot"><span>Gift of the Givers Relief Management System · Team Contribution Report</span><span>Generated from docs/deliverables/src by docs/tools/build_deliverables.py</span></footer>
+</main>
+</body>
+</html>

@@ -19,6 +19,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GiftOfTheGivers\GiftOfTheGivers.csproj" />
+    <!-- Integration tests call the Azure Function against the same database as the web app.
+         Aliased because both projects define a top-level Program class. -->
+    <ProjectReference Include="..\GiftOfTheGivers.Functions\GiftOfTheGivers.Functions.csproj" Aliases="functions" />
   </ItemGroup>
 
   <ItemGroup>

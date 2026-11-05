@@ -1,0 +1,2 @@
+[Unit] Passed!  - Failed:     0, Passed:    48, Skipped:     0, Total:    48, Duration: 2 s - GiftOfTheGivers.Tests.dll (net10.0)
+[Integration] Passed!  - Failed:     0, Passed:    80, Skipped:     0, Total:    80, Duration: 6 s - GiftOfTheGivers.Tests.dll (net10.0)

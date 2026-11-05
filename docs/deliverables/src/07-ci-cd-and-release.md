@@ -17,7 +17,7 @@ date: 2026-11-02
 | CI — Migrations on SQL Server | same file, job `migrations` | Same | SQL Server 2022 service container → apply all migrations to an empty DB → roll back the latest and re-apply → `migrate.sql` (idempotent) artifact |
 | CD | `.github/workflows/cd.yml` | `workflow_run`: CI completed **successfully** on `main` (push) | Container image to GHCR `:sha` and `:main`, OCI labels |
 | Mirror | `.github/workflows/mirror-to-azure-devops.yml` | Any push | `git push --mirror` to Azure DevOps |
-| Publish Helpers | `.github/workflows/publish-helpers-package.yml` | `main`, tags `helpers-v*`, manual | SemVer check → helper tests → pack → push to Azure Artifacts |
+| Publish Helpers | `.github/workflows/publish-helpers-package.yml` | `main`, tags `helpers-v*`, manual | SemVer check → explicit `AZURE_ARTIFACTS_PAT` preflight and feed authentication → helper tests → pack → push to Azure Artifacts |
 | Azure Pipelines | `azure-pipelines.yml` | Mirrored `main`, `feature/*`; PR to `main` | Locked restore, build, test (TRX), vuln gate, drift check, `migrations` artifact, `webapp` zip → **DeployDev** on `main` |
 
 All GitHub workflows declare least-privilege `permissions`. CD is the only one with `packages: write`.
@@ -32,7 +32,7 @@ All GitHub workflows declare least-privilege `permissions`. CD is the only one w
 | --- | --- | --- | --- |
 | `GITHUB_TOKEN` | GitHub (automatic) | CD | `packages: write` only in CD |
 | `AZURE_DEVOPS_REPO_URL`, `AZURE_DEVOPS_PAT` | GitHub secrets | Mirror | PAT scope: Code read and write |
-| `AZURE_ARTIFACTS_PAT` | GitHub secret | Publish Helpers | PAT scope: Packaging read and write; passed via `env` |
+| `AZURE_ARTIFACTS_PAT` | GitHub secret | Publish Helpers | Required; the workflow fails early with a setup hint if missing. PAT scope: Packaging read and write; passed via `env` |
 | `azureServiceConnection`, `azureWebAppName` | Azure DevOps variables | DeployDev | Deploy is skipped if empty |
 | App settings (connection string, `PayFast__*`, `SendGrid__ApiKey`, `Organisation__*`, `StaffAccess__BootstrapEmployeeEmails__0`) | App Service configuration / Key Vault | Runtime | Never in the repository |
 

@@ -56,36 +56,40 @@ jobs:
           echo "package_version=$resolved" >> "$GITHUB_OUTPUT"
 
       - name: Check publish credentials
-        id: publish-credentials
         shell: bash
         env:
           AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACTS_PAT }}
         run: |
           set -euo pipefail
+          if [[ -z "${AZURE_ARTIFACTS_PAT:-}" ]]; then
+            echo "::error::Configure the AZURE_ARTIFACTS_PAT repository secret to publish GiftOfTheGivers.Helpers."
+            exit 1
+          fi
 
-
-
-      - name: Test helpers before publishing
-        run: dotnet test GiftOfTheGivers.Tests/GiftOfTheGivers.Tests.csproj --configuration Release --filter "FullyQualifiedName~HelperCalculationsTests"
-
-      - name: Pack GiftOfTheGivers.Helpers
-        if: steps.publish-credentials.outputs.can_publish == 'true'
+      - name: Configure Azure Artifacts credentials
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACTS_PAT }}
         run: |
-          dotnet pack ./GiftOfTheGivers.Helpers/GiftOfTheGivers.Helpers.csproj \
-            --configuration Release \
-            --output ./artifacts/nuget \
-            -p:PackageVersion=${{ steps.version.outputs.package_version }}
-
-
-        run: |
+          set -euo pipefail
           dotnet nuget update source "giftgivers-helpers" \
             --source "$AZURE_ARTIFACTS_NUGET_URL" \
             --username "github-actions" \
             --password "$AZURE_ARTIFACTS_PAT" \
             --store-password-in-clear-text
 
+      - name: Test helpers before publishing
+        run: dotnet test GiftOfTheGivers.Tests/GiftOfTheGivers.Tests.csproj --configuration Release --filter "FullyQualifiedName~HelperCalculationsTests"
+
+      - name: Pack GiftOfTheGivers.Helpers
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
+        run: |
+          dotnet pack ./GiftOfTheGivers.Helpers/GiftOfTheGivers.Helpers.csproj \
+            --configuration Release \
+            --output ./artifacts/nuget \
+            -p:PackageVersion="$PACKAGE_VERSION"
+
       - name: Push package
-        if: steps.publish-credentials.outputs.can_publish == 'true'
         run: |
           dotnet nuget push "./artifacts/nuget/*.nupkg" \
             --source "giftgivers-helpers" \

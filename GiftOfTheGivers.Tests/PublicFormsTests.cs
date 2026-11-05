@@ -91,6 +91,26 @@ public class PublicFormsTests : IClassFixture<TestApplicationFactory>
         Assert.DoesNotContain("Use this page to detail your site", html);
         Assert.Contains("POPIA", html);
     }
+
+    [Fact]
+    public async Task Apk_Page_ReturnsSuccess()
+    {
+        var client = _factory.CreateClientFor();
+        var response = await client.GetAsync("/Apk");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Contains("GIFT OF THE GIVERS MOBILE", html);
+        Assert.Contains("Download Android APK", html);
+    }
+
+    [Fact]
+    public async Task DownloadApk_ReturnsApkFile()
+    {
+        var client = _factory.CreateClientFor();
+        var response = await client.GetAsync("/downloads/giftofthegivers.apk");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/vnd.android.package-archive", response.Content.Headers.ContentType?.MediaType);
+    }
 }
 
 [Trait("Category", "Integration")]

@@ -121,6 +121,15 @@ if (builder.Configuration.GetValue("ForwardedHeaders:Enabled", false))
 }
 
 builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>("database", tags: ["ready"]);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowMobileAndWeb", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
@@ -155,6 +164,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSerilogRequestLogging();
 app.UseRouting();
+app.UseCors("AllowMobileAndWeb");
 app.UseRateLimiter();
 
 app.UseAuthentication();
@@ -163,6 +173,8 @@ app.UseAuthorization();
 // /health/live: process is up. /health: also checks the database.
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health");
+
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",

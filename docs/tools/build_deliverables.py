@@ -131,23 +131,27 @@ LIST_RE = re.compile(r"^(\s*)([-*+]|\d+\.)\s+(.*)$")
 
 def render_list(lines: list[str]) -> str:
     """Renders a (possibly nested) list block."""
-    items: list[tuple[int, bool, str]] = []
+    items: list[tuple[int, bool, str, int]] = []
     for line in lines:
         m = LIST_RE.match(line)
         if m:
-            items.append((len(m.group(1).expandtabs(4)), m.group(2)[0].isdigit(), m.group(3)))
+            marker = m.group(2)
+            number = int(marker.rstrip(".)")) if marker[0].isdigit() else 1
+            items.append((len(m.group(1).expandtabs(4)), marker[0].isdigit(), m.group(3), number))
         elif items:
-            indent, ordered, text = items[-1]
-            items[-1] = (indent, ordered, text + " " + line.strip())
+            indent, ordered, text, number = items[-1]
+            items[-1] = (indent, ordered, text + " " + line.strip(), number)
 
     out: list[str] = []
     stack: list[tuple[int, str]] = []
-    for indent, ordered, text in items:
+    for indent, ordered, text, number in items:
         tag = "ol" if ordered else "ul"
         while stack and indent < stack[-1][0]:
             out.append(f"</li></{stack.pop()[1]}>")
         if not stack or indent > stack[-1][0]:
-            out.append(f"<{tag}>")
+            # A numbered list that resumes after a figure keeps its numbering (e.g. starts at 4).
+            start = f' start="{number}"' if ordered and number != 1 else ""
+            out.append(f"<{tag}{start}>")
             stack.append((indent, tag))
         else:
             out.append("</li>")
@@ -350,7 +354,20 @@ def render_pdf(browser: str, html_path: Path, pdf_path: Path, profile: Path) -> 
         [browser, "--headless=new", "--disable-gpu", "--no-first-run", f"--user-data-dir={profile}",
          "--no-pdf-header-footer", f"--print-to-pdf={pdf_path}", html_path.resolve().as_uri()],
         capture_output=True, text=True, timeout=180)
-    return pdf_path.exists() and "written" in (result.stdout + result.stderr)
+    if "written" in (result.stdout + result.stderr):
+        return pdf_path.exists()
+    # Some Edge installs hand the job to a background process and return before the file is
+    # written. Wait until the PDF exists and its size has stopped changing.
+    import time
+    last_size = -1
+    for _ in range(120):
+        if pdf_path.exists():
+            size = pdf_path.stat().st_size
+            if size > 0 and size == last_size:
+                return True
+            last_size = size
+        time.sleep(0.5)
+    return False
 
 
 def expand_placeholders(text: str) -> str:

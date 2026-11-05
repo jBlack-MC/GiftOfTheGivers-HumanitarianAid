@@ -1,3 +1,14 @@
+# Gift of the Givers — CI/CD (Part 3: testing, deployment and handover)
+#
+#   Build ─► unit tests ─► integration tests ─► Selenium UI tests ─► coverage gate ─► artifacts
+#     │
+#     └─(main only)─► DeployDatabase ─► DeployWebApp (staging slot ─► smoke ─► swap) ─► DeployFunctions ─► LiveSmokeTests
+#
+# Deployment stages run only when the variable group `giftgivers-azure` exists and is authorised
+# for this pipeline. Every value it needs is listed in docs/deliverables/11-azure-deployment-guide.
+# Rollback: run the pipeline manually with `rollbackDatabase` ticked (database) and/or swap the
+# slots back (web app) — see the same guide, section "Rollback and restore".
+
 trigger:
   branches:
     include:
@@ -9,72 +20,122 @@ pr:
     include:
       - main
 
+parameters:
+  - name: rollbackDatabase
+    displayName: Roll the database back by one migration (runs the rollback script instead of migrate.sql)
+    type: boolean
+    default: false
+  - name: runUiTests
+    displayName: Run Selenium UI tests in the build stage
+    type: boolean
+    default: true
+
 pool:
   vmImage: ubuntu-latest
 
 variables:
-  buildConfiguration: Release
-  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  # Set these in Azure DevOps Pipeline variables to enable deployment.
-  azureServiceConnection: ''
-  azureWebAppName: ''
+  - template: pipelines/templates/variables.yml
 
 stages:
-  - stage: BuildAndTest
+  # ------------------------------------------------------------------ CI
+  - stage: Build
     displayName: Build and test
     jobs:
       - job: Build
-        displayName: Restore, build, test, and publish artifact
+        displayName: Restore, build, test, coverage, package
         steps:
-          - task: UseDotNet@2
-            displayName: Install .NET SDK
-            inputs:
-              packageType: sdk
-              version: 10.0.401
-
-          - task: Cache@2
-            displayName: Cache NuGet packages
-            inputs:
-              key: 'nuget | "$(Agent.OS)" | **/packages.lock.json, **/*.csproj'
-              restoreKeys: |
-                nuget | "$(Agent.OS)"
-              path: $(NUGET_PACKAGES)
-
-          - task: NuGetAuthenticate@1
-            displayName: Authenticate to Azure Artifacts feeds
-
-          - script: dotnet restore GiftOfTheGivers.slnx --locked-mode
-            displayName: Restore dependencies (lock files enforced)
-            env:
-              NUGET_PACKAGES: $(NUGET_PACKAGES)
+          - template: pipelines/templates/dotnet-setup.yml
 
           - script: dotnet build GiftOfTheGivers.slnx --configuration $(buildConfiguration) --no-restore
             displayName: Build solution
-            env:
-              NUGET_PACKAGES: $(NUGET_PACKAGES)
 
           - script: >
-              dotnet test GiftOfTheGivers.slnx
-              --configuration $(buildConfiguration)
-              --no-build
-              --logger "trx;LogFileName=test-results.trx"
-              --results-directory $(Agent.TempDirectory)/TestResults
-            displayName: Run tests
+              dotnet test GiftOfTheGivers.Tests/GiftOfTheGivers.Tests.csproj
+              --configuration $(buildConfiguration) --no-build
+              --filter "Category=Unit"
+              --settings coverage.runsettings --collect "XPlat Code Coverage"
+              --logger "trx;LogFileName=unit.trx"
+              --results-directory $(Agent.TempDirectory)/TestResults/unit
+            displayName: Unit tests
+
+          - script: >
+              dotnet test GiftOfTheGivers.Tests/GiftOfTheGivers.Tests.csproj
+              --configuration $(buildConfiguration) --no-build
+              --filter "Category=Integration"
+              --settings coverage.runsettings --collect "XPlat Code Coverage"
+              --logger "trx;LogFileName=integration.trx"
+              --results-directory $(Agent.TempDirectory)/TestResults/integration
+            displayName: Integration tests (web form → database → Azure Function)
+
+          - script: >
+              dotnet test GiftOfTheGivers.UiTests/GiftOfTheGivers.UiTests.csproj
+              --configuration $(buildConfiguration) --no-build
+              --logger "trx;LogFileName=ui-chrome.trx"
+              --results-directory $(Agent.TempDirectory)/TestResults/ui
+            displayName: Selenium UI tests (headless Chrome, desktop + mobile)
+            condition: and(succeededOrFailed(), eq('${{ parameters.runUiTests }}', 'true'))
             env:
-              NUGET_PACKAGES: $(NUGET_PACKAGES)
+              UI_BROWSER: chrome
+              UI_SCREENSHOT_DIR: $(Build.ArtifactStagingDirectory)/ui-screenshots
 
           - task: PublishTestResults@2
-            displayName: Publish test results
+            displayName: Publish unit test results
             condition: succeededOrFailed()
             inputs:
               testResultsFormat: VSTest
-              testResultsFiles: "**/*.trx"
+              testResultsFiles: '**/unit.trx'
               searchFolder: $(Agent.TempDirectory)/TestResults
-              mergeTestResults: true
+              testRunTitle: Unit tests
               failTaskOnFailedTests: true
+
+          - task: PublishTestResults@2
+            displayName: Publish integration test results
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: '**/integration.trx'
+              searchFolder: $(Agent.TempDirectory)/TestResults
+              testRunTitle: Integration tests
+              failTaskOnFailedTests: true
+
+          - task: PublishTestResults@2
+            displayName: Publish UI test results
+            condition: and(succeededOrFailed(), eq('${{ parameters.runUiTests }}', 'true'))
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: '**/ui-*.trx'
+              searchFolder: $(Agent.TempDirectory)/TestResults
+              testRunTitle: Selenium UI tests
+              failTaskOnFailedTests: true
+
+          # Merges the unit and integration coverage files and shows the report on the
+          # "Code Coverage" tab of the run and in the build summary.
+          - task: PublishCodeCoverageResults@2
+            displayName: Publish code coverage
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: $(Agent.TempDirectory)/TestResults/**/coverage.cobertura.xml
+
+          - script: |
+              python3 - <<'EOF'
+              import glob, xml.etree.ElementTree as ET
+              files = glob.glob("$(Agent.TempDirectory)/TestResults/**/coverage.cobertura.xml", recursive=True)
+              covered = valid = 0
+              lines = {}
+              for f in files:
+                  for cls in ET.parse(f).iter("class"):
+                      for line in cls.iter("line"):
+                          key = (cls.get("filename"), line.get("number"))
+                          lines[key] = lines.get(key, 0) or int(line.get("hits"))
+              valid = len(lines); covered = sum(1 for h in lines.values() if h > 0)
+              rate = covered / valid if valid else 0
+              print(f"Merged line coverage: {covered}/{valid} = {rate:.1%} (minimum $(coverageMinimum)%)")
+              print(f"##vso[task.setvariable variable=lineCoverage]{rate:.1%}")
+              if rate * 100 < float("$(coverageMinimum)"):
+                  print(f"##vso[task.logissue type=error]Line coverage {rate:.1%} is below $(coverageMinimum)%")
+                  raise SystemExit(1)
+              EOF
+            displayName: Coverage gate (≥ $(coverageMinimum)% lines)
 
           - script: |
               set -e
@@ -84,65 +145,310 @@ stages:
                 exit 1
               fi
             displayName: Check vulnerable packages
-            env:
-              NUGET_PACKAGES: $(NUGET_PACKAGES)
 
           - script: |
               set -e
+              EF="dotnet ef --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --no-build"
+              OUT=$(Build.ArtifactStagingDirectory)/migrations
+              mkdir -p $OUT
               dotnet tool restore
-              dotnet ef migrations has-pending-model-changes --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --no-build
-              dotnet ef migrations script --idempotent --project GiftOfTheGivers/GiftOfTheGivers.csproj --startup-project GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/migrations/migrate.sql
-            displayName: Check model drift and generate idempotent migration script
-            env:
-              NUGET_PACKAGES: $(NUGET_PACKAGES)
+              $EF migrations has-pending-model-changes
+              # Forward: idempotent, safe to run against any version of the database.
+              $EF migrations script --idempotent --output $OUT/migrate.sql
+              # Rollback: from the newest migration back to the one before it.
+              $EF migrations list --no-connect | grep -E '^[0-9]{14}_' > $OUT/migrations.txt
+              latest=$(tail -n 1 $OUT/migrations.txt | awk '{print $1}')
+              previous=$(tail -n 2 $OUT/migrations.txt | head -n 1 | awk '{print $1}')
+              $EF migrations script "$latest" "$previous" --output $OUT/rollback.sql
+              echo "Schema version in this build: $latest (rollback target: $previous)" | tee $OUT/schema-version.txt
+            displayName: Model drift check, migration and rollback scripts
 
-          - task: PublishBuildArtifacts@1
-            displayName: Publish migration script
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/migrations'
-              ArtifactName: migrations
-              publishLocation: Container
-
-          - script: dotnet publish GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/webapp
-            displayName: Publish web app files
-            env:
-              NUGET_PACKAGES: $(NUGET_PACKAGES)
+          - script: |
+              set -e
+              dotnet publish GiftOfTheGivers/GiftOfTheGivers.csproj --configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/webapp
+              dotnet publish GiftOfTheGivers.Functions/GiftOfTheGivers.Functions.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/functions
+            displayName: Publish web app and function app
 
           - task: ArchiveFiles@2
-            displayName: Archive web app files
+            displayName: Zip web app
             inputs:
-              rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/webapp'
+              rootFolderOrFile: $(Build.ArtifactStagingDirectory)/webapp
               includeRootFolder: false
               archiveType: zip
-              archiveFile: '$(Build.ArtifactStagingDirectory)/webapp.zip'
-              replaceExistingArchive: true
+              archiveFile: $(Build.ArtifactStagingDirectory)/drop/webapp.zip
 
-          - task: PublishBuildArtifacts@1
-            displayName: Publish artifact
+          - task: ArchiveFiles@2
+            displayName: Zip function app
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/webapp.zip'
-              ArtifactName: webapp
-              publishLocation: Container
+              rootFolderOrFile: $(Build.ArtifactStagingDirectory)/functions
+              includeRootFolder: false
+              archiveType: zip
+              archiveFile: $(Build.ArtifactStagingDirectory)/drop/functions.zip
 
-  - stage: DeployDev
-    displayName: Deploy to Azure App Service (dev)
-    dependsOn: BuildAndTest
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['azureServiceConnection'], ''), ne(variables['azureWebAppName'], ''))
-    jobs:
-      - deployment: DeployWebApp
-        displayName: Deploy web app
-        environment: giftgivers-dev
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - download: current
-                  artifact: webapp
+          - publish: $(Build.ArtifactStagingDirectory)/drop
+            artifact: drop
+            displayName: Publish deployment packages
 
-                - task: AzureWebApp@1
-                  displayName: Deploy artifact to Azure Web App
-                  inputs:
-                    azureSubscription: '$(azureServiceConnection)'
-                    appType: webApp
-                    appName: '$(azureWebAppName)'
-                    package: '$(Pipeline.Workspace)/webapp/webapp.zip'
+          - publish: $(Build.ArtifactStagingDirectory)/migrations
+            artifact: migrations
+            displayName: Publish migration scripts
+
+          - publish: $(Build.ArtifactStagingDirectory)/ui-screenshots
+            artifact: ui-screenshots
+            displayName: Publish Selenium screenshots
+            condition: and(succeededOrFailed(), eq('${{ parameters.runUiTests }}', 'true'))
+
+  # Deployment stages are inserted only when deployEnabled is 'true' in
+  # pipelines/templates/variables.yml, so the pipeline still runs before Azure is set up.
+  - ${{ if eq(variables.deployEnabled, 'true') }}:
+      # ------------------------------------------------------------------ CD: SQL
+      - stage: DeployDatabase
+        displayName: Deploy schema to Azure SQL
+        dependsOn: Build
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+        variables:
+          - group: giftgivers-azure
+        jobs:
+          - deployment: Migrate
+            displayName: Apply EF Core migrations
+            environment: giftgivers-production
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - download: current
+                      artifact: migrations
+
+                    - script: cat $(Pipeline.Workspace)/migrations/schema-version.txt
+                      displayName: Show target schema version
+
+                    - ${{ if eq(parameters.rollbackDatabase, true) }}:
+                        - task: SqlAzureDacpacDeployment@1
+                          displayName: ROLLBACK — revert the latest migration (rollback.sql)
+                          inputs:
+                            azureSubscription: $(azureServiceConnection)
+                            AuthenticationType: server
+                            ServerName: $(sqlServerName).database.windows.net
+                            DatabaseName: $(sqlDatabaseName)
+                            SqlUsername: $(sqlAdminUser)
+                            SqlPassword: $(sqlAdminPassword)
+                            deployType: SqlTask
+                            IpDetectionMethod: AutoDetect
+                            SqlFile: $(Pipeline.Workspace)/migrations/rollback.sql
+                    - ${{ else }}:
+                        - task: SqlAzureDacpacDeployment@1
+                          displayName: Apply idempotent migration script (migrate.sql)
+                          inputs:
+                            azureSubscription: $(azureServiceConnection)
+                            AuthenticationType: server
+                            ServerName: $(sqlServerName).database.windows.net
+                            DatabaseName: $(sqlDatabaseName)
+                            SqlUsername: $(sqlAdminUser)
+                            SqlPassword: $(sqlAdminPassword)
+                            deployType: SqlTask
+                            IpDetectionMethod: AutoDetect
+                            SqlFile: $(Pipeline.Workspace)/migrations/migrate.sql
+
+                    - task: SqlAzureDacpacDeployment@1
+                      displayName: Show applied schema versions (__EFMigrationsHistory)
+                      inputs:
+                        azureSubscription: $(azureServiceConnection)
+                        AuthenticationType: server
+                        ServerName: $(sqlServerName).database.windows.net
+                        DatabaseName: $(sqlDatabaseName)
+                        SqlUsername: $(sqlAdminUser)
+                        SqlPassword: $(sqlAdminPassword)
+                        deployType: InlineSqlTask
+                        SqlInline: SELECT MigrationId, ProductVersion FROM __EFMigrationsHistory ORDER BY MigrationId;
+                        IpDetectionMethod: AutoDetect
+
+      # ------------------------------------------------------------------ CD: Web app
+      - stage: DeployWebApp
+        displayName: Deploy web app to App Service
+        dependsOn: DeployDatabase
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq('${{ parameters.rollbackDatabase }}', 'false'))
+        variables:
+          - group: giftgivers-azure
+        jobs:
+          - deployment: WebApp
+            displayName: Slot deploy, smoke test, swap
+            environment: giftgivers-production
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - download: current
+                      artifact: drop
+
+                    # Runtime configuration lives in App Service, never in the repository.
+                    - task: AzureAppServiceSettings@1
+                      displayName: Apply app settings
+                      inputs:
+                        azureSubscription: $(azureServiceConnection)
+                        appName: $(webAppName)
+                        resourceGroupName: $(resourceGroup)
+                        ${{ if eq(variables.useStagingSlot, 'true') }}:
+                          slotName: staging
+                        appSettings: |
+                          [
+                            { "name": "ASPNETCORE_ENVIRONMENT", "value": "Production", "slotSetting": false },
+                            { "name": "Database__MigrateOnStartup", "value": "false", "slotSetting": false },
+                            { "name": "ForwardedHeaders__Enabled", "value": "true", "slotSetting": false },
+                            { "name": "Seed__DemoData", "value": "$(seedDemoData)", "slotSetting": false },
+                            { "name": "Organisation__IsDemo", "value": "true", "slotSetting": false }
+                          ]
+                        connectionStrings: |
+                          [
+                            { "name": "DefaultConnection", "value": "$(sqlConnectionString)", "type": "SQLAzure", "slotSetting": false }
+                          ]
+
+                    - task: AzureWebApp@1
+                      displayName: Deploy package
+                      inputs:
+                        azureSubscription: $(azureServiceConnection)
+                        appType: $(webAppType)
+                        appName: $(webAppName)
+                        package: $(Pipeline.Workspace)/drop/webapp.zip
+                        ${{ if eq(variables.useStagingSlot, 'true') }}:
+                          deployToSlotOrASE: true
+                          resourceGroupName: $(resourceGroup)
+                          slotName: staging
+
+                    - ${{ if eq(variables.useStagingSlot, 'true') }}:
+                        - template: pipelines/templates/smoke-test.yml
+                          parameters:
+                            name: staging slot
+                            url: $(webAppStagingUrl)
+
+                        - task: AzureAppServiceManage@0
+                          displayName: Swap staging into production
+                          inputs:
+                            azureSubscription: $(azureServiceConnection)
+                            Action: Swap Slots
+                            WebAppName: $(webAppName)
+                            ResourceGroupName: $(resourceGroup)
+                            SourceSlot: staging
+                            SwapWithProduction: true
+
+                        - template: pipelines/templates/smoke-test.yml
+                          parameters:
+                            name: production after swap
+                            url: $(webAppUrl)
+                    - ${{ else }}:
+                        - template: pipelines/templates/smoke-test.yml
+                          parameters:
+                            name: production
+                            url: $(webAppUrl)
+
+                # Automatic rollback: the previous build is still in the staging slot after a swap,
+                # so swapping again restores it.
+                on:
+                  failure:
+                    steps:
+                      - ${{ if eq(variables.useStagingSlot, 'true') }}:
+                          - task: AzureAppServiceManage@0
+                            displayName: Roll back (swap the previous version back)
+                            inputs:
+                              azureSubscription: $(azureServiceConnection)
+                              Action: Swap Slots
+                              WebAppName: $(webAppName)
+                              ResourceGroupName: $(resourceGroup)
+                              SourceSlot: staging
+                              SwapWithProduction: true
+                      - ${{ else }}:
+                          - script: echo "##vso[task.logissue type=warning]No staging slot on this plan. Re-run the DeployWebApp stage of the last good run to roll back."
+                            displayName: Rollback instructions
+
+      # ------------------------------------------------------------------ CD: Functions
+      - stage: DeployFunctions
+        displayName: Deploy Azure Function
+        dependsOn: DeployDatabase
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq('${{ parameters.rollbackDatabase }}', 'false'))
+        variables:
+          - group: giftgivers-azure
+        jobs:
+          - deployment: FunctionApp
+            displayName: Deploy and test the certificate function
+            environment: giftgivers-production
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - download: current
+                      artifact: drop
+
+                    - task: AzureFunctionApp@2
+                      displayName: Deploy function package
+                      inputs:
+                        connectedServiceNameARM: $(azureServiceConnection)
+                        appType: $(functionAppType)
+                        appName: $(functionAppName)
+                        package: $(Pipeline.Workspace)/drop/functions.zip
+                        deploymentMethod: auto
+
+                    # Secrets come from the variable group (marked secret), so they never appear in logs.
+                    - task: AzureAppServiceSettings@1
+                      displayName: Apply function settings
+                      inputs:
+                        azureSubscription: $(azureServiceConnection)
+                        appName: $(functionAppName)
+                        resourceGroupName: $(resourceGroup)
+                        appSettings: |
+                          [
+                            { "name": "FUNCTIONS_WORKER_RUNTIME", "value": "dotnet-isolated", "slotSetting": false },
+                            { "name": "ConnectionStrings__DefaultConnection", "value": "$(sqlConnectionString)", "slotSetting": false },
+                            { "name": "Organisation__Name", "value": "Gift of the Givers Foundation", "slotSetting": false },
+                            { "name": "Organisation__IsDemo", "value": "true", "slotSetting": false }
+                          ]
+
+                    - script: |
+                        set -u
+                        base="https://$(functionAppName).azurewebsites.net/api/tax-certificate"
+                        check() {
+                          local label="$1" url="$2" expected="$3" code=""
+                          for attempt in 1 2 3 4 5 6; do
+                            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+                            [ "$code" = "$expected" ] && break
+                            sleep 10
+                          done
+                          echo "$label → HTTP $code (expected $expected)"
+                          [ "$code" = "$expected" ] || { echo "##vso[task.logissue type=error]$label failed"; exit 1; }
+                        }
+                        check "No function key (must be refused)"       "$base/0123456789abcdef0123456789abcdef"                    401
+                        check "Malformed reference (validation)"        "$base/bad-ref?code=$(functionKey)"                          400
+                        check "Unknown reference (database lookup)"     "$base/0123456789abcdef0123456789abcdef?code=$(functionKey)" 404
+                      displayName: Test the deployed function with several inputs
+
+      # ------------------------------------------------------------------ Post-deploy
+      - stage: LiveSmokeTests
+        displayName: Selenium smoke tests against the live site
+        dependsOn:
+          - DeployWebApp
+          - DeployFunctions
+        condition: succeeded()
+        variables:
+          - group: giftgivers-azure
+        jobs:
+          - job: Smoke
+            steps:
+              - template: pipelines/templates/dotnet-setup.yml
+              - script: >
+                  dotnet test GiftOfTheGivers.UiTests/GiftOfTheGivers.UiTests.csproj
+                  --configuration $(buildConfiguration)
+                  --filter "Category=Smoke"
+                  --logger "trx;LogFileName=live-smoke.trx"
+                  --results-directory $(Agent.TempDirectory)/TestResults
+                displayName: Read-only Selenium tests on $(webAppUrl)
+                env:
+                  UI_BASE_URL: $(webAppUrl)
+                  UI_SCREENSHOT_DIR: $(Build.ArtifactStagingDirectory)/live-screenshots
+              - task: PublishTestResults@2
+                condition: succeededOrFailed()
+                inputs:
+                  testResultsFormat: VSTest
+                  testResultsFiles: '**/live-smoke.trx'
+                  searchFolder: $(Agent.TempDirectory)/TestResults
+                  testRunTitle: Live smoke tests
+              - publish: $(Build.ArtifactStagingDirectory)/live-screenshots
+                artifact: live-screenshots
+                condition: succeededOrFailed()

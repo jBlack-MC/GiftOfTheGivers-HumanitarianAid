@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Code coverage settings. Command line: dotnet test with the settings option pointing at this file.
+     Visual Studio: Test > Configure Run Settings > Select Solution Wide runsettings File.
+     Only hand-written code is measured: EF migrations and compiled Razor views are generated. -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Exclude>[GiftOfTheGivers]GiftOfTheGivers.Data.Migrations.*,[GiftOfTheGivers]AspNetCoreGeneratedDocument.*</Exclude>
+          <ExcludeByAttribute>GeneratedCodeAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <ExcludeByFile>**/Migrations/*.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

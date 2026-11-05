@@ -9,35 +9,37 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Primary,
+    onPrimary = Color.White,
+    primaryContainer = PrimaryDark,
+    secondary = Accent,
+    onSecondary = Color.White,
+    background = Navy,
+    surface = Color(0xFF121C26),
+    onBackground = Color.White,
+    onSurface = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = Primary,
     onPrimary = Color.White,
+    primaryContainer = PrimarySubtle,
+    secondary = Accent,
     onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    background = BackgroundLight,
+    surface = SurfaceLight,
+    onBackground = Ink,
+    onSurface = BodyText
 )
 
 @Composable
 fun GiftOfTheGiversMobileTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // default to brand colors
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -45,7 +47,6 @@ fun GiftOfTheGiversMobileTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
